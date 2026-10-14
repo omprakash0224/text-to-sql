@@ -8,11 +8,11 @@ This document outlines the phase-by-phase roadmap for developing **DataSpeak**, 
 ## Phase 1: Project Setup & Core Infrastructure
 
 ### Tasks
-- [ ] Initialize monorepo structure with `backend/` and `frontend/` directories.
-- [ ] Configure Python backend environment with `requirements.txt` (FastAPI, Uvicorn, SQLAlchemy, sqlglot, LangGraph, LangChain-Groq, PyJWT, Cryptography).
-- [ ] Set up `.env.example` with config variables (`CLERK_ISSUER`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, etc.).
-- [ ] Initialize frontend with Vite + React + TypeScript and configure Tailwind CSS and Lucide React.
-- [ ] Configure CORS, logging, and health check endpoint (`/health`) in FastAPI.
+- [x] Initialize monorepo structure with `backend/` and `frontend/` directories.
+- [x] Configure Python backend environment with `requirements.txt` (FastAPI, Uvicorn, SQLAlchemy, sqlglot, LangGraph, LangChain-Groq, PyJWT, Cryptography).
+- [x] Set up `.env.example` with config variables (`CLERK_ISSUER`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, etc.).
+- [x] Initialize frontend with Vite + React + TypeScript and configure Tailwind CSS and Lucide React.
+- [x] Configure CORS, logging, and health check endpoint (`/health`) in FastAPI.
 
 ### Success Criteria
 - Backend server runs via `uvicorn main:app --reload` and returns `{"status": "ok"}` on `GET /health`.
