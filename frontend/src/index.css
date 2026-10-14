@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════════
+   DataSpeak — Global Design System
+   Dark-first, glassmorphic, premium aesthetic
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Google Fonts ──────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── CSS Custom Properties ─────────────────────────────────────── */
+:root {
+  /* Brand palette */
+  --ds-primary:        #7c3aed;   /* violet-700  */
+  --ds-primary-light:  #a78bfa;   /* violet-400  */
+  --ds-primary-glow:   rgba(124, 58, 237, 0.35);
+
+  --ds-accent:         #06b6d4;   /* cyan-500    */
+  --ds-accent-light:   #67e8f9;   /* cyan-300    */
+
+  /* Surface layers */
+  --ds-bg-base:        #0a0b0f;   /* near-black  */
+  --ds-bg-surface:     #111218;   /* card background */
+  --ds-bg-elevated:    #1a1b23;   /* hover / modal surface */
+  --ds-bg-overlay:     rgba(17, 18, 24, 0.8);
+
+  /* Borders */
+  --ds-border:         rgba(255, 255, 255, 0.08);
+  --ds-border-strong:  rgba(255, 255, 255, 0.14);
+
+  /* Text */
+  --ds-text-primary:   #f1f5f9;   /* slate-100   */
+  --ds-text-secondary: #94a3b8;   /* slate-400   */
+  --ds-text-muted:     #475569;   /* slate-600   */
+
+  /* Status */
+  --ds-success:        #10b981;   /* emerald-500 */
+  --ds-warning:        #f59e0b;   /* amber-500   */
+  --ds-error:          #ef4444;   /* red-500     */
+
+  /* Elevation / shadows */
+  --ds-shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.4);
+  --ds-shadow-md:      0 4px 16px rgba(0, 0, 0, 0.5);
+  --ds-shadow-lg:      0 12px 40px rgba(0, 0, 0, 0.7);
+  --ds-shadow-glow:    0 0 32px var(--ds-primary-glow);
+
+  /* Transitions */
+  --ds-transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Base Reset ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--ds-bg-base);
+  color: var(--ds-text-primary);
+  min-height: 100dvh;
+  overflow-x: hidden;
+
+  /* Subtle grid texture */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.15), transparent),
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ── Typography ────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ds-text-primary);
+}
+
+code, pre, kbd {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* ── Glass / Card Utility ──────────────────────────────────────── */
+.ds-glass {
+  background: rgba(17, 18, 24, 0.6);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--ds-border);
+}
+
+.ds-card {
+  background: var(--ds-bg-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  box-shadow: var(--ds-shadow-md);
+}
+
+/* ── Gradient Text Utility ─────────────────────────────────────── */
+.ds-gradient-text {
+  background: linear-gradient(135deg, var(--ds-primary-light) 0%, var(--ds-accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Scrollbar Styling ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-text-muted);
+}
+
+/* ── Animations ────────────────────────────────────────────────── */
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ds-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ds-primary-glow); }
+  50%       { box-shadow: 0 0 20px 4px var(--ds-primary-glow); }
+}
+
+@keyframes ds-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.ds-fade-in {
+  animation: ds-fade-in var(--ds-transition-normal) both;
+}
+
+.ds-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ds-bg-surface) 25%,
+    var(--ds-bg-elevated) 50%,
+    var(--ds-bg-surface) 75%
+  );
+  background-size: 200% auto;
+  animation: ds-shimmer 1.6s linear infinite;
+}

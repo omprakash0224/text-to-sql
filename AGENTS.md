@@ -174,4 +174,5 @@ Agents must consult the authoritative documentation in the `docs/` folder before
 - [Security Requirements](file:///d:/text-to-sql/docs/SECURITY.md): Threat mitigation, Clerk JWT auth, and guardrail specifications.
 - [Architecture Decisions (ADRs)](file:///d:/text-to-sql/docs/DECISIONS.md): Key architectural choices and design rationales.
 - [Task Roadmap & Milestones](file:///d:/text-to-sql/docs/TASK.md): Phased implementation checklist and success criteria.
+- [UI/UX Design Reference](file:///d:/text-to-sql/docs/DESIGN.md): Complete frontend design reference.
 - [Environment Configuration Template](file:///d:/text-to-sql/.env.example): Complete configuration variables for backend and frontend.

@@ -1,0 +1,38 @@
+# ==========================================
+# DATASPEAK - BACKEND DEPENDENCIES
+# ==========================================
+
+# --- Web Framework & Server ---
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+
+# --- Environment & Config ---
+python-dotenv==1.0.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# --- Authentication (Clerk JWT) ---
+PyJWT==2.10.1
+cryptography==44.0.0
+httpx==0.28.1
+
+# --- Database (SQLAlchemy Async) ---
+sqlalchemy[asyncio]==2.0.36
+
+# --- Async DB Drivers ---
+asyncpg==0.30.0          # PostgreSQL / Neon / Supabase
+aiomysql==0.2.0          # MySQL
+aiosqlite==0.20.0        # SQLite (local & demo)
+
+# --- SQL Safety & Parsing ---
+sqlglot>=25.34.0
+
+# --- AI / LLM Orchestration ---
+langchain==0.3.13
+langchain-core==0.3.29
+langchain-groq==0.2.3
+langgraph==0.2.59
+
+# --- Logging & Utilities ---
+structlog==24.4.0
