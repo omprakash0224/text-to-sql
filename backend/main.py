@@ -47,6 +47,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield  # ── Application runs here ──────────────────────────────────────────
 
     logger.info("DataSpeak backend shutting down")
+    from app.db.session_manager import session_manager
+    await session_manager.dispose_all_sessions()
 
 
 # ── FastAPI application instance ─────────────────────────────────────────────

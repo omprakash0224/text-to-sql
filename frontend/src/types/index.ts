@@ -45,7 +45,31 @@ export interface DatabaseConnection {
   database?: string;
   username?: string;
   ssl?: boolean;
+  is_sample_db?: boolean;
+  table_count?: number;
+  connected_at: string;
   connectedAt?: string;
+}
+
+export interface ConnectionParams {
+  name?: string;
+  dialect?: DatabaseDialect;
+  host?: string;
+  port?: number;
+  database?: string;
+  username?: string;
+  password?: string;
+  connection_string?: string;
+  ssl?: boolean;
+  is_sample_db?: boolean;
+}
+
+export interface ConnectionTestResponse {
+  success: boolean;
+  message: string;
+  latency_ms?: number;
+  dialect?: string;
+  database_version?: string;
 }
 
 // ── Schema ────────────────────────────────────────────────────────────────
@@ -54,18 +78,34 @@ export interface ColumnDefinition {
   type: string;
   nullable: boolean;
   primaryKey: boolean;
+  default_value?: string;
   foreignKey?: string;
+}
+
+export interface ForeignKeyDefinition {
+  constrained_column: string;
+  referred_table: string;
+  referred_column: string;
 }
 
 export interface TableSchema {
   name: string;
   columns: ColumnDefinition[];
+  primary_keys?: string[];
+  foreign_keys?: ForeignKeyDefinition[];
   rowCount?: number;
+  row_count_estimate?: number;
+  sample_rows?: Record<string, unknown>[];
 }
 
 export interface DatabaseSchema {
+  dialect?: string;
+  database_name?: string;
   tables: TableSchema[];
-  reflectedAt: string;
+  table_count?: number;
+  reflected_at: string;
+  reflectedAt?: string;
+  summary_prompt?: string;
 }
 
 // ── Query & Results ───────────────────────────────────────────────────────
