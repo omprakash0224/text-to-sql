@@ -15,6 +15,16 @@ export interface ApiError {
   status_code?: number;
 }
 
+// ── Authentication ────────────────────────────────────────────────────────
+export interface AuthUser {
+  user_id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  org_id?: string;
+  session_claims?: Record<string, unknown>;
+}
+
 // ── Health Check ──────────────────────────────────────────────────────────
 export interface HealthCheckResponse {
   status: 'ok' | 'degraded' | 'error';

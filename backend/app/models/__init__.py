@@ -1,2 +1,8 @@
-# Models package — Pydantic v2 request/response and user models.
-# Populated across Phases 2-5.
+"""
+DataSpeak Backend — Models Package
+Exports Pydantic v2 domain schemas.
+"""
+
+from app.models.user import AuthenticatedUser
+
+__all__ = ["AuthenticatedUser"]

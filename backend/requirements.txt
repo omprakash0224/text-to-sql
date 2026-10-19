@@ -36,3 +36,7 @@ langgraph==0.2.59
 
 # --- Logging & Utilities ---
 structlog==24.4.0
+
+# --- Testing ---
+pytest==8.3.4
+pytest-asyncio==0.25.0
