@@ -5,7 +5,7 @@ Responsibilities:
   - Create and configure the FastAPI application instance.
   - Register CORS middleware with allowed origins from settings.
   - Mount the /api/v1 router.
-  - Expose /health check endpoint.
+  - Expose / and /health check endpoints.
   - Configure structured logging on startup.
 """
 
@@ -79,6 +79,20 @@ def create_app() -> FastAPI:
 
     # ── API v1 router ─────────────────────────────────────────────────────────
     app.include_router(api_router, prefix="/api/v1")
+
+    # ── Root endpoint ─────────────────────────────────────────────────────────
+    @app.get("/", tags=["Root"], summary="Root endpoint")
+    async def root() -> JSONResponse:
+        """
+        Root endpoint returning a welcome message and basic API status.
+        """
+        return JSONResponse(
+            content={
+                "message": "Welcome to DataSpeak API",
+                "status": "ok",
+                "version": "0.1.0",
+            }
+        )
 
     # ── Health check endpoint ─────────────────────────────────────────────────
     @app.get("/health", tags=["Health"], summary="Health check")
