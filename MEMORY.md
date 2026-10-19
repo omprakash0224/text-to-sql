@@ -9,14 +9,15 @@
 
 | Dimension | Status |
 |---|---|
-| **Phase** | Phase 1 ✅ Complete |
-| **Next Phase** | Phase 2 — Authentication & SQL Guardrails |
-| **Backend** | FastAPI scaffold — runnable, health check live |
-| **Frontend** | Vite + React + TS + Tailwind — base layout done |
-| **Auth** | ❌ Not implemented (Phase 2) |
+| **Phase** | Phase 2 ✅ Complete |
+| **Next Phase** | Phase 3 — Database Connection & Schema Reflection |
+| **Backend** | FastAPI — auth guard active, /api/v1/auth/me protected |
+| **Frontend** | React 19 + ClerkProvider + Axios JWT interceptor active |
+| **Auth** | ✅ Clerk JWKS JWT verification + get_current_user dependency |
+| **SQL Guardrails** | ✅ sqlglot AST validator & auto LIMIT injection (51/51 tests passing) |
 | **Database Connectivity** | ❌ Not implemented (Phase 3) |
 | **AI Agent** | ❌ Not implemented (Phase 4) |
-| **UI Components** | Skeleton only (Phase 5) |
+| **UI Components** | Base layout + Auth Navbar + ProtectedRoute (Phase 5 full components) |
 
 ---
 
@@ -93,10 +94,10 @@ npm run dev       # http://localhost:5173
 
 ## Pending TODOs (Carry-Forward)
 
-- [ ] Install Python venv and `pip install -r requirements.txt` (user's local machine)
-- [ ] Install frontend deps: `npm install tailwindcss @tailwindcss/vite lucide-react`
-- [ ] Copy `.env.example` → `.env` and fill in real keys before Phase 2
-- [ ] Phase 2: Clerk JWT auth guard + SQL AST guardrail module + unit tests
+- [x] Install Python venv and `pip install -r requirements.txt` (user's local machine)
+- [x] Install frontend deps: `npm install tailwindcss @tailwindcss/vite lucide-react @clerk/clerk-react axios`
+- [x] Copy `.env.example` → `.env` template in repository root
+- [x] Phase 2: Clerk JWT auth guard + SQL AST guardrail module + unit tests (59/59 passing)
 - [ ] Phase 3: SQLAlchemy async engine factory, schema reflection, connection endpoints
 - [ ] Phase 4: LangGraph agent, Groq LLM client, query execution pipeline
 - [ ] Phase 5: Full UI (connection modal, schema explorer, query input, data table, charts)

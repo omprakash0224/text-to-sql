@@ -1,162 +1,183 @@
 /**
- * DataSpeak — Base App Layout Component
- * Renders the top navigation bar and a placeholder hero section.
- * Will be expanded in Phase 5 with full sidebar, query input, and results panels.
+ * DataSpeak — Root Application Component
+ * Configures ClerkProvider, AuthNavbar, ProtectedRoute, and interactive dashboard shell.
  */
 
-import { Database, Sparkles, Zap } from 'lucide-react'
+import { useState } from 'react';
+import { ClerkProvider } from '@clerk/clerk-react';
+import { Sparkles, Zap, ShieldCheck, UserCheck, Terminal, AlertTriangle } from 'lucide-react';
+import { AuthNavbar } from './components/auth/AuthNavbar';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { authService } from './services/api';
+import type { AuthUser } from './types';
 
-function App() {
+// Retrieve publishable key from environment variables
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
+const isClerkKeyValid =
+  Boolean(CLERK_PUBLISHABLE_KEY) &&
+  !CLERK_PUBLISHABLE_KEY.includes('your_clerk_publishable_key_here') &&
+  CLERK_PUBLISHABLE_KEY.startsWith('pk_');
+
+export function AppContent({ isClerkConfigured }: { isClerkConfigured: boolean }) {
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Test calling backend GET /api/v1/auth/me with Bearer token
+  const handleVerifyBackendAuth = async () => {
+    setIsLoadingUser(true);
+    setAuthError(null);
+    try {
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+    } catch (err: unknown) {
+      console.error('Backend auth verification failed:', err);
+      const message =
+        err && typeof err === 'object' && 'response' in err
+          ? JSON.stringify((err as { response?: { data?: unknown } }).response?.data)
+          : 'Failed to verify authentication with backend server.';
+      setAuthError(message);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-dvh">
-      {/* ── Top Navigation Bar ──────────────────────────────────────── */}
-      <header
-        className="ds-glass sticky top-0 z-50 flex items-center justify-between px-6 py-3"
-        style={{ borderBottom: '1px solid var(--ds-border)' }}
-      >
-        {/* Logo + Brand */}
-        <div className="flex items-center gap-3">
-          <div
-            className="flex items-center justify-center w-8 h-8 rounded-lg"
-            style={{ background: 'linear-gradient(135deg, var(--ds-primary) 0%, var(--ds-accent) 100%)' }}
-          >
-            <Database size={16} className="text-white" />
+    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
+      <AuthNavbar
+        environment={import.meta.env.VITE_APP_ENV || 'development'}
+        isClerkConfigured={isClerkConfigured}
+      />
+
+      <ProtectedRoute isClerkConfigured={isClerkConfigured}>
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          {/* Hero Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-6 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              Phase 2: Authentication & Security Guardrails
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
+              Ask Your Database{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-300 to-indigo-300">
+                Anything
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              DataSpeak transforms natural language questions into safe, strictly read-only SQL queries
+              enforced by AST guardrails.
+            </p>
           </div>
-          <span className="font-semibold text-base tracking-tight" style={{ color: 'var(--ds-text-primary)' }}>
-            Data<span style={{ color: 'var(--ds-primary-light)' }}>Speak</span>
-          </span>
-        </div>
 
-        {/* Status pill */}
-        <div
-          className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-          style={{
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            color: 'var(--ds-success)',
-          }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          API Connected
-        </div>
+          {/* Quick Security & Auth Verification Panel */}
+          <div className="max-w-2xl mx-auto rounded-2xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm shadow-xl mb-12">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-5">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                <h3 className="font-semibold text-white">Security & Identity Health</h3>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Guardrails Active
+              </span>
+            </div>
 
-        {/* Auth placeholder */}
-        <button
-          className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all"
-          style={{
-            background: 'var(--ds-primary)',
-            color: '#fff',
-            transition: 'var(--ds-transition-fast)',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--ds-primary-light)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--ds-primary)')}
-        >
-          Sign In
-        </button>
-      </header>
+            <p className="text-sm text-slate-300 mb-5 leading-relaxed">
+              Your session is authenticated via Clerk and protected on the backend using RS256 JWKS token validation.
+              Verify server-side token exchange below:
+            </p>
 
-      {/* ── Hero Section ────────────────────────────────────────────── */}
-      <main className="flex flex-1 flex-col items-center justify-center px-6 py-20 ds-fade-in">
-        {/* Glow orb */}
-        <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)',
-            filter: 'blur(40px)',
-          }}
-        />
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleVerifyBackendAuth}
+                disabled={isLoadingUser}
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 px-4 py-2.5 text-sm font-semibold text-white transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
+              >
+                <UserCheck className="h-4 w-4" />
+                {isLoadingUser ? 'Verifying with Backend...' : 'Verify Token with GET /api/v1/auth/me'}
+              </button>
+            </div>
 
-        {/* Badge */}
-        <div
-          className="relative flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
-          style={{
-            background: 'rgba(124, 58, 237, 0.12)',
-            border: '1px solid rgba(124, 58, 237, 0.35)',
-            color: 'var(--ds-primary-light)',
-          }}
-        >
-          <Sparkles size={12} />
-          Powered by Groq + LangGraph
-        </div>
+            {/* Verification Result Display */}
+            {currentUser && (
+              <div className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-2">
+                  <UserCheck className="h-4 w-4" />
+                  <span>Backend Token Verified Successfully!</span>
+                </div>
+                <div className="rounded-lg bg-slate-950/80 p-3 font-mono text-xs text-slate-300 border border-slate-800/80 overflow-x-auto">
+                  <pre>{JSON.stringify(currentUser, null, 2)}</pre>
+                </div>
+              </div>
+            )}
 
-        {/* Headline */}
-        <h1 className="relative text-center text-5xl sm:text-6xl font-bold mb-4 leading-tight">
-          Ask Your Database{' '}
-          <span className="ds-gradient-text">Anything</span>
-        </h1>
+            {authError && (
+              <div className="mt-5 rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-rose-400 mb-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>Backend Auth Response Error:</span>
+                </div>
+                <p className="text-xs text-rose-300 font-mono break-all">{authError}</p>
+              </div>
+            )}
+          </div>
 
-        {/* Sub-headline */}
-        <p
-          className="relative text-center text-lg max-w-xl mb-10"
-          style={{ color: 'var(--ds-text-secondary)' }}
-        >
-          DataSpeak turns plain English into safe, read-only SQL — instantly. No SQL expertise required.
-        </p>
+          {/* Feature Highlights Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <h4 className="font-semibold text-white mb-1.5">Strict AST Guardrails</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                sqlglot AST inspection strictly prohibits mutations (INSERT, UPDATE, DELETE, DROP) and stacked queries.
+              </p>
+            </div>
 
-        {/* CTA buttons */}
-        <div className="relative flex flex-wrap gap-4 justify-center">
-          <button
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all"
-            style={{
-              background: 'linear-gradient(135deg, var(--ds-primary) 0%, var(--ds-accent) 100%)',
-              color: '#fff',
-              boxShadow: 'var(--ds-shadow-glow)',
-              transition: 'var(--ds-transition-normal)',
-            }}
-          >
-            <Zap size={16} />
-            Connect a Database
-          </button>
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 mb-4">
+                <Terminal className="h-5 w-5" />
+              </div>
+              <h4 className="font-semibold text-white mb-1.5">Automatic LIMIT Caps</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Queries are automatically injected with safe row caps (default LIMIT 100) to protect database performance.
+              </p>
+            </div>
 
-          <button
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ds-glass"
-            style={{
-              color: 'var(--ds-text-primary)',
-              transition: 'var(--ds-transition-normal)',
-            }}
-          >
-            <Database size={16} />
-            Try Demo (SQLite)
-          </button>
-        </div>
+            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
+                <Zap className="h-5 w-5" />
+              </div>
+              <h4 className="font-semibold text-white mb-1.5">Stateless JWT Auth</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Clerk Bearer tokens validated statelessly on FastAPI using cached RS256 JWKS public keys.
+              </p>
+            </div>
+          </div>
+        </main>
+      </ProtectedRoute>
 
-        {/* Feature pills */}
-        <div className="relative flex flex-wrap gap-3 justify-center mt-14">
-          {[
-            '🔒 Read-only guardrails',
-            '⚡ Sub-second inference',
-            '📊 Auto chart generation',
-            '🌐 PostgreSQL · MySQL · SQLite',
-            '📥 CSV export',
-          ].map(feature => (
-            <span
-              key={feature}
-              className="px-3 py-1 rounded-full text-xs font-medium"
-              style={{
-                background: 'var(--ds-bg-elevated)',
-                border: '1px solid var(--ds-border)',
-                color: 'var(--ds-text-secondary)',
-              }}
-            >
-              {feature}
-            </span>
-          ))}
-        </div>
-      </main>
-
-      {/* ── Footer ──────────────────────────────────────────────────── */}
-      <footer
-        className="text-center py-4 text-xs"
-        style={{
-          color: 'var(--ds-text-muted)',
-          borderTop: '1px solid var(--ds-border)',
-        }}
-      >
-        DataSpeak v0.1.0 · Phase 1 — Infrastructure ·{' '}
-        <span style={{ color: 'var(--ds-primary-light)' }}>Development</span>
+      {/* Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+        DataSpeak v0.1.0 · Phase 2: Authentication & Security Guardrails ·{' '}
+        <span className="text-indigo-400">Security Invariants Active</span>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default function App() {
+  if (isClerkKeyValid) {
+    return (
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+        <AppContent isClerkConfigured={true} />
+      </ClerkProvider>
+    );
+  }
+
+  // Fallback when Clerk publishable key is not set in .env
+  return <AppContent isClerkConfigured={false} />;
+}

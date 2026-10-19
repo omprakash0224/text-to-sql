@@ -23,15 +23,15 @@ This document outlines the phase-by-phase roadmap for developing **DataSpeak**, 
 ## Phase 2: Authentication & Security Guardrails
 
 ### Tasks
-- [ ] Set up `@clerk/clerk-react` in the frontend with `<ClerkProvider />`, `<SignIn />`, and `<UserButton />`.
-- [ ] Configure Axios interceptor in the frontend to attach the Clerk session Bearer token to API calls.
-- [ ] Implement Clerk JWT verification dependency (`app/core/auth.py`) in FastAPI using Clerk JWKS public keys.
-- [ ] Protect backend API routes with `Depends(get_current_user)`.
-- [ ] Build the SQL AST Guardrail module using `sqlglot` (`app/guardrails/validator.py`):
+- [x] Set up `@clerk/clerk-react` in the frontend with `<ClerkProvider />`, `<SignIn />`, and `<UserButton />`.
+- [x] Configure Axios interceptor in the frontend to attach the Clerk session Bearer token to API calls.
+- [x] Implement Clerk JWT verification dependency (`app/core/auth.py`) in FastAPI using Clerk JWKS public keys.
+- [x] Protect backend API routes with `Depends(get_current_user)`.
+- [x] Build the SQL AST Guardrail module using `sqlglot` (`app/guardrails/validator.py`):
   - Strictly permit only `SELECT` statements.
   - Automatically reject `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, and multiple stacked queries.
   - Automatically inject safety row caps (e.g. `LIMIT 100`) if missing.
-- [ ] Write unit tests for the AST guardrail covering safe queries and forbidden malicious SQL attempts.
+- [x] Write unit tests for the AST guardrail covering safe queries and forbidden malicious SQL attempts.
 
 ### Success Criteria
 - Requests without a valid Clerk JWT receive `401 Unauthorized`.

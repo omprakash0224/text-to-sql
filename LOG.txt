@@ -1,0 +1,83 @@
+================================================================================
+DATASPEAK - PROJECT CHANGE & STATUS LOG (LOG.txt)
+================================================================================
+Purpose: Living log of project status, architectural changes, and rationale.
+Maintained across all implementation phases in accordance with AGENTS.md.
+
+Current Status Overview:
+- Active Phase: Phase 2 (Authentication & Security Guardrails) - IMPLEMENTED & VERIFIED
+- Prior Phase: Phase 1 (Project Setup & Core Infrastructure) - COMPLETED
+- Next Phase: Phase 3 (Database Connection & Schema Reflection)
+
+--------------------------------------------------------------------------------
+[2026-10-14] Phase 1 - Project Setup & Core Infrastructure (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Monorepo structure established:
+   - backend/ (FastAPI, Uvicorn, SQLAlchemy async, sqlglot, LangGraph, pydantic-settings, structlog)
+   - frontend/ (Vite, React 19, TypeScript, Tailwind CSS v4, Lucide React)
+   - docs/ (PRD, ARCHITECTURE, RULES, SECURITY, DECISIONS, TASK)
+2. Backend core initialized:
+   - backend/app/core/config.py: Pydantic-settings config singleton with .env support.
+   - backend/app/core/logging.py: Structured logging via structlog.
+   - backend/app/api/v1/__init__.py: Router aggregator for v1 endpoints.
+   - backend/main.py: FastAPI app factory, CORS middleware, /health endpoint.
+   - backend/requirements.txt: Dependency manifest pinned.
+   - Package stubs created: app/agent/, app/guardrails/, app/db/, app/models/, app/services/.
+3. Frontend core initialized:
+   - frontend/vite.config.ts: Configured @tailwindcss/vite and dev proxy to backend (/api -> localhost:8000).
+   - frontend/src/index.css: DataSpeak design system tokens and glassmorphism utilities.
+   - frontend/src/App.tsx: Hero and layout shell.
+   - frontend/src/types/index.ts: Shared TypeScript contracts.
+4. Environment & Context:
+   - .env.example: Full template for backend and frontend env vars.
+   - AGENTS.md: Authoritative AI guidelines, security policies, and invariants.
+   - MEMORY.md: Living architecture memory.
+
+Why these changes were made:
+- Pydantic-settings guarantees type-safe config loading and cached singleton prevents redundant disk I/O.
+- structlog provides JSON output in production for observability while remaining developer-friendly in console.
+- Tailwind CSS v4 Vite integration eliminates legacy PostCSS overhead.
+- Base contracts in types/ and package stubs lock module boundaries early, preventing circular imports.
+
+--------------------------------------------------------------------------------
+[2026-10-19] Phase 2 - Authentication & Security Guardrails (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Frontend Authentication & API Client:
+   - frontend/package.json: Installed @clerk/clerk-react (^5.61.10) and axios (^1.20.0).
+   - frontend/src/types/index.ts: Added AuthUser interface.
+   - frontend/src/services/api.ts: Centralized Axios client with automatic dynamic Bearer token injection (setAuthTokenGetter) and 401 error event dispatcher.
+   - frontend/src/components/auth/AuthNavbar.tsx: Top navbar integrating Clerk SignedIn, SignedOut, SignInButton, and UserButton with status indicators.
+   - frontend/src/components/auth/ProtectedRoute.tsx: Authentication gate protecting queries and connections, automatically syncing Clerk token getter with Axios.
+   - frontend/src/App.tsx: Configured ClerkProvider, verified backend token communication trigger (GET /api/v1/auth/me), and fallback when keys are unconfigured.
+   - frontend/vite.config.ts: Configured to read frontend/.env directly for Clerk keys.
+   - frontend/src/index.css: Swapped font import order to prevent CSS spec warnings.
+
+2. Backend JWT Verification & Route Protection:
+   - backend/app/models/user.py: Pydantic v2 AuthenticatedUser schema (user_id, email, first_name, last_name, org_id, session_claims).
+   - backend/app/core/auth.py: Clerk JWKS verifier via PyJWKClient (RS256, expiration, issuer validation). Uses standard HTTPBearer(auto_error=False) with custom 401 Unauthorized handling (RFC 6750) and test/dev bypass support.
+   - backend/app/api/v1/auth.py: Exposes GET /api/v1/auth/me protected by Depends(get_current_user).
+   - backend/app/api/v1/__init__.py: Mounted auth_router under /api/v1/auth.
+   - backend/app/core/config.py: Configured env_file=['.env', '../.env'] for flexible directory execution.
+
+3. SQL AST Guardrail Engine:
+   - backend/app/guardrails/validator.py: sqlglot AST parser enforcing zero-trust read-only queries:
+     * Only exp.Query (SELECT, UNION, INTERSECT, EXCEPT) allowed as root statement.
+     * Blocks DDL/DML mutations (INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, CREATE, etc.) anywhere in AST (including CTEs).
+     * Rejects stacked/multi-statement queries (len(parsed) > 1).
+   - backend/app/guardrails/sanitizer.py: Automatically injects DEFAULT_QUERY_ROW_LIMIT (LIMIT 100) if omitted; clamps excessive limits to maximum allowable cap.
+   - backend/app/guardrails/__init__.py: Clean exports for validator and sanitizer.
+
+4. Test Suites & Environment:
+   - backend/requirements.txt: Added pytest and pytest-asyncio.
+   - backend/tests/test_guardrails.py: 51 test cases covering safe SELECT queries, CTEs, mutations, stacked injections, LIMIT clamping, and dialect tests (PostgreSQL, MySQL, SQLite).
+   - backend/tests/test_auth.py: 8 test cases covering 401 on missing auth, invalid schemes, expired tokens, forged signatures, missing sub claims, and dev tokens.
+   - Live Clerk issuer handling: Aligned mock test payloads with active CLERK_ISSUER in .env, and prioritized dev-token bypass ahead of live JWKS parsing.
+   - Root .env created from .env.example.
+
+Why these changes were made:
+- AST parsing via sqlglot prevents prompt injection and accidental mutations before queries reach the database engine.
+- Stateless JWKS token verification allows the FastAPI server to validate Clerk JWTs with RS256 caching without making network requests on every call.
+- Strict 401 response enforcement adheres to RFC 6750 and project security criteria.
+================================================================================
