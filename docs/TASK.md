@@ -42,17 +42,17 @@ This document outlines the phase-by-phase roadmap for developing **DataSpeak**, 
 ## Phase 3: Database Connection & Schema Reflection
 
 ### Tasks
-- [ ] Build dynamic SQLAlchemy async engine factory (`app/db/connection.py`) supporting PostgreSQL (including Neon & Supabase with SSL/TLS and connection pooling modes), MySQL, and SQLite.
-- [ ] Implement schema reflection service (`app/db/inspector.py`) to extract:
+- [x] Build dynamic SQLAlchemy async engine factory (`app/db/connection.py`) supporting PostgreSQL (including Neon & Supabase with SSL/TLS and connection pooling modes), MySQL, and SQLite.
+- [x] Implement schema reflection service (`app/db/inspector.py`) to extract:
   - Table names and column definitions (names, data types, nullability).
   - Primary keys and foreign key relationships.
   - Lightweight data samples (top 3 sample rows per table for semantic LLM context).
-- [ ] Build in-memory schema cache associated with the active user session.
-- [ ] Create API endpoints:
+- [x] Build in-memory schema cache associated with the active user session.
+- [x] Create API endpoints:
   - `POST /api/v1/connections/test`: Validate database connectivity.
   - `POST /api/v1/connections/connect`: Save active connection and trigger schema indexing.
   - `GET /api/v1/schema`: Return formatted schema for UI exploration.
-- [ ] Prepare a sample SQLite e-commerce database (e.g., customers, orders, products) for immediate local testing.
+- [x] Prepare a sample SQLite e-commerce database (e.g., customers, orders, products) for immediate local testing.
 
 ### Success Criteria
 - User can connect to both a local SQLite sample database and cloud-hosted Neon/Supabase PostgreSQL instances with SSL.

@@ -71,13 +71,23 @@ def verify_clerk_token(token: str) -> AuthenticatedUser:
     if settings.ENVIRONMENT in ("development", "test"):
         if token in ("dev-token", "test-token") or token.startswith("dev_"):
             logger.debug("Accepting development test token", token_preview=token[:10])
+            if token in ("dev-token", "test-token"):
+                return AuthenticatedUser(
+                    user_id="user_dev_01",
+                    email="developer@dataspeak.local",
+                    first_name="Dev",
+                    last_name="User",
+                    org_id="org_dev_local",
+                    session_claims={"sub": "user_dev_01", "role": "admin"},
+                )
+            user_id = token
             return AuthenticatedUser(
-                user_id="user_dev_01",
-                email="developer@dataspeak.local",
+                user_id=user_id,
+                email=f"{user_id}@dataspeak.local",
                 first_name="Dev",
                 last_name="User",
                 org_id="org_dev_local",
-                session_claims={"sub": "user_dev_01", "role": "admin"},
+                session_claims={"sub": user_id, "role": "admin"},
             )
 
     jwk_client = get_jwk_client()

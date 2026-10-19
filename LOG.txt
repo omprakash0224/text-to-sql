@@ -5,9 +5,9 @@ Purpose: Living log of project status, architectural changes, and rationale.
 Maintained across all implementation phases in accordance with AGENTS.md.
 
 Current Status Overview:
-- Active Phase: Phase 2 (Authentication & Security Guardrails) - IMPLEMENTED & VERIFIED
-- Prior Phase: Phase 1 (Project Setup & Core Infrastructure) - COMPLETED
-- Next Phase: Phase 3 (Database Connection & Schema Reflection)
+- Active Phase: Phase 3 (Database Connection & Schema Reflection) - IMPLEMENTED & VERIFIED
+- Prior Phase: Phase 2 (Authentication & Security Guardrails) - COMPLETED
+- Next Phase: Phase 4 (AI Agent Orchestration - LangGraph + Groq/OpenRouter)
 
 --------------------------------------------------------------------------------
 [2026-10-14] Phase 1 - Project Setup & Core Infrastructure (COMPLETED)
@@ -80,4 +80,45 @@ Why these changes were made:
 - AST parsing via sqlglot prevents prompt injection and accidental mutations before queries reach the database engine.
 - Stateless JWKS token verification allows the FastAPI server to validate Clerk JWTs with RS256 caching without making network requests on every call.
 - Strict 401 response enforcement adheres to RFC 6750 and project security criteria.
+
+--------------------------------------------------------------------------------
+[2026-10-20] Phase 3 - Database Connection & Schema Reflection (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Pydantic v2 Models:
+   - backend/app/models/connection.py: DatabaseDialect enum, ConnectionParams (with credential protection and custom validator), ConnectionTestRequest, ConnectionTestResponse (latency, dialect, version), ConnectionConnectRequest, ConnectionInfoResponse (safe public metadata, zero password/secret leakage).
+   - backend/app/models/schema.py: ColumnMetadata (name, type, nullability, PK, default), ForeignKeyMetadata, TableMetadata (columns, PKs, FKs, row counts, sanitized sample rows), DatabaseSchemaResponse (with pre-built summary_prompt for LLM).
+   - backend/app/models/__init__.py: Centralized export of all connection and schema models.
+
+2. Sample E-Commerce SQLite Database:
+   - backend/app/db/sample_data.py: Fully seeded relational schema (customers, categories, products, orders, order_items, reviews) with foreign keys, checks, realistic prices, and ISO dates. Idempotent generator seeded at backend/demo_ecommerce.db.
+
+3. Dynamic SQLAlchemy Async Engine Factory:
+   - backend/app/db/connection.py: Normalizes postgres://, postgresql://, mysql://, and sqlite:// URLs into async drivers (asyncpg, aiomysql, aiosqlite). Detects cloud providers (Neon, Supabase) and enforces sslmode=require and pooler statement cache disabling (statement_cache_size=0, prepared_statement_cache_size=0). Implements test_connection() with error sanitization.
+
+4. Schema Reflection Service:
+   - backend/app/db/inspector.py: Asynchronous schema reflection via run_sync(inspect(sync_conn)) extracting tables, columns, PKs, FKs in < 20ms (< 2s target). Concurrently pulls top-3 sample rows with sensitive column masking ([REDACTED] on password/secret/token/key). Generates structured Markdown DDL summary for Phase 4 LLM context.
+
+5. Multi-Tenant Session Cache & Resource Management:
+   - backend/app/db/session_manager.py: Thread-safe in-memory manager mapping Clerk user_id to ActiveDatabaseSession. Handles graceful engine disposal on connection replacement, disconnect, and server shutdown (integrated into backend/main.py lifespan).
+
+6. REST API Endpoints:
+   - backend/app/api/v1/connections.py: Mounted /api/v1/connections (POST /test, POST /connect, GET /current, POST /disconnect) protected by Depends(get_current_user).
+   - backend/app/api/v1/schema.py: Mounted /api/v1/schema (GET /, POST /refresh) protected by Depends(get_current_user).
+   - backend/app/api/v1/__init__.py: Registered sub-routers into api_router.
+
+7. Frontend Type Alignment:
+   - frontend/src/types/index.ts: Extended DatabaseConnection, TableSchema, DatabaseSchema, and added ConnectionParams, ConnectionTestResponse, ForeignKeyDefinition. Verified clean production compilation (npm run build).
+
+8. Test Suites:
+   - backend/tests/test_connection.py: 7 tests covering URL parsing, cloud SSL/pooler settings, sample DB test, and sanitized connection error handling.
+   - backend/tests/test_inspector.py: 3 tests verifying schema reflection accuracy, column types, FKs, sample rows, sensitive masking, and < 2s duration benchmark.
+   - backend/tests/test_connections_api.py: 4 integration tests verifying 401 unauthenticated blocking, test connection endpoint, connect/inspect/refresh/disconnect lifecycle, and strict multi-tenant isolation across different users.
+   - backend/app/core/auth.py: Enhanced dev-token handling so dev_ prefixed tokens dynamically assume unique user_ids for tenant isolation testing.
+
+Why these changes were made:
+- Guarantees strict zero-leakage security: Database passwords and raw connection strings are never returned to client endpoints or exposed in error messages.
+- Neon & Supabase cloud compatibility: Disabling statement caching on pooler endpoints prevents asyncpg collision crashes when running behind PgBouncer.
+- Sub-second schema reflection provides instant feedback to users while assembling semantic context for Phase 4 LangGraph agents.
+- Strict multi-tenant session isolation ensures one user can never view, inspect, or query databases connected by another account.
 ================================================================================

@@ -9,13 +9,13 @@
 
 | Dimension | Status |
 |---|---|
-| **Phase** | Phase 2 ✅ Complete |
-| **Next Phase** | Phase 3 — Database Connection & Schema Reflection |
-| **Backend** | FastAPI — auth guard active, /api/v1/auth/me protected |
+| **Phase** | Phase 3 ✅ Complete |
+| **Next Phase** | Phase 4 — AI Agent Orchestration (LangGraph + Groq/OpenRouter) |
+| **Backend** | FastAPI — auth guard active, /api/v1/auth/me, connections & schema active |
 | **Frontend** | React 19 + ClerkProvider + Axios JWT interceptor active |
 | **Auth** | ✅ Clerk JWKS JWT verification + get_current_user dependency |
 | **SQL Guardrails** | ✅ sqlglot AST validator & auto LIMIT injection (51/51 tests passing) |
-| **Database Connectivity** | ❌ Not implemented (Phase 3) |
+| **Database Connectivity** | ✅ SQLAlchemy async factory (Postgres/Neon/Supabase/MySQL/SQLite) + Inspector |
 | **AI Agent** | ❌ Not implemented (Phase 4) |
 | **UI Components** | Base layout + Auth Navbar + ProtectedRoute (Phase 5 full components) |
 
@@ -98,7 +98,7 @@ npm run dev       # http://localhost:5173
 - [x] Install frontend deps: `npm install tailwindcss @tailwindcss/vite lucide-react @clerk/clerk-react axios`
 - [x] Copy `.env.example` → `.env` template in repository root
 - [x] Phase 2: Clerk JWT auth guard + SQL AST guardrail module + unit tests (59/59 passing)
-- [ ] Phase 3: SQLAlchemy async engine factory, schema reflection, connection endpoints
+- [x] Phase 3: SQLAlchemy async engine factory, schema reflection, connection endpoints, sample DB
 - [ ] Phase 4: LangGraph agent, Groq LLM client, query execution pipeline
 - [ ] Phase 5: Full UI (connection modal, schema explorer, query input, data table, charts)
 - [ ] Phase 6: Integration tests, security hardening, README
