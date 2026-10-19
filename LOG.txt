@@ -5,9 +5,10 @@ Purpose: Living log of project status, architectural changes, and rationale.
 Maintained across all implementation phases in accordance with AGENTS.md.
 
 Current Status Overview:
-- Active Phase: Phase 3 (Database Connection & Schema Reflection) - IMPLEMENTED & VERIFIED
-- Prior Phase: Phase 2 (Authentication & Security Guardrails) - COMPLETED
-- Next Phase: Phase 4 (AI Agent Orchestration - LangGraph + Groq/OpenRouter)
+- Active Phase: Phase 4 (AI Agent Orchestration - LangGraph + Groq/OpenRouter) - IMPLEMENTED & VERIFIED
+- Prior Phase: Phase 3 (Database Connection & Schema Reflection) - COMPLETED
+- Next Phase: Phase 5 (Frontend Interface & Visualization)
+
 
 --------------------------------------------------------------------------------
 [2026-10-14] Phase 1 - Project Setup & Core Infrastructure (COMPLETED)
@@ -121,4 +122,57 @@ Why these changes were made:
 - Neon & Supabase cloud compatibility: Disabling statement caching on pooler endpoints prevents asyncpg collision crashes when running behind PgBouncer.
 - Sub-second schema reflection provides instant feedback to users while assembling semantic context for Phase 4 LangGraph agents.
 - Strict multi-tenant session isolation ensures one user can never view, inspect, or query databases connected by another account.
+
+--------------------------------------------------------------------------------
+[2026-10-20] Phase 4 - AI Agent Orchestration (COMPLETED & VERIFIED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Pydantic v2 Models:
+   - backend/app/models/query.py: Created QueryAskRequest (with length and whitespace validation), ChartConfigResponse (type, x_key, y_key, title), and QueryAskResponse (sql, columns, rows, row_count, execution_time_ms, chart, summary, status, error_message).
+   - backend/app/models/__init__.py: Exported all query models.
+
+2. Safe Database Query Executor:
+   - backend/app/db/executor.py: Built QueryExecutor with enforced query execution timeouts (default: 10s via settings.MAX_QUERY_TIMEOUT_SECONDS), read-only transaction execution (SET TRANSACTION READ ONLY on Postgres), and mandatory transaction rollback (await conn.rollback() in finally block). Includes safe cell value serialization (handling Decimal, datetime, UUID, memoryview) and database error message sanitization.
+   - backend/app/db/__init__.py: Exported QueryExecutor and QueryExecutionError.
+
+3. Multi-Provider LLM Inference Client:
+   - backend/app/agent/llm.py: Built LLMClient with automated fallback:
+     * Primary: Groq (ChatGroq with llama-3.3-70b-versatile, temperature 0.0 for SQL, 0.2 for summaries).
+     * Secondary: OpenRouter fallback via OpenAI-compatible async HTTP completions.
+     * Test / Mock provider support for deterministic unit tests and offline testing.
+
+4. System Prompts:
+   - backend/app/agent/prompts.py: Designed SQL_GENERATION_SYSTEM_PROMPT, SQL_SELF_CORRECTION_SYSTEM_PROMPT, and NARRATIVE_SUMMARY_SYSTEM_PROMPT enforcing dialect awareness, schema bounds, read-only SELECT constraints, and concise executive takeaways.
+
+5. Chart Recommendation & Summary Services:
+   - backend/app/services/chart_service.py: Implemented ChartRecommendationService with deterministic heuristics mapping column cardinality and temporal/numeric/categorical types to Recharts formats (line, bar, pie, none).
+   - backend/app/services/summary_service.py: Implemented SummaryService generating 2–3 sentence plain-English business narratives with rule-based fallback for empty and single-row results.
+   - backend/app/services/__init__.py: Exported services.
+
+6. LangGraph Agent State Machine:
+   - backend/app/agent/state.py: Defined AgentState TypedDict capturing full query lifecycle context.
+   - backend/app/agent/graph.py: Built and compiled stateful workflow graph:
+     * generate_sql_node -> validate_guardrails_node -> self_correct_sql_node (max 2 retries) -> execute_query_node -> generate_insights_node.
+     * Enforced zero-tolerance AST guardrail block (0 retries) on fatal DDL/DML mutations (INSERT, UPDATE, DELETE, DROP, etc.).
+   - backend/app/guardrails/validator.py: Enriched ValidationResult with error_code derivation.
+
+7. REST API Endpoint:
+   - backend/app/api/v1/queries.py: Exposed POST /api/v1/queries/ask protected by Depends(get_current_user), verifying active database session from DatabaseSessionManager and running LangGraph pipeline.
+   - backend/app/api/v1/__init__.py: Mounted queries_router under /api/v1.
+
+8. Frontend Type Alignment:
+   - frontend/src/types/index.ts: Extended ChartConfig and QueryResult with flexible camelCase and snake_case properties to ensure seamless UI integration. Verified clean compilation (tsc -b && vite build passed in 494ms).
+
+9. Test Suites:
+   - backend/tests/test_agent.py: 16 tests covering SQL fence extraction, chart heuristics, summary generator, safe QueryExecutor, guardrail security blocking, self-correction on syntax error, and max 2 retry cap.
+   - backend/tests/test_queries_api.py: 5 integration tests covering 401 unauthenticated, 400 no connection, 422 blank validation, successful end-to-end question answering against demo database, and status='blocked' guardrail response.
+   - Full test suite passed: 94 tests passed, 0 failures, 0 regressions across all phases.
+
+Why these changes were made:
+- Stateful LangGraph multi-step graph allows automatic recovery from minor SQL syntax or column name hallucinations without exposing raw errors to end users.
+- AST guardrails via sqlglot combined with read-only transaction rollbacks and 10s timeouts provide defense-in-depth against malicious prompt injection and DoS.
+- Heuristic chart selection delivers instantaneous, zero-cost visualization recommendations tailored directly for Recharts.
+- Multi-provider fallback prevents vendor lock-in and eliminates downtime during LLM API outages or rate limits.
 ================================================================================
+
+
