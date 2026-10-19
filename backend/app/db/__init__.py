@@ -20,6 +20,10 @@ from app.db.session_manager import (
     session_manager,
     ActiveDatabaseSession,
 )
+from app.db.executor import (
+    QueryExecutor,
+    QueryExecutionError,
+)
 
 __all__ = [
     "build_async_engine",
@@ -31,4 +35,7 @@ __all__ = [
     "get_sample_db_path",
     "session_manager",
     "ActiveDatabaseSession",
+    "QueryExecutor",
+    "QueryExecutionError",
 ]
+

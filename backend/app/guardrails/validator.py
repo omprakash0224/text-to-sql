@@ -82,6 +82,7 @@ class ValidationResult:
         statement_type: Optional[str] = None,
         dialect: str = "postgres",
         ast: Optional[exp.Expression] = None,
+        error_code: Optional[str] = None,
     ):
         self.is_valid = is_valid
         self.original_sql = original_sql
@@ -90,6 +91,13 @@ class ValidationResult:
         self.statement_type = statement_type
         self.dialect = dialect
         self.ast = ast
+        self.error_code = error_code or (
+            "MULTI_STATEMENT_DETECTED" if statement_type == "MULTIPLE"
+            else "FORBIDDEN_STATEMENT" if statement_type
+            else "SQL_SYNTAX_ERROR" if error_message
+            else None
+        )
+
 
     def __repr__(self) -> str:
         return (

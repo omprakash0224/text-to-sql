@@ -18,6 +18,11 @@ from app.models.schema import (
     TableMetadata,
     DatabaseSchemaResponse,
 )
+from app.models.query import (
+    QueryAskRequest,
+    ChartConfigResponse,
+    QueryAskResponse,
+)
 
 __all__ = [
     "AuthenticatedUser",
@@ -31,4 +36,8 @@ __all__ = [
     "ForeignKeyMetadata",
     "TableMetadata",
     "DatabaseSchemaResponse",
+    "QueryAskRequest",
+    "ChartConfigResponse",
+    "QueryAskResponse",
 ]
+

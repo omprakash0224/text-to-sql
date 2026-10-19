@@ -63,16 +63,17 @@ This document outlines the phase-by-phase roadmap for developing **DataSpeak**, 
 ## Phase 4: AI Agent Orchestration (LangGraph + Groq/OpenRouter)
 
 ### Tasks
-- [ ] Configure LLM clients (`app/agent/llm.py`) with Groq (`llama-3.3-70b-versatile`) and OpenRouter fallback.
-- [ ] Define the LangGraph agent state (`app/agent/state.py`):
+- [x] Configure LLM clients (`app/agent/llm.py`) with Groq (`llama-3.3-70b-versatile`) and OpenRouter fallback.
+- [x] Define the LangGraph agent state (`app/agent/state.py`):
   - User query, database dialect, schema context, generated SQL, execution results, error logs, retry count, chart config, and summary.
-- [ ] Implement agent nodes and workflow (`app/agent/graph.py`):
+- [x] Implement agent nodes and workflow (`app/agent/graph.py`):
   1. **Schema Context Node:** Inject relevant tables and column descriptions.
   2. **SQL Generation Node:** Construct prompt and produce dialect-specific SQL.
   3. **Guardrail Validation Node:** Validate SQL AST via `sqlglot`. Route back to LLM with error message on syntax issues (max 2 retries).
   4. **Execution Node:** Run validated `SELECT` query against target database in a read-only session.
   5. **Insight & Visualization Node:** Recommend chart type (bar, line, pie, or none) and generate a 2-3 sentence plain-English summary.
-- [ ] Expose `POST /api/v1/queries/ask` endpoint executing the LangGraph pipeline.
+- [x] Expose `POST /api/v1/queries/ask` endpoint executing the LangGraph pipeline.
+
 
 ### Success Criteria
 - Plain-English question (e.g., "What are the top 5 best-selling products by revenue?") produces valid SQL, executes successfully, and returns structured data, chart metadata, and a plain-English explanation.

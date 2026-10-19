@@ -113,8 +113,10 @@ export type ChartType = 'bar' | 'line' | 'pie' | 'none';
 
 export interface ChartConfig {
   type: ChartType;
-  xKey: string;
-  yKey: string;
+  xKey?: string;
+  yKey?: string;
+  x_key?: string;
+  y_key?: string;
   title?: string;
 }
 
@@ -122,16 +124,21 @@ export interface QueryResult {
   sql: string;
   columns: string[];
   rows: Record<string, unknown>[];
-  rowCount: number;
-  executionTimeMs: number;
+  rowCount?: number;
+  row_count?: number;
+  executionTimeMs?: number;
+  execution_time_ms?: number;
   chart?: ChartConfig;
   summary?: string;
+  status?: 'success' | 'error' | 'blocked';
+  error_message?: string;
 }
 
 export interface QueryRequest {
   question: string;
-  connectionId: string;
+  connectionId?: string;
 }
+
 
 // ── UI State ──────────────────────────────────────────────────────────────
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
