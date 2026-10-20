@@ -1,54 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   DataSpeak — Global Design System
-   Dark-first, glassmorphic, premium aesthetic
+   DataSpeak — Design System Tokens (DESIGN.md)
+   A warm paper analytics workspace inspired by Notion, Linear, Airtable, and PostHog.
    ════════════════════════════════════════════════════════════════ */
 
-/* ── CSS Custom Properties ─────────────────────────────────────── */
 :root {
-  /* Brand palette */
-  --ds-primary:        #7c3aed;   /* violet-700  */
-  --ds-primary-light:  #a78bfa;   /* violet-400  */
-  --ds-primary-glow:   rgba(124, 58, 237, 0.35);
+  /* ── Structural Brand Accent (Notion Blue) ─────────────────────── */
+  --ds-primary:             #0075de;
+  --ds-primary-active:      #005bab;
+  --ds-primary-soft:        #eaf3fc;
+  --ds-primary-soft-border: #c9e0f6;
+  --ds-on-primary:          #ffffff;
 
-  --ds-accent:         #06b6d4;   /* cyan-500    */
-  --ds-accent-light:   #67e8f9;   /* cyan-300    */
+  /* ── Surfaces (Notion Warm Paper Canvas) ───────────────────────── */
+  --ds-canvas:              #f6f5f4;
+  --ds-surface:             #ffffff;
+  --ds-surface-sunken:      #efeeec;
+  --ds-surface-hover:       #f8fafc;
+  --ds-hairline:            #e6e6e6;
+  --ds-hairline-strong:     #dddddd;
+  --ds-hairline-soft:       #eeeeec;
 
-  /* Surface layers */
-  --ds-bg-base:        #0a0b0f;   /* near-black  */
-  --ds-bg-surface:     #111218;   /* card background */
-  --ds-bg-elevated:    #1a1b23;   /* hover / modal surface */
-  --ds-bg-overlay:     rgba(17, 18, 24, 0.8);
+  /* ── Text / Ink Ladder (Notion Ink) ───────────────────────────── */
+  --ds-ink:                 #0d0d0d;
+  --ds-ink-secondary:       #31302e;
+  --ds-ink-muted:           #615d59;
+  --ds-ink-faint:           #a39e98;
 
-  /* Borders */
-  --ds-border:         rgba(255, 255, 255, 0.08);
-  --ds-border-strong:  rgba(255, 255, 255, 0.14);
+  /* ── Code & Dark Island (PostHog Olive-Charcoal) ───────────────── */
+  --ds-code-bg:             #23251d;
+  --ds-code-ink:            #ffffff;
+  --ds-code-comment:        #9b9c92;
+  --ds-code-keyword:        #62aef0;
+  --ds-code-string:         #8fd19e;
+  --ds-code-number:         #fcab79;
+  --ds-code-flag:           #ff8b82;
 
-  /* Text */
-  --ds-text-primary:   #f1f5f9;   /* slate-100   */
-  --ds-text-secondary: #94a3b8;   /* slate-400   */
-  --ds-text-muted:     #475569;   /* slate-600   */
+  /* ── Safety Semantics (PostHog Safety Trio) ────────────────────── */
+  --ds-safe:                #2c8c66;
+  --ds-safe-soft:           #d9eddf;
+  --ds-safe-ink:            #17543b;
 
-  /* Status */
-  --ds-success:        #10b981;   /* emerald-500 */
-  --ds-warning:        #f59e0b;   /* amber-500   */
-  --ds-error:          #ef4444;   /* red-500     */
+  --ds-blocked:             #cd4239;
+  --ds-blocked-soft:        #f7d6d3;
+  --ds-blocked-ink:         #86241d;
 
-  /* Elevation / shadows */
-  --ds-shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.4);
-  --ds-shadow-md:      0 4px 16px rgba(0, 0, 0, 0.5);
-  --ds-shadow-lg:      0 12px 40px rgba(0, 0, 0, 0.7);
-  --ds-shadow-glow:    0 0 32px var(--ds-primary-glow);
+  --ds-caution:             #f7a501;
+  --ds-caution-soft:        #fdf0d0;
+  --ds-caution-ink:         #6e4600;
 
-  /* Transitions */
-  --ds-transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --ds-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --ds-transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-neutral-soft:        #e5e7e0;
+
+  /* ── Chart Series Palette (PostHog - NO red/green) ─────────────── */
+  --ds-series-1:            #0075de;
+  --ds-series-2:            #f7a501;
+  --ds-series-3:            #2a9d99;
+  --ds-series-4:            #7c44a6;
+  --ds-series-5:            #62aef0;
+  --ds-series-6:            #d6409f;
+  --ds-series-other:        #a39e98;
+  --ds-chart-grid:          #e6e6e6;
+  --ds-tooltip-bg:          #23251d;
 }
 
-/* ── Base Reset ────────────────────────────────────────────────── */
+/* ── Base Reset & Typography Defaults ────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -60,66 +77,65 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--ds-bg-base);
-  color: var(--ds-text-primary);
-  min-height: 100dvh;
-  overflow-x: hidden;
-
-  /* Subtle grid texture */
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.15), transparent),
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: auto, 48px 48px, 48px 48px;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--ds-canvas);
+  color: var(--ds-ink);
+  min-height: 100vh;
+  letter-spacing: -0.011em;
 }
 
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
+/* Tabular Numerals for metrics, table cells, and stats */
+.tnum,
+[data-tnum="true"] {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Typography ────────────────────────────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-  color: var(--ds-text-primary);
+/* Monospace fonts */
+code, pre, kbd, .font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 }
 
-code, pre, kbd {
-  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+/* ── Elevation & Focus Shadows ───────────────────────────────────── */
+.shadow-flat {
+  box-shadow: none;
+  border: 1px solid var(--ds-hairline);
 }
 
-/* ── Glass / Card Utility ──────────────────────────────────────── */
-.ds-glass {
-  background: rgba(17, 18, 24, 0.6);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--ds-border);
+.shadow-prompt-focus {
+  border-color: var(--ds-primary);
+  box-shadow: 0 0 0 2px rgba(0, 117, 222, 0.25), 0 4px 18px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
-.ds-card {
-  background: var(--ds-bg-surface);
-  border: 1px solid var(--ds-border);
-  border-radius: 12px;
-  box-shadow: var(--ds-shadow-md);
+.shadow-floating {
+  box-shadow: 0 23px 52px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* ── Gradient Text Utility ─────────────────────────────────────── */
-.ds-gradient-text {
-  background: linear-gradient(135deg, var(--ds-primary-light) 0%, var(--ds-accent-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ── Subtle Shimmer Animation for Skeletons ──────────────────────── */
+@keyframes ds-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-/* ── Scrollbar Styling ─────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ds-surface-sunken) 25%,
+    #e8e7e4 37%,
+    var(--ds-surface-sunken) 63%
+  );
+  background-size: 400% 100%;
+  animation: ds-shimmer 1.4s ease infinite;
+}
+
+/* ── Custom Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -128,40 +144,9 @@ code, pre, kbd {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--ds-border-strong);
-  border-radius: 3px;
+  background: var(--ds-hairline-strong);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ds-text-muted);
-}
-
-/* ── Animations ────────────────────────────────────────────────── */
-@keyframes ds-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ds-pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 var(--ds-primary-glow); }
-  50%       { box-shadow: 0 0 20px 4px var(--ds-primary-glow); }
-}
-
-@keyframes ds-shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-
-.ds-fade-in {
-  animation: ds-fade-in var(--ds-transition-normal) both;
-}
-
-.ds-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--ds-bg-surface) 25%,
-    var(--ds-bg-elevated) 50%,
-    var(--ds-bg-surface) 75%
-  );
-  background-size: 200% auto;
-  animation: ds-shimmer 1.6s linear infinite;
+  background: var(--ds-ink-faint);
 }

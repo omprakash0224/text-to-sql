@@ -84,16 +84,16 @@ This document outlines the phase-by-phase roadmap for developing **DataSpeak**, 
 ## Phase 5: Frontend Interface & Visualization
 
 ### Tasks
-- [ ] Build app layout (`AppLayout.tsx`) with top navigation, connection indicator, and Clerk user controls.
-- [ ] Build Database Connection Modal (`DbConnectionModal.tsx`) with one-click presets for SQLite, PostgreSQL, Neon, and Supabase (with automatic SSL & pooler options).
-- [ ] Build Schema Explorer sidebar (`SchemaExplorer.tsx`) showing searchable tables and columns.
-- [ ] Build Conversational Query Input (`QueryInput.tsx`) with sample suggestion chips.
-- [ ] Build Interactive Data Table (`DataTable.tsx`) with sorting and pagination using TanStack Table.
-- [ ] Build Dynamic Chart Renderer (`ChartViewer.tsx`) supporting Recharts Bar, Line, and Pie views based on backend recommendation, with manual chart type switcher.
-- [ ] Build Plain-English Insight Card (`InsightCard.tsx`) highlighting key takeaways.
-- [ ] Build Transparent SQL Preview modal/toggle allowing users to inspect the generated query.
-- [ ] Implement CSV export utility (`ExportButton.tsx`).
-- [ ] Add loading skeletons, pulse animations, and user-friendly error banners.
+- [x] Build app layout (`AppLayout.tsx`) with top navigation, connection indicator, and Clerk user controls.
+- [x] Build Database Connection Modal (`DbConnectionModal.tsx`) with one-click presets for SQLite, PostgreSQL, Neon, and Supabase (with automatic SSL & pooler options).
+- [x] Build Schema Explorer sidebar (`SchemaExplorer.tsx`) showing searchable tables and columns.
+- [x] Build Conversational Query Input (`QueryInput.tsx`) with sample suggestion chips.
+- [x] Build Interactive Data Table (`DataTable.tsx`) with sorting and pagination using TanStack Table.
+- [x] Build Dynamic Chart Renderer (`ChartViewer.tsx`) supporting Recharts Bar, Line, and Pie views based on backend recommendation, with manual chart type switcher.
+- [x] Build Plain-English Insight Card (`InsightCard.tsx`) highlighting key takeaways.
+- [x] Build Transparent SQL Preview modal/toggle allowing users to inspect the generated query.
+- [x] Implement CSV export utility (`ExportButton.tsx`).
+- [x] Add loading skeletons, pulse animations, and user-friendly error banners.
 
 ### Success Criteria
 - Non-technical user can ask a question, inspect the response via table and auto-selected chart, read the narrative summary, and download results to CSV without seeing raw SQL errors.
