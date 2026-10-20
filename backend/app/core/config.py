@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=[".env", "../.env"],
+        env_file=[".env", "backend/.env", "../.env"],
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -46,10 +46,10 @@ class Settings(BaseSettings):
 
     # ── LLM Providers ────────────────────────────────────────────────────────
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
 
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "qwen/qwen-2.5-coder-32b-instruct"
+    OPENROUTER_MODEL: str = "minimax/minimax-m3.1-flash:free"
 
     # ── SQL Security ──────────────────────────────────────────────────────────
     DEFAULT_QUERY_ROW_LIMIT: int = 100

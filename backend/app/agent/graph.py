@@ -31,12 +31,14 @@ from app.services.summary_service import summary_service
 logger = get_logger("agent.graph")
 
 
-def extract_sql_from_text(text: str) -> str:
+def extract_sql_from_text(text: Optional[str]) -> str:
     """
     Extracts raw SQL from markdown code fences or returns trimmed text.
-    Handles ```sql ... ``` or ``` ... ``` wrappers.
+    Handles ```sql ... ``` or ``` ... ``` wrappers. Safely handles None and empty input.
     """
-    clean = text.strip()
+    if not text:
+        return ""
+    clean = str(text).strip()
     match = re.search(r"```(?:sql)?\s*([\s\S]*?)\s*```", clean, re.IGNORECASE)
     if match:
         clean = match.group(1).strip()

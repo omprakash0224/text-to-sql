@@ -64,8 +64,8 @@ class SummaryService:
                 temperature=0.2,
                 max_tokens=300,
             )
-            clean_summary = summary.strip().strip('"').strip("'")
-            if clean_summary:
+            clean_summary = (summary or "").strip().strip('"').strip("'")
+            if clean_summary and clean_summary.lower() not in ("none", "null"):
                 return clean_summary
         except Exception as exc:
             logger.warn("LLM summary generation failed, using rule-based fallback", error=str(exc))
