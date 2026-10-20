@@ -149,3 +149,25 @@ export interface AppNotification {
   message: string;
   durationMs?: number;
 }
+
+// ── Query History & Interactive Stepper ──────────────────────────────────
+export interface QueryHistoryItem {
+  id: string;
+  question: string;
+  timestamp: string;
+  result: QueryResult;
+  isSaved?: boolean;
+}
+
+export type ProgressStepId =
+  | 'reading_schema'
+  | 'generating_sql'
+  | 'validating_guardrails'
+  | 'executing_query'
+  | 'summarizing';
+
+export interface QueryProgressStep {
+  id: ProgressStepId;
+  label: string;
+  status: 'pending' | 'active' | 'completed' | 'blocked';
+}

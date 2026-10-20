@@ -9,7 +9,15 @@ import axios, {
   type AxiosResponse,
   type AxiosError,
 } from 'axios';
-import type { AuthUser, HealthCheckResponse } from '../types';
+import type {
+  AuthUser,
+  HealthCheckResponse,
+  ConnectionParams,
+  ConnectionTestResponse,
+  DatabaseConnection,
+  DatabaseSchema,
+  QueryResult,
+} from '../types';
 
 // API base URL: defaults to empty string so requests leverage Vite proxy (/api/v1)
 // or can be overridden with VITE_API_BASE_URL (e.g. http://localhost:8000)
@@ -87,6 +95,78 @@ export const authService = {
    */
   async getHealth(): Promise<HealthCheckResponse> {
     const res = await apiClient.get<HealthCheckResponse>('/health');
+    return res.data;
+  },
+};
+
+// ── Database Connection Service ─────────────────────────────────────────────
+export const connectionService = {
+  /**
+   * Test database connectivity and latency without registering a session.
+   */
+  async test(params: ConnectionParams): Promise<ConnectionTestResponse> {
+    const res = await apiClient.post<ConnectionTestResponse>('/api/v1/connections/test', params);
+    return res.data;
+  },
+
+  /**
+   * Connect to database, reflect schema, and store session cache.
+   */
+  async connect(params: ConnectionParams): Promise<DatabaseConnection> {
+    const res = await apiClient.post<DatabaseConnection>('/api/v1/connections/connect', params);
+    return res.data;
+  },
+
+  /**
+   * Retrieve active connection metadata for current user session.
+   */
+  async getCurrent(): Promise<DatabaseConnection | null> {
+    try {
+      const res = await apiClient.get<DatabaseConnection>('/api/v1/connections/current');
+      return res.data;
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err && (err as { response?: { status?: number } }).response?.status === 404) {
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Disconnect active database and purge session cache.
+   */
+  async disconnect(): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/api/v1/connections/disconnect');
+    return res.data;
+  },
+};
+
+// ── Schema Reflection Service ───────────────────────────────────────────────
+export const schemaService = {
+  /**
+   * Get current database schema (tables, columns, types, sample rows).
+   */
+  async get(): Promise<DatabaseSchema> {
+    const res = await apiClient.get<DatabaseSchema>('/api/v1/schema');
+    return res.data;
+  },
+
+  /**
+   * Force re-reflection of active database schema.
+   */
+  async refresh(): Promise<DatabaseSchema> {
+    const res = await apiClient.post<DatabaseSchema>('/api/v1/schema/refresh');
+    return res.data;
+  },
+};
+
+// ── AI Natural Language Query Service ──────────────────────────────────────
+export const queryService = {
+  /**
+   * Submit a natural language question to the LangGraph Text-to-SQL pipeline.
+   */
+  async ask(question: string): Promise<QueryResult> {
+    const res = await apiClient.post<QueryResult>('/api/v1/queries/ask', { question });
     return res.data;
   },
 };

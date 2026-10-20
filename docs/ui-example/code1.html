@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSpeak — Calm Analytics Workspace</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Calm Analytics Workspace Design System Tokens
+            primary: "#0075de",
+            "primary-active": "#005bab",
+            "primary-soft": "#eaf3fc",
+            "primary-soft-border": "#c9e0f6",
+            "on-primary": "#ffffff",
+            canvas: "#f6f5f4",
+            surface: "#ffffff",
+            "surface-sunken": "#efeeec",
+            "surface-hover": "#f8fafc",
+            hairline: "#e6e6e6",
+            "hairline-strong": "#dddddd",
+            "hairline-soft": "#eeeeec",
+            ink: "#0d0d0d",
+            "ink-secondary": "#31302e",
+            "ink-muted": "#615d59",
+            "ink-faint": "#a39e98",
+            "code-bg": "#23251d",
+            "code-ink": "#ffffff",
+            "code-comment": "#9b9c92",
+            "code-keyword": "#62aef0",
+            "code-string": "#8fd19e",
+            "code-number": "#fcab79",
+            "code-flag": "#ff8b82",
+            safe: "#2c8c66",
+            "safe-soft": "#d9eddf",
+            "safe-ink": "#17543b",
+            blocked: "#cd4239",
+            "blocked-soft": "#f7d6d3",
+            "blocked-ink": "#86241d",
+            caution: "#f7a501",
+            "caution-soft": "#fdf0d0",
+            "caution-ink": "#6e4600",
+            "series-1": "#0075de",
+            "series-2": "#f7a501",
+            "series-3": "#2a9d99",
+            "series-4": "#7c44a6",
+            "series-5": "#62aef0"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          },
+          borderRadius: {
+            DEFAULT: "8px",
+            sm: "6px",
+            md: "8px",
+            lg: "12px",
+            xl: "16px",
+            full: "9999px"
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      background-color: #f6f5f4;
+      color: #0d0d0d;
+    }
+    .tnum {
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    .dashed-grid {
+      background-image: linear-gradient(to right, #e6e6e6 50%, rgba(255,255,255,0) 0%);
+      background-position: bottom;
+      background-size: 8px 1px;
+      background-repeat: repeat-x;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #dddddd;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c0c0c0;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-sans min-h-screen flex flex-col">
+<!-- ========================================================= -->
+<!-- 1. LEFT SIDEBAR (Width 264px, Paper Canvas #f6f5f4)        -->
+<!-- ========================================================= -->
+<aside class="fixed left-0 top-0 bottom-0 w-[264px] bg-canvas border-r border-hairline z-50 flex flex-col justify-between p-4 select-none">
+<div class="flex flex-col gap-4">
+<!-- App Brand -->
+<div class="h-10 flex items-center gap-2.5 px-2">
+<div class="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-white shadow-xs">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-[16px] tracking-[-0.4px] text-ink leading-tight">DataSpeak</span>
+<span class="text-[11px] text-ink-muted tracking-tight">AI SQL Workspace</span>
+</div>
+</div>
+<!-- New Question Button -->
+<button class="w-full flex items-center justify-center gap-2 bg-surface hover:bg-surface-hover text-ink text-[14px] font-medium h-9 px-3.5 rounded-md border border-hairline-strong transition-colors shadow-xs active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">add</span>
+<span>New question</span>
+</button>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 pt-1">
+<div class="px-2 pb-1 text-[11px] font-semibold text-ink-faint tracking-wider uppercase">Workspace</div>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-surface text-ink font-semibold text-[14px] border border-hairline transition-all shadow-xs" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">chat_bubble</span>
+<span>Query &amp; Explore</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">schema</span>
+<span>Schema Explorer</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">history</span>
+<span>Query History</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">settings</span>
+<span>Settings &amp; Connections</span>
+</a>
+</div>
+<!-- Saved Questions Section -->
+<div class="flex flex-col gap-1 pt-3">
+<div class="px-2 pb-1 text-[11px] font-semibold text-ink-faint tracking-wider uppercase">Saved Questions</div>
+<a class="flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-sunken text-[13px] transition-colors truncate" href="#">
+<span class="material-symbols-outlined text-[14px] text-caution">star</span>
+<span class="truncate">Monthly Recurring Revenue</span>
+</a>
+<a class="flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-sunken text-[13px] transition-colors truncate" href="#">
+<span class="material-symbols-outlined text-[14px] text-ink-faint">star_border</span>
+<span class="truncate">Churn Rate by Tier</span>
+</a>
+</div>
+</div>
+<!-- Bottom Database Indicator & Read-only Status -->
+<div class="p-3 bg-surface rounded-lg border border-hairline flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-semibold tracking-wider text-ink-faint uppercase">Active Database</span>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-safe-soft text-safe-ink border border-safe/40 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px] text-safe">shield</span>
+<span>Read-only</span>
+</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="flex flex-col min-w-0">
+<span class="text-[13px] font-medium text-ink truncate tnum">neon-production-pg</span>
+<span class="text-[11px] text-ink-muted truncate">PostgreSQL 16 · AST Guarded</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================= -->
+<!-- 2. TOP BAR (Height 56px, Canvas #f6f5f4 with Border)       -->
+<!-- ========================================================= -->
+<header class="fixed top-0 left-[264px] right-0 h-14 bg-canvas/95 backdrop-blur-sm border-b border-hairline z-40 px-6 flex items-center justify-between">
+<!-- Left: Database Selector Chip -->
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-surface-sunken hover:bg-hairline text-ink-secondary text-[12px] font-medium border border-hairline transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px] text-ink-muted">database</span>
+<span class="tnum font-semibold">neon-production-pg (PostgreSQL 16)</span>
+<span class="material-symbols-outlined text-[14px] text-ink-muted">expand_more</span>
+</button>
+</div>
+<!-- Center: Quiet Search Bar -->
+<div class="w-full max-w-md hidden md:flex items-center">
+<div class="w-full relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[16px] text-ink-muted">search</span>
+<input class="w-full h-8 pl-9 pr-10 rounded-sm bg-surface text-[13px] text-ink placeholder:text-ink-faint border border-hairline-strong focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search queries, tables, metrics..." type="text"/>
+<kbd class="absolute right-2.5 text-[10px] font-mono text-ink-muted bg-surface-sunken px-1.5 py-0.5 rounded border border-hairline">⌘K</kbd>
+</div>
+</div>
+<!-- Right: Persistent Safety Badge + Profile -->
+<div class="flex items-center gap-3">
+<!-- Persistent Safety Badge -->
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-safe-soft text-safe-ink border border-safe text-[12px] font-semibold" title="DataSpeak can only read from this database. Write statements are strictly blocked.">
+<span class="material-symbols-outlined text-[14px] text-safe">verified_user</span>
+<span>Read-only</span>
+</div>
+<!-- User Profile -->
+<div class="flex items-center gap-2 pl-2 border-l border-hairline">
+<div class="w-7 h-7 rounded-full bg-surface border border-hairline flex items-center justify-center text-[12px] font-semibold text-ink-secondary">
+          ER
+        </div>
+<div class="hidden xl:flex flex-col text-left">
+<span class="text-[13px] font-medium text-ink leading-tight">Elena Rostova</span>
+<span class="text-[11px] text-ink-muted">Acme Corp Analytics</span>
+</div>
+</div>
+</div>
+</header>
+<!-- ========================================================= -->
+<!-- 3. MAIN CONVERSATION AREA (Max-w 840px to 1120px)          -->
+<!-- ========================================================= -->
+<main class="ml-[264px] pt-14 flex-1 px-6 pb-20">
+<div class="max-w-[840px] xl:max-w-[960px] mx-auto py-8 flex flex-col gap-6">
+<!-- ===================================================== -->
+<!-- A. PROMPT BOX (Hero / Linear-inspired craft)           -->
+<!-- ===================================================== -->
+<section class="flex flex-col gap-2.5">
+<div class="bg-surface rounded-xl border border-hairline-strong p-4 sm:p-5 shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<textarea class="w-full bg-transparent resize-none border-0 p-0 text-ink text-[17px] leading-relaxed placeholder:text-ink-faint focus:ring-0 focus:outline-none" id="prompt-input" placeholder="Ask anything about your database in plain English..." rows="2">Show monthly recurring revenue (MRR) and active subscribers by plan for the last 6 months</textarea>
+<div class="flex items-center justify-between pt-3 border-t border-hairline-soft mt-1">
+<div class="flex items-center gap-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-surface-sunken text-ink-secondary text-[11px] font-semibold tnum">
+<span class="material-symbols-outlined text-[12px] text-ink-muted">database</span>
+                neon-production-pg
+              </span>
+<span class="text-[12px] text-ink-faint hidden sm:inline">↵ to ask · ⇧↵ new line</span>
+</div>
+<button class="w-9 h-9 rounded-full bg-primary hover:bg-primary-active text-on-primary flex items-center justify-center transition-transform active:scale-95 shadow-xs" title="Ask question" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+</div>
+</div>
+<!-- Suggestion Chips Below Prompt -->
+<div class="flex items-center gap-2 overflow-x-auto py-0.5 text-[13px] no-scrollbar">
+<span class="text-ink-muted text-[12px] font-medium shrink-0">Try asking:</span>
+<button class="shrink-0 px-3 py-1 bg-surface hover:bg-surface-hover text-ink-secondary text-[13px] rounded-full border border-hairline transition-colors" onclick="setPrompt('Top 10 churning customers')" type="button">
+            Top 10 churning customers
+          </button>
+<button class="shrink-0 px-3 py-1 bg-surface hover:bg-surface-hover text-ink-secondary text-[13px] rounded-full border border-hairline transition-colors" onclick="setPrompt('Average order value by category')" type="button">
+            Average order value by category
+          </button>
+<button class="shrink-0 px-3 py-1 bg-surface hover:bg-surface-hover text-ink-secondary text-[13px] rounded-full border border-hairline transition-colors" onclick="setPrompt('Quarterly sales pipeline by rep')" type="button">
+            Quarterly sales pipeline by rep
+          </button>
+</div>
+</section>
+<!-- ===================================================== -->
+<!-- B. AI SUMMARY CALLOUT (Notion-style callout block)     -->
+<!-- ===================================================== -->
+<section class="bg-primary-soft border border-primary-soft-border rounded-lg p-5 sm:p-6 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+<span class="text-[12px] font-semibold tracking-wider text-primary-active uppercase">AI SUMMARY</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="text-ink-muted hover:text-ink text-[12px] px-2 py-0.5 rounded hover:bg-primary-soft-border transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+</div>
+<p class="text-[16px] text-ink leading-relaxed">
+<strong>MRR reached $142,500 in May 2024 (+14.2% MoM)</strong>, driven primarily by Enterprise plan expansion (42 new accounts). Starter tier churn stabilized at 1.8%.
+        </p>
+<ul class="flex flex-col gap-1.5 pt-1 text-[14px] text-ink leading-normal">
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+<span>Enterprise tier now accounts for 68% of total recurring revenue ($96.9k)</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></span>
+<span>Blended ARPU increased to $77.45 (+$4.10 MoM)</span>
+</li>
+</ul>
+<div class="pt-2 text-[13px] text-ink-muted flex items-center justify-between border-t border-primary-soft-border/60">
+<span>Based on 6 rows</span>
+<a class="text-primary hover:underline font-medium" href="#sql-section">View SQL ↓</a>
+</div>
+</section>
+<!-- ===================================================== -->
+<!-- C. METRIC HEADLINE CARDS & CHART CARD (PostHog style)   -->
+<!-- ===================================================== -->
+<section class="flex flex-col gap-4">
+<!-- 3 Metric Tiles -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-surface rounded-lg p-5 border border-hairline flex flex-col gap-1">
+<span class="text-[12px] font-semibold uppercase tracking-wider text-ink-muted">Current MRR</span>
+<div class="text-[28px] font-bold text-ink tracking-tight tnum mt-0.5">$142.5k</div>
+<div class="text-[13px] font-medium text-safe-ink flex items-center gap-0.5 tnum">
+<span>↑</span>
+<span>+14.2% MoM</span>
+</div>
+</div>
+<div class="bg-surface rounded-lg p-5 border border-hairline flex flex-col gap-1">
+<span class="text-[12px] font-semibold uppercase tracking-wider text-ink-muted">Active Paid Subscribers</span>
+<div class="text-[28px] font-bold text-ink tracking-tight tnum mt-0.5">1,840</div>
+<div class="text-[13px] font-medium text-safe-ink flex items-center gap-0.5 tnum">
+<span>↑</span>
+<span>+8.5% MoM</span>
+</div>
+</div>
+<div class="bg-surface rounded-lg p-5 border border-hairline flex flex-col gap-1">
+<span class="text-[12px] font-semibold uppercase tracking-wider text-ink-muted">Blended ARPU</span>
+<div class="text-[28px] font-bold text-ink tracking-tight tnum mt-0.5">$77.45</div>
+<div class="text-[13px] font-medium text-safe-ink flex items-center gap-0.5 tnum">
+<span>↑</span>
+<span>+$4.10 MoM</span>
+</div>
+</div>
+</div>
+<!-- Chart Card (PostHog style) -->
+<div class="bg-surface rounded-lg p-6 border border-hairline flex flex-col gap-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<h2 class="text-[18px] font-semibold tracking-[-0.2px] text-ink">Revenue Progression by Tier (USD)</h2>
+<p class="text-[13px] text-ink-muted">Monthly recurring revenue split across active subscription plans</p>
+</div>
+<!-- Segmented Control (Bar / Line / Pie) -->
+<div class="flex items-center bg-surface-sunken p-1 rounded-md self-start sm:self-auto">
+<button class="px-3 py-1 bg-surface text-ink text-[13px] font-medium rounded-sm border border-hairline shadow-xs" type="button">Bar</button>
+<button class="px-3 py-1 text-ink-muted hover:text-ink text-[13px] font-medium transition-colors" type="button">Line</button>
+<button class="px-3 py-1 text-ink-muted hover:text-ink text-[13px] font-medium transition-colors" type="button">Pie</button>
+</div>
+</div>
+<!-- Series Legend (Blue, Amber, Teal - strictly NO green/red) -->
+<div class="flex items-center gap-5 text-[12px] text-ink-secondary">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-xs bg-[#0075de]"></span>
+<span class="font-medium">Enterprise Tier (Series 1)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-xs bg-[#f7a501]"></span>
+<span class="font-medium">Pro Tier (Series 2)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-xs bg-[#2a9d99]"></span>
+<span class="font-medium">Starter Tier (Series 3)</span>
+</div>
+</div>
+<!-- Clean High-Contrast Column Visualization -->
+<div class="w-full h-64 relative flex flex-col justify-between pt-4 pb-2">
+<!-- Dashed horizontal gridlines -->
+<div class="absolute inset-x-0 top-4 border-b border-dashed border-hairline"></div>
+<div class="absolute inset-x-0 top-20 border-b border-dashed border-hairline"></div>
+<div class="absolute inset-x-0 top-36 border-b border-dashed border-hairline"></div>
+<div class="absolute inset-x-0 bottom-7 border-b border-hairline-strong"></div>
+<!-- Axis Labels & Chart Stage -->
+<div class="w-full h-full flex items-end justify-between pl-10 pr-2 pb-6 z-10">
+<!-- Y-axis values -->
+<span class="absolute left-0 top-2 text-[11px] text-ink-muted font-mono tnum">$150k</span>
+<span class="absolute left-0 top-18 text-[11px] text-ink-muted font-mono tnum">$100k</span>
+<span class="absolute left-0 top-34 text-[11px] text-ink-muted font-mono tnum">$50k</span>
+<span class="absolute left-0 bottom-6 text-[11px] text-ink-muted font-mono tnum">$0</span>
+<!-- Month 1: Dec 2023 -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 58%;" title="Enterprise: $58.0k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 24%;" title="Pro: $24.2k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 7%;" title="Starter: $7.1k"></div>
+</div>
+<span class="text-[12px] text-ink-muted tnum group-hover:text-ink">Dec 23</span>
+</div>
+<!-- Month 2: Jan 2024 -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 63%;" title="Enterprise: $63.4k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 26%;" title="Pro: $26.1k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 7%;" title="Starter: $7.3k"></div>
+</div>
+<span class="text-[12px] text-ink-muted tnum group-hover:text-ink">Jan 24</span>
+</div>
+<!-- Month 3: Feb 2024 -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 70%;" title="Enterprise: $70.2k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 29%;" title="Pro: $29.0k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 8%;" title="Starter: $7.8k"></div>
+</div>
+<span class="text-[12px] text-ink-muted tnum group-hover:text-ink">Feb 24</span>
+</div>
+<!-- Month 4: Mar 2024 -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 80%;" title="Enterprise: $79.8k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 31%;" title="Pro: $31.5k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 8%;" title="Starter: $8.1k"></div>
+</div>
+<span class="text-[12px] text-ink-muted tnum group-hover:text-ink">Mar 24</span>
+</div>
+<!-- Month 5: Apr 2024 -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 88%;" title="Enterprise: $88.2k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 35%;" title="Pro: $34.8k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 8%;" title="Starter: $8.4k"></div>
+</div>
+<span class="text-[12px] text-ink-muted tnum group-hover:text-ink">Apr 24</span>
+</div>
+<!-- Month 6: May 2024 (Active) -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex items-end gap-1.5 h-44">
+<div class="w-3 sm:w-4 bg-[#0075de] rounded-t-xs transition-opacity hover:opacity-85" style="height: 97%;" title="Enterprise: $96.9k"></div>
+<div class="w-3 sm:w-4 bg-[#f7a501] rounded-t-xs transition-opacity hover:opacity-85" style="height: 37%;" title="Pro: $37.05k"></div>
+<div class="w-3 sm:w-4 bg-[#2a9d99] rounded-t-xs transition-opacity hover:opacity-85" style="height: 9%;" title="Starter: $8.55k"></div>
+</div>
+<span class="text-[12px] font-semibold text-primary tnum">May 24</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================================================== -->
+<!-- D. RESULTS TABLE (Airtable-style comfortable grid)    -->
+<!-- ===================================================== -->
+<section class="bg-surface rounded-lg border border-hairline-strong overflow-hidden flex flex-col">
+<!-- Table Toolbar -->
+<div class="h-14 px-4 flex items-center justify-between border-b border-hairline">
+<div class="flex items-center gap-2">
+<span class="text-[15px] font-semibold text-ink">Results</span>
+<span class="text-[13px] text-ink-muted">· 6 rows</span>
+</div>
+<div class="flex items-center gap-2">
+<!-- Density Toggle -->
+<button class="hidden sm:inline-flex items-center gap-1 text-[13px] text-ink-secondary hover:text-ink px-2.5 py-1.5 rounded hover:bg-surface-sunken transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">density_medium</span>
+<span>Density</span>
+</button>
+<!-- Columns Toggle -->
+<button class="hidden sm:inline-flex items-center gap-1 text-[13px] text-ink-secondary hover:text-ink px-2.5 py-1.5 rounded hover:bg-surface-sunken transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">view_column</span>
+<span>Columns</span>
+</button>
+<!-- Export CSV -->
+<button class="inline-flex items-center gap-1.5 bg-surface hover:bg-surface-hover text-ink text-[13px] font-medium h-9 px-3.5 rounded-md border border-hairline-strong transition-colors shadow-xs" onclick="exportCsv()" type="button">
+<span class="material-symbols-outlined text-[16px] text-ink-muted">download</span>
+<span>Export CSV</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-10 bg-canvas border-b border-hairline-strong text-[12px] font-semibold text-ink-secondary uppercase tracking-[0.2px] select-none">
+<th class="px-4 text-left font-semibold">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-ink-faint">calendar_today</span>
+<span>Month</span>
+</div>
+</th>
+<th class="px-4 text-left font-semibold">
+<div class="flex items-center gap-1.5">
+<span class="text-ink-faint font-mono text-[11px]">Aa</span>
+<span>Plan Name</span>
+</div>
+</th>
+<th class="px-4 text-right font-semibold">
+<div class="flex items-center justify-end gap-1.5">
+<span class="text-ink-faint font-mono text-[11px]">#</span>
+<span>Active Subscribers</span>
+</div>
+</th>
+<th class="px-4 text-right font-semibold">
+<div class="flex items-center justify-end gap-1.5">
+<span class="text-ink-faint font-mono text-[11px]">$</span>
+<span>New MRR</span>
+</div>
+</th>
+<th class="px-4 text-right font-semibold">
+<div class="flex items-center justify-end gap-1.5">
+<span class="text-ink-faint font-mono text-[11px]">%</span>
+<span>Churn Rate</span>
+</div>
+</th>
+<th class="px-4 text-right font-semibold">
+<div class="flex items-center justify-end gap-1.5">
+<span class="text-ink-faint font-mono text-[11px]">%</span>
+<span>Net Expansion</span>
+</div>
+</th>
+</tr>
+</thead>
+<tbody class="text-[14px] text-ink divide-y divide-hairline-soft font-normal">
+<!-- Row 1 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">May 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Enterprise</span>
+</td>
+<td class="px-4 text-right tnum">420</td>
+<td class="px-4 text-right tnum font-medium text-ink">$96,900.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">0.8%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+18.4%</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">May 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Pro Tier</span>
+</td>
+<td class="px-4 text-right tnum">1,420</td>
+<td class="px-4 text-right tnum font-medium text-ink">$37,050.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">1.8%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+6.2%</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">Apr 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Enterprise</span>
+</td>
+<td class="px-4 text-right tnum">378</td>
+<td class="px-4 text-right tnum font-medium text-ink">$88,200.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">1.1%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+12.0%</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">Mar 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Enterprise</span>
+</td>
+<td class="px-4 text-right tnum">345</td>
+<td class="px-4 text-right tnum font-medium text-ink">$79,800.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">1.4%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+9.8%</td>
+</tr>
+<!-- Row 5 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">Feb 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Pro Tier</span>
+</td>
+<td class="px-4 text-right tnum">1,210</td>
+<td class="px-4 text-right tnum font-medium text-ink">$29,000.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">2.4%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+3.1%</td>
+</tr>
+<!-- Row 6 -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 tnum font-normal text-ink">Jan 2024</td>
+<td class="px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-surface-sunken text-ink border border-hairline">Enterprise</span>
+</td>
+<td class="px-4 text-right tnum">290</td>
+<td class="px-4 text-right tnum font-medium text-ink">$63,400.00</td>
+<td class="px-4 text-right tnum text-ink-secondary">1.2%</td>
+<td class="px-4 text-right tnum font-medium text-safe-ink">+11.5%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer -->
+<div class="h-12 bg-canvas px-4 flex items-center justify-between text-[13px] text-ink-muted border-t border-hairline">
+<span>Showing 1–6 of 6 rows</span>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 text-[13px] text-ink-faint cursor-not-allowed" disabled="" type="button">Previous</button>
+<span class="px-2 py-0.5 rounded bg-surface border border-hairline text-ink font-semibold tnum text-[12px]">1</span>
+<button class="px-2.5 py-1 text-[13px] text-ink-faint cursor-not-allowed" disabled="" type="button">Next</button>
+</div>
+</div>
+</section>
+<!-- ===================================================== -->
+<!-- E. GENERATED SQL PREVIEW (PostHog dark olive-charcoal)-->
+<!-- ===================================================== -->
+<section class="bg-[#23251d] text-white rounded-lg overflow-hidden flex flex-col border border-hairline-strong/20 shadow-xs" id="sql-section">
+<!-- SQL Header Strip -->
+<div class="h-12 px-4 bg-[#2a2d23] border-b border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<!-- Safety Chip -->
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-safe-soft text-safe-ink text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px] text-safe">shield</span>
+<span>Read-only check passed</span>
+</div>
+<span class="text-[12px] text-[#9b9c92] hidden sm:inline">Execution: 42ms · LIMIT 100 enforced</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1 text-[12px] font-medium text-[#c6c7bd] hover:text-white px-2 py-1 rounded hover:bg-white/10 transition-colors" onclick="copySqlCode(this)" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy SQL</span>
+</button>
+</div>
+</div>
+<!-- Code Body with JetBrains Mono Syntax Highlighting -->
+<div class="p-4 sm:p-5 font-mono text-[13px] leading-relaxed overflow-x-auto">
+<pre class="text-[#ffffff]"><code><span class="text-[#62aef0] font-medium">SELECT</span>
+  <span class="text-[#62aef0]">DATE_TRUNC</span>(<span class="text-[#8fd19e]">'month'</span>, s.created_at) <span class="text-[#62aef0] font-medium">AS</span> month,
+  p.name <span class="text-[#62aef0] font-medium">AS</span> plan_name,
+  <span class="text-[#62aef0]">COUNT</span>(<span class="text-[#62aef0] font-medium">DISTINCT</span> s.id) <span class="text-[#62aef0] font-medium">AS</span> active_subscribers,
+  <span class="text-[#62aef0]">SUM</span>(p.price_monthly) <span class="text-[#62aef0] font-medium">AS</span> new_mrr
+<span class="text-[#62aef0] font-medium">FROM</span> subscriptions s
+<span class="text-[#62aef0] font-medium">JOIN</span> plans p <span class="text-[#62aef0] font-medium">ON</span> s.plan_id = p.id
+<span class="text-[#62aef0] font-medium">WHERE</span> s.status = <span class="text-[#8fd19e]">'active'</span>
+  <span class="text-[#62aef0] font-medium">AND</span> s.created_at &gt;= <span class="text-[#62aef0]">NOW</span>() - <span class="text-[#62aef0] font-medium">INTERVAL</span> <span class="text-[#8fd19e]">'6 months'</span>
+<span class="text-[#62aef0] font-medium">GROUP BY</span> <span class="text-[#fcab79]">1</span>, <span class="text-[#fcab79]">2</span>
+<span class="text-[#62aef0] font-medium">ORDER BY</span> <span class="text-[#fcab79]">1</span> <span class="text-[#62aef0] font-medium">DESC</span>
+<span class="text-[#62aef0] font-medium">LIMIT</span> <span class="text-[#fcab79]">100</span>;</code></pre>
+</div>
+<!-- SQL Footer Strip -->
+<div class="px-4 py-2.5 bg-[#1e2019] border-t border-white/5 flex items-center justify-between text-[12px] text-[#9b9c92]">
+<div class="flex items-center gap-2">
+<span>Tables used:</span>
+<span class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[11px]">subscriptions</span>
+<span class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[11px]">plans</span>
+</div>
+<span class="text-[11px] text-[#9b9c92]">Llama 3.3 70B via Groq</span>
+</div>
+</section>
+</div>
+</main>
+<!-- Interactive Helpers -->
+<script>
+    function setPrompt(text) {
+      const el = document.getElementById('prompt-input');
+      if (el) {
+        el.value = text;
+        el.focus();
+      }
+    }
+
+    function exportCsv() {
+      const csv = "Month,Plan Name,Active Subscribers,New MRR,Churn Rate,Net Expansion\n" +
+        "May 2024,Enterprise,420,96900.00,0.8%,+18.4%\n" +
+        "May 2024,Pro Tier,1420,37050.00,1.8%,+6.2%\n" +
+        "Apr 2024,Enterprise,378,88200.00,1.1%,+12.0%\n" +
+        "Mar 2024,Enterprise,345,79800.00,1.4%,+9.8%\n" +
+        "Feb 2024,Pro Tier,1210,29000.00,2.4%,+3.1%\n" +
+        "Jan 2024,Enterprise,290,63400.00,1.2%,+11.5%";
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "dataspeak-mrr-active-subscribers-2024-05.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function copySqlCode(btn) {
+      const sql = `SELECT\n  DATE_TRUNC('month', s.created_at) AS month,\n  p.name AS plan_name,\n  COUNT(DISTINCT s.id) AS active_subscribers,\n  SUM(p.price_monthly) AS new_mrr\nFROM subscriptions s\nJOIN plans p ON s.plan_id = p.id\nWHERE s.status = 'active'\n  AND s.created_at >= NOW() - INTERVAL '6 months'\nGROUP BY 1, 2\nORDER BY 1 DESC\nLIMIT 100;`;
+      navigator.clipboard.writeText(sql).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[14px] text-safe">check</span><span>Copied!</span>';
+        setTimeout(() => {
+          btn.innerHTML = original;
+        }, 2000);
+      });
+    }
+  </script>
+</body></html>

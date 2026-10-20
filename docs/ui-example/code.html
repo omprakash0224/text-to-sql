@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DataSpeak — Schema Explorer &amp; Database Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          // Calm Analytics Workspace Design System Tokens
+          primary: "#0075de",
+          "primary-active": "#005bab",
+          "primary-soft": "#eaf3fc",
+          "primary-soft-border": "#c9e0f6",
+          "on-primary": "#ffffff",
+          canvas: "#f6f5f4",
+          surface: "#ffffff",
+          "surface-sunken": "#efeeec",
+          "surface-hover": "#f8fafc",
+          hairline: "#e6e6e6",
+          "hairline-strong": "#dddddd",
+          "hairline-soft": "#eeeeec",
+          ink: "#0d0d0d",
+          "ink-secondary": "#31302e",
+          "ink-muted": "#615d59",
+          "ink-faint": "#a39e98",
+          "code-bg": "#23251d",
+          "code-ink": "#ffffff",
+          "code-comment": "#9b9c92",
+          "code-keyword": "#62aef0",
+          "code-string": "#8fd19e",
+          "code-number": "#fcab79",
+          "code-flag": "#ff8b82",
+          safe: "#2c8c66",
+          "safe-soft": "#d9eddf",
+          "safe-ink": "#17543b",
+          blocked: "#cd4239",
+          "blocked-soft": "#f7d6d3",
+          "blocked-ink": "#86241d",
+          caution: "#f7a501",
+          "caution-soft": "#fdf0d0",
+          "caution-ink": "#6e4600",
+          "series-1": "#0075de",
+          "series-2": "#f7a501",
+          "series-3": "#2a9d99",
+          "series-4": "#7c44a6",
+          "series-5": "#62aef0"
+        },
+        fontFamily: {
+          sans: ["Inter", "sans-serif"],
+          mono: ["JetBrains Mono", "monospace"]
+        },
+        borderRadius: {
+          DEFAULT: "8px",
+          sm: "6px",
+          md: "8px",
+          lg: "12px",
+          xl: "16px",
+          full: "9999px"
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    background-color: #f6f5f4;
+    color: #0d0d0d;
+  }
+  .tnum {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #dddddd;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #c0c0c0;
+  }
+</style>
+</head>
+<body class="bg-canvas text-ink font-sans min-h-screen flex flex-col">
+<!-- ========================================================= -->
+<!-- 1. LEFT SIDEBAR (Width 264px, Paper Canvas #f6f5f4)        -->
+<!-- ========================================================= -->
+<aside class="fixed left-0 top-0 bottom-0 w-[264px] bg-canvas border-r border-hairline z-50 flex flex-col justify-between p-4 select-none">
+<div class="flex flex-col gap-4">
+<!-- App Brand -->
+<div class="h-10 flex items-center gap-2.5 px-2">
+<div class="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-white shadow-xs">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-[16px] tracking-[-0.4px] text-ink leading-tight">DataSpeak</span>
+<span class="text-[11px] text-ink-muted tracking-tight">AI SQL Workspace</span>
+</div>
+</div>
+<!-- New Question Button -->
+<button class="w-full flex items-center justify-center gap-2 bg-surface hover:bg-surface-hover text-ink text-[14px] font-medium h-9 px-3.5 rounded-md border border-hairline-strong transition-colors shadow-xs active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">add</span>
+<span>New question</span>
+</button>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 pt-1">
+<div class="px-2 pb-1 text-[11px] font-semibold text-ink-faint tracking-wider uppercase">Workspace</div>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">chat_bubble</span>
+<span>Query &amp; Explore</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-surface text-ink font-semibold text-[14px] border border-hairline transition-all shadow-xs" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">schema</span>
+<span>Schema Explorer</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">history</span>
+<span>Query History</span>
+</a>
+<a class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-sunken hover:text-ink text-[14px] font-normal transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-ink-muted">settings</span>
+<span>Settings &amp; Connections</span>
+</a>
+</div>
+<!-- Saved Questions Section -->
+<div class="flex flex-col gap-1 pt-3">
+<div class="px-2 pb-1 text-[11px] font-semibold text-ink-faint tracking-wider uppercase">Saved Questions</div>
+<a class="flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-sunken text-[13px] transition-colors truncate" href="#">
+<span class="material-symbols-outlined text-[14px] text-caution">star</span>
+<span class="truncate">Monthly Recurring Revenue</span>
+</a>
+<a class="flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-sunken text-[13px] transition-colors truncate" href="#">
+<span class="material-symbols-outlined text-[14px] text-ink-faint">star_border</span>
+<span class="truncate">Churn Rate by Tier</span>
+</a>
+</div>
+</div>
+<!-- Bottom Database Indicator & Read-only Status -->
+<div class="p-3 bg-surface rounded-lg border border-hairline flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-semibold tracking-wider text-ink-faint uppercase">Active Database</span>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-safe-soft text-safe-ink border border-safe/40 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px] text-safe">shield</span>
+<span>Read-only</span>
+</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="flex flex-col min-w-0">
+<span class="text-[13px] font-medium text-ink truncate tnum">neon-production-pg</span>
+<span class="text-[11px] text-ink-muted truncate">PostgreSQL 16 · AST Guarded</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================= -->
+<!-- 2. TOP BAR (Height 56px, Canvas #f6f5f4 with Border)       -->
+<!-- ========================================================= -->
+<header class="fixed top-0 left-[264px] right-0 h-14 bg-canvas/95 backdrop-blur-sm border-b border-hairline z-40 px-6 flex items-center justify-between">
+<!-- Left: Database Selector Chip -->
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-surface-sunken hover:bg-hairline text-ink-secondary text-[12px] font-medium border border-hairline transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px] text-ink-muted">database</span>
+<span class="tnum font-semibold">neon-production-pg (PostgreSQL 16)</span>
+<span class="material-symbols-outlined text-[14px] text-ink-muted">expand_more</span>
+</button>
+</div>
+<!-- Center: Quiet Search Bar -->
+<div class="w-full max-w-md hidden md:flex items-center">
+<div class="w-full relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[16px] text-ink-muted">search</span>
+<input class="w-full h-8 pl-9 pr-10 rounded-sm bg-surface text-[13px] text-ink placeholder:text-ink-faint border border-hairline-strong focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search queries, tables, metrics..." type="text"/>
+<kbd class="absolute right-2.5 text-[10px] font-mono text-ink-muted bg-surface-sunken px-1.5 py-0.5 rounded border border-hairline">⌘K</kbd>
+</div>
+</div>
+<!-- Right: Persistent Safety Badge + Profile -->
+<div class="flex items-center gap-3">
+<!-- Persistent Safety Badge -->
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-safe-soft text-safe-ink border border-safe text-[12px] font-semibold" title="DataSpeak can only read from this database. Write statements are strictly blocked.">
+<span class="material-symbols-outlined text-[14px] text-safe">verified_user</span>
+<span>Read-only</span>
+</div>
+<!-- User Profile -->
+<div class="flex items-center gap-2 pl-2 border-l border-hairline">
+<div class="w-7 h-7 rounded-full bg-surface border border-hairline flex items-center justify-center text-[12px] font-semibold text-ink-secondary">
+        ER
+      </div>
+<div class="hidden xl:flex flex-col text-left">
+<span class="text-[13px] font-medium text-ink leading-tight">Elena Rostova</span>
+<span class="text-[11px] text-ink-muted">Acme Corp Analytics</span>
+</div>
+</div>
+</div>
+</header>
+<!-- ========================================================= -->
+<!-- 3. MAIN SCHEMA EXPLORER WORKSPACE                          -->
+<!-- ========================================================= -->
+<main class="ml-[264px] pt-14 flex-1 px-6 pb-16">
+<div class="max-w-[1400px] mx-auto py-6 flex flex-col gap-6">
+<!-- Header Banner / Connection Details Card -->
+<div class="bg-surface rounded-lg border border-hairline p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div class="flex items-start sm:items-center gap-3.5">
+<div class="w-10 h-10 rounded-md bg-primary-soft border border-primary-soft-border flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">database</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-bold text-[17px] text-ink tracking-tight">Neon PostgreSQL Cloud</span>
+<span class="font-mono text-[12px] text-ink-muted px-2 py-0.5 rounded bg-surface-sunken border border-hairline">neon-production.us-east-2.aws.neon.tech</span>
+</div>
+<div class="flex items-center gap-3 text-ink-muted text-[12px] pt-1 flex-wrap font-medium">
+<span class="inline-flex items-center gap-1 text-ink-secondary">
+<span class="material-symbols-outlined text-[13px] text-primary">lock</span> SSL Enforced
+            </span>
+<span class="text-hairline-strong">•</span>
+<span class="inline-flex items-center gap-1 text-safe-ink font-semibold">
+<span class="material-symbols-outlined text-[13px] text-safe">shield</span> Read-only Session
+            </span>
+<span class="text-hairline-strong">•</span>
+<span class="tnum">14 tables indexed</span>
+<span class="text-hairline-strong">•</span>
+<span>Latency: <strong class="text-ink font-semibold tnum">38ms</strong></span>
+</div>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-2 self-start lg:self-center flex-wrap">
+<button class="inline-flex items-center gap-1.5 bg-surface hover:bg-surface-hover text-ink text-[13px] font-medium h-8 px-3 rounded-md border border-hairline-strong transition-colors shadow-xs" id="test-conn-btn" type="button">
+<span class="material-symbols-outlined text-[15px] text-ink-muted">speed</span>
+<span>Test Latency</span>
+</button>
+<button class="inline-flex items-center gap-1.5 bg-surface hover:bg-surface-hover text-ink text-[13px] font-medium h-8 px-3 rounded-md border border-hairline-strong transition-colors shadow-xs" id="refresh-cache-btn" type="button">
+<span class="material-symbols-outlined text-[15px] text-ink-muted">sync</span>
+<span>Refresh Cache</span>
+</button>
+<button class="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-active text-on-primary text-[13px] font-medium h-8 px-3 rounded-md transition-colors shadow-xs" id="open-conn-modal" type="button">
+<span class="material-symbols-outlined text-[15px]">add_link</span>
+<span>Connect Database</span>
+</button>
+</div>
+</div>
+<!-- Two-Column Split Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- ===================================================== -->
+<!-- LEFT COLUMN: Schema Directory & Tables Navigator (300px)-->
+<!-- ===================================================== -->
+<div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-4">
+<div class="bg-surface rounded-lg border border-hairline p-4 shadow-xs flex flex-col gap-3">
+<!-- Search & Count Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-semibold text-[14px] text-ink">Database Schema</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-sunken text-ink-muted text-[11px] font-medium tnum">14</span>
+</div>
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">public</span>
+</div>
+<!-- Filter Input -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2.5 text-[15px] text-ink-faint">search</span>
+<input class="w-full h-8 pl-8 pr-7 rounded-sm bg-surface-hover hover:bg-surface text-[13px] text-ink placeholder:text-ink-faint border border-hairline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="table-search-input" placeholder="Filter tables by name..." type="text"/>
+<button class="absolute right-2 text-ink-faint hover:text-ink text-[14px] hidden" id="clear-search-btn" type="button">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<!-- Categorized Tables List -->
+<div class="flex flex-col gap-3 max-h-[580px] overflow-y-auto pr-0.5" id="tables-list-container">
+<!-- Group 1: Subscriptions & Revenue -->
+<div class="table-group flex flex-col gap-1">
+<div class="flex items-center justify-between px-1.5 py-1 text-[11px] font-semibold text-ink-faint uppercase tracking-wider">
+<span class="flex items-center gap-1 text-ink-muted">
+<span class="material-symbols-outlined text-[13px]">credit_card</span> Subscriptions &amp; Revenue
+                </span>
+<span class="tnum">3 tables</span>
+</div>
+<!-- subscriptions (SELECTED) -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md bg-primary-soft text-ink border border-primary-soft-border cursor-pointer transition-colors" data-table="subscriptions">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-[17px]">table_chart</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-semibold text-primary-active truncate">subscriptions</span>
+<span class="text-[11px] text-ink-muted">id (UUID) • 8 cols</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="font-mono text-[11px] text-ink-muted tnum">12,400 rows</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+</div>
+<!-- plans table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="plans">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">table_rows</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">plans</span>
+<span class="text-[11px] text-ink-muted">plan_tier • 5 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">6 rows</span>
+</div>
+<!-- invoices table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="invoices">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">table_rows</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">invoices</span>
+<span class="text-[11px] text-ink-muted">invoice_num • 11 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">89,410 rows</span>
+</div>
+</div>
+<!-- Group 2: Identity & Workspaces -->
+<div class="table-group flex flex-col gap-1 pt-1 border-t border-hairline-soft">
+<div class="flex items-center justify-between px-1.5 py-1 text-[11px] font-semibold text-ink-faint uppercase tracking-wider">
+<span class="flex items-center gap-1 text-ink-muted">
+<span class="material-symbols-outlined text-[13px]">group</span> Users &amp; Workspaces
+                </span>
+<span class="tnum">3 tables</span>
+</div>
+<!-- users table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="users">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">table_rows</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">users</span>
+<span class="text-[11px] text-ink-muted">clerk_id • 12 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">48,290 rows</span>
+</div>
+<!-- workspaces table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="workspaces">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">table_rows</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">workspaces</span>
+<span class="text-[11px] text-ink-muted">workspace_slug • 7 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">5,120 rows</span>
+</div>
+<!-- workspace_members table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="workspace_members">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">table_rows</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">workspace_members</span>
+<span class="text-[11px] text-ink-muted">composite key • 4 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">16,840 rows</span>
+</div>
+</div>
+<!-- Group 3: Analytics & Events -->
+<div class="table-group flex flex-col gap-1 pt-1 border-t border-hairline-soft">
+<div class="flex items-center justify-between px-1.5 py-1 text-[11px] font-semibold text-ink-faint uppercase tracking-wider">
+<span class="flex items-center gap-1 text-ink-muted">
+<span class="material-symbols-outlined text-[13px]">insights</span> High-Throughput Telemetry
+                </span>
+<span class="tnum">2 tables</span>
+</div>
+<!-- events table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="events">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">bolt</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">events</span>
+<span class="text-[11px] text-ink-muted">event_uuid • 9 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">1.2M rows</span>
+</div>
+<!-- query_audit_logs table -->
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="query_audit_logs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">history</span>
+<div class="flex flex-col min-w-0">
+<span class="font-mono text-[13px] font-medium text-ink truncate">query_audit_logs</span>
+<span class="text-[11px] text-ink-muted">id • 14 cols</span>
+</div>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">410,290 rows</span>
+</div>
+</div>
+<!-- Group 4: Operational Meta -->
+<div class="table-group flex flex-col gap-1 pt-1 border-t border-hairline-soft">
+<div class="flex items-center justify-between px-1.5 py-1 text-[11px] font-semibold text-ink-faint uppercase tracking-wider">
+<span class="flex items-center gap-1 text-ink-muted">
+<span class="material-symbols-outlined text-[13px]">tune</span> Engine Configurations
+                </span>
+<span class="tnum">2 tables</span>
+</div>
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="api_keys">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">vpn_key</span>
+<span class="font-mono text-[13px] font-medium text-ink truncate">api_keys</span>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">242 rows</span>
+</div>
+<div class="table-nav-item flex items-center justify-between px-2.5 py-2 rounded-md text-ink-secondary hover:bg-surface-hover hover:text-ink transition-colors cursor-pointer" data-table="llm_evaluations">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-ink-muted text-[17px]">model_training</span>
+<span class="font-mono text-[13px] font-medium text-ink truncate">llm_evaluations</span>
+</div>
+<span class="font-mono text-[11px] text-ink-faint tnum">18,300 rows</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Semantic Vector Health Card -->
+<div class="bg-surface rounded-lg border border-hairline p-4 shadow-xs flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">Vectorized Context Health</span>
+<span class="font-mono text-[12px] text-safe-ink font-semibold tnum">98.2% Accurate</span>
+</div>
+<div class="w-full bg-surface-sunken h-1.5 rounded-full overflow-hidden">
+<div class="bg-safe h-full rounded-full" style="width: 98.2%;"></div>
+</div>
+<span class="text-[12px] text-ink-muted leading-relaxed">Foreign key relations &amp; column descriptions auto-fed to LLM prompt cache via pgvector embeddings.</span>
+</div>
+</div>
+<!-- ===================================================== -->
+<!-- RIGHT COLUMN: Table Inspector for `subscriptions`      -->
+<!-- ===================================================== -->
+<div class="lg:col-span-8 xl:col-span-9 flex flex-col gap-4">
+<!-- Table Header & Metadata Summary Card -->
+<div class="bg-surface rounded-lg border border-hairline p-5 shadow-xs flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[24px]">table_chart</span>
+<div class="flex items-center gap-2">
+<h1 class="text-[20px] font-bold text-ink tracking-tight font-mono">subscriptions</h1>
+<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-sunken text-ink-secondary border border-hairline">base table</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-active text-on-primary text-[13px] font-medium h-8 px-3 rounded-md transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-[15px]">chat</span>
+<span>Ask Question on Table</span>
+</button>
+<button class="inline-flex items-center gap-1.5 bg-surface hover:bg-surface-hover text-ink text-[13px] font-medium h-8 px-3 rounded-md border border-hairline-strong transition-colors shadow-xs" type="button">
+<span class="material-symbols-outlined text-[15px] text-ink-muted">share</span>
+<span>Export DDL</span>
+</button>
+</div>
+</div>
+<!-- Meta Grid (4 items) -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-md bg-canvas border border-hairline text-[12px]">
+<div class="flex flex-col gap-0.5">
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">Primary Key</span>
+<span class="font-mono text-[12px] font-semibold text-ink">id (UUID)</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">Foreign Keys</span>
+<span class="font-mono text-[12px] font-medium text-ink-secondary">user_id, plan_id</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">Table Size</span>
+<span class="font-mono text-[12px] font-medium text-ink tnum">24.8 MB (with toast)</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[11px] font-semibold text-ink-faint uppercase tracking-wider">Last Reflected</span>
+<span class="text-[12px] font-medium text-ink-muted">2 mins ago</span>
+</div>
+</div>
+<!-- Clean Tab Navigation -->
+<div class="flex items-center gap-6 border-b border-hairline -mb-1 pt-1">
+<button class="pb-2.5 text-primary font-semibold text-[14px] border-b-2 border-primary flex items-center gap-1.5 transition-colors" id="tab-columns-btn" onclick="switchSchemaTab('columns')" type="button">
+<span class="material-symbols-outlined text-[17px]">view_column</span>
+<span>Column Definitions (8)</span>
+</button>
+<button class="pb-2.5 text-ink-muted hover:text-ink font-medium text-[14px] border-b-2 border-transparent flex items-center gap-1.5 transition-colors" id="tab-preview-btn" onclick="switchSchemaTab('preview')" type="button">
+<span class="material-symbols-outlined text-[17px]">preview</span>
+<span>Sample Data Preview (3 rows)</span>
+</button>
+<button class="pb-2.5 text-ink-muted hover:text-ink font-medium text-[14px] border-b-2 border-transparent flex items-center gap-1.5 transition-colors" id="tab-indexes-btn" onclick="switchSchemaTab('indexes')" type="button">
+<span class="material-symbols-outlined text-[17px]">hub</span>
+<span>Indexes &amp; Relations (4)</span>
+</button>
+</div>
+</div>
+<!-- TAB 1: Column Definitions Table (Airtable-style comfortable grid) -->
+<div class="bg-surface rounded-lg border border-hairline-strong overflow-hidden flex flex-col shadow-xs" id="tab-columns-content">
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-10 bg-canvas border-b border-hairline-strong text-[11px] font-semibold text-ink-secondary uppercase tracking-[0.2px] select-none">
+<th class="px-4 text-left">Column Name</th>
+<th class="px-4 text-left">Data Type</th>
+<th class="px-4 text-left">Constraints / Key</th>
+<th class="px-4 text-left">Nullable</th>
+<th class="px-4 text-left">Description &amp; Semantic Tag</th>
+</tr>
+</thead>
+<tbody class="text-[13px] text-ink divide-y divide-hairline-soft font-normal">
+<!-- Row 1: id -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-semibold text-ink">id</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">UUID</span></td>
+<td class="px-4">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary-soft text-primary-active border border-primary-soft-border font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[13px]">key</span> PK
+                    </span>
+</td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Globally unique primary identifier (v4)</td>
+</tr>
+<!-- Row 2: user_id -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">user_id</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">UUID</span></td>
+<td class="px-4">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-sunken text-ink-secondary border border-hairline text-[11px] font-medium font-mono">
+<span class="material-symbols-outlined text-[13px] text-ink-muted">link</span> FK → users.id
+                    </span>
+</td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Foreign key referencing the subscriber user profile</td>
+</tr>
+<!-- Row 3: plan_id -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">plan_id</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">VARCHAR(64)</span></td>
+<td class="px-4">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-sunken text-ink-secondary border border-hairline text-[11px] font-medium font-mono">
+<span class="material-symbols-outlined text-[13px] text-ink-muted">link</span> FK → plans.plan_tier
+                    </span>
+</td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Tier name: 'starter', 'growth', 'enterprise'</td>
+</tr>
+<!-- Row 4: status -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">status</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">VARCHAR(32)</span></td>
+<td class="px-4"><span class="text-ink-muted text-[11px] font-mono">INDEXED</span></td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Enum: 'active', 'past_due', 'canceled', 'trialing'</td>
+</tr>
+<!-- Row 5: current_period_start -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">current_period_start</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">TIMESTAMPTZ</span></td>
+<td class="px-4"><span class="text-ink-faint font-mono">—</span></td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Billing cycle anchor start timestamp</td>
+</tr>
+<!-- Row 6: current_period_end -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">current_period_end</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">TIMESTAMPTZ</span></td>
+<td class="px-4"><span class="text-ink-faint font-mono">—</span></td>
+<td class="px-4 text-ink-muted text-[12px] font-mono">NO</td>
+<td class="px-4 text-[13px] text-ink-secondary">Cycle expiration date; renewals trigger here</td>
+</tr>
+<!-- Row 7: monthly_mrr -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">monthly_mrr</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">NUMERIC(10,2)</span></td>
+<td class="px-4"><span class="text-ink-faint font-mono">—</span></td>
+<td class="px-4 text-ink-secondary text-[12px] font-mono font-medium">YES</td>
+<td class="px-4 text-[13px] text-ink-secondary">Normalized monthly recurring revenue in USD</td>
+</tr>
+<!-- Row 8: canceled_at -->
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 font-mono font-medium text-ink">canceled_at</td>
+<td class="px-4 font-mono text-[12px]"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink-secondary">TIMESTAMPTZ</span></td>
+<td class="px-4"><span class="text-ink-faint font-mono">—</span></td>
+<td class="px-4 text-ink-secondary text-[12px] font-mono font-medium">YES</td>
+<td class="px-4 text-[13px] text-ink-secondary">Null if active. Populated on churn event</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="h-11 bg-canvas px-4 flex items-center justify-between text-[12px] text-ink-muted border-t border-hairline">
+<span>8 columns defined in PostgreSQL catalog</span>
+<span class="font-mono text-ink-faint">Table OID: 24598</span>
+</div>
+</div>
+<!-- TAB 2: Sample Data Preview (Hidden initially) -->
+<div class="hidden bg-surface rounded-lg border border-hairline-strong overflow-hidden flex-col shadow-xs" id="tab-preview-content">
+<div class="h-10 px-4 bg-canvas border-b border-hairline flex items-center justify-between text-[12px]">
+<span class="text-ink-secondary font-medium">Top 3 sampled records (Used for LLM schema grounding)</span>
+<span class="text-[11px] font-semibold text-ink-faint uppercase font-mono">LIMIT 3</span>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-9 bg-canvas/60 border-b border-hairline text-[11px] font-semibold text-ink-secondary uppercase tracking-[0.2px] font-mono">
+<th class="px-4">id</th>
+<th class="px-4">user_id</th>
+<th class="px-4">plan_id</th>
+<th class="px-4">status</th>
+<th class="px-4 text-right">monthly_mrr</th>
+<th class="px-4">current_period_end</th>
+</tr>
+</thead>
+<tbody class="text-[13px] text-ink divide-y divide-hairline-soft font-mono">
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 text-ink-muted">sub_89e41b</td>
+<td class="px-4 text-ink-secondary">usr_991c28f</td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-medium">enterprise</span></td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-safe-soft text-safe-ink border border-safe/30 text-[11px] font-semibold font-sans">active</span></td>
+<td class="px-4 text-right font-semibold text-ink tnum font-sans">$1,450.00</td>
+<td class="px-4 text-ink-muted text-[12px]">2025-12-31 23:59:59Z</td>
+</tr>
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 text-ink-muted">sub_72a10c</td>
+<td class="px-4 text-ink-secondary">usr_334aa10</td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-medium">growth</span></td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-safe-soft text-safe-ink border border-safe/30 text-[11px] font-semibold font-sans">active</span></td>
+<td class="px-4 text-right font-semibold text-ink tnum font-sans">$299.00</td>
+<td class="px-4 text-ink-muted text-[12px]">2025-11-15 14:20:00Z</td>
+</tr>
+<tr class="h-11 hover:bg-surface-hover transition-colors">
+<td class="px-4 text-ink-muted">sub_11c990</td>
+<td class="px-4 text-ink-secondary">usr_40112dd</td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-medium">starter</span></td>
+<td class="px-4"><span class="px-1.5 py-0.5 rounded bg-caution-soft text-caution-ink border border-caution/30 text-[11px] font-semibold font-sans">past_due</span></td>
+<td class="px-4 text-right font-semibold text-ink tnum font-sans">$49.00</td>
+<td class="px-4 text-ink-muted text-[12px]">2025-04-01 00:00:00Z</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- TAB 3: Indexes & Relational Topology (Hidden initially) -->
+<div class="hidden bg-surface rounded-lg border border-hairline p-5 flex-col gap-4 shadow-xs" id="tab-indexes-content">
+<span class="font-semibold text-[15px] text-ink">Active Database Indexes</span>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 rounded-md bg-canvas border border-hairline flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[13px] text-ink font-semibold">subscriptions_pkey</span>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface border border-hairline text-ink-secondary font-semibold">BTREE • UNIQUE</span>
+</div>
+<span class="font-mono text-[12px] text-ink-muted">ON subscriptions (id ASC)</span>
+</div>
+<div class="p-4 rounded-md bg-canvas border border-hairline flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[13px] text-ink font-semibold">idx_subscriptions_user_status</span>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface border border-hairline text-ink-secondary font-semibold">BTREE</span>
+</div>
+<span class="font-mono text-[12px] text-ink-muted">ON subscriptions (user_id, status)</span>
+</div>
+</div>
+</div>
+<!-- Minimalist Schema Relationship Context Node Graph -->
+<div class="bg-surface rounded-lg border border-hairline p-5 shadow-xs flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">schema</span>
+<span class="font-semibold text-[14px] text-ink">Schema Relationship Context</span>
+</div>
+<span class="text-[11px] font-semibold text-safe-ink bg-safe-soft border border-safe/40 px-2 py-0.5 rounded-full">Foreign Keys Validated</span>
+</div>
+<!-- Clean Canvas Diagram -->
+<div class="relative w-full h-32 rounded-md bg-canvas border border-hairline flex items-center justify-around px-6 overflow-hidden">
+<!-- users table node -->
+<div class="flex flex-col items-center px-4 py-2.5 rounded-md bg-surface border border-hairline shadow-xs z-10">
+<span class="font-mono text-[13px] font-semibold text-ink">users</span>
+<span class="text-[11px] text-ink-muted font-mono">id (UUID)</span>
+</div>
+<!-- Connector users -> subscriptions -->
+<div class="flex-1 flex flex-col items-center justify-center relative px-2">
+<div class="w-full h-px bg-hairline-strong"></div>
+<span class="text-[11px] font-mono text-ink-muted bg-canvas px-1.5 -mt-2">1 : N (user_id)</span>
+</div>
+<!-- subscriptions table node (Active Target) -->
+<div class="flex flex-col items-center px-5 py-3 rounded-md bg-surface border-2 border-primary shadow-xs z-10">
+<span class="font-mono text-[14px] font-bold text-primary">subscriptions</span>
+<span class="text-[11px] font-medium text-ink-secondary">Active Target</span>
+</div>
+<!-- Connector subscriptions -> plans -->
+<div class="flex-1 flex flex-col items-center justify-center relative px-2">
+<div class="w-full h-px bg-hairline-strong"></div>
+<span class="text-[11px] font-mono text-ink-muted bg-canvas px-1.5 -mt-2">N : 1 (plan_id)</span>
+</div>
+<!-- plans table node -->
+<div class="flex flex-col items-center px-4 py-2.5 rounded-md bg-surface border border-hairline shadow-xs z-10">
+<span class="font-mono text-[13px] font-semibold text-ink">plans</span>
+<span class="text-[11px] text-ink-muted font-mono">plan_tier</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- ========================================================= -->
+<!-- 4. MODAL: Connect / Switch Relational Database             -->
+<!-- ========================================================= -->
+<div class="fixed inset-0 bg-ink/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden" id="conn-modal-backdrop">
+<div class="w-full max-w-lg rounded-lg bg-surface border border-hairline-strong p-6 shadow-xl flex flex-col gap-5 relative">
+<!-- Modal Header -->
+<div class="flex items-center justify-between pb-3 border-b border-hairline">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-md bg-primary-soft border border-primary-soft-border flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">add_link</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-semibold text-[16px] text-ink">Add / Switch Database Connection</h3>
+<span class="text-[11px] text-ink-muted uppercase tracking-wider font-medium">AST Read-Only Guardrails Enforced</span>
+</div>
+</div>
+<button class="text-ink-muted hover:text-ink p-1 rounded hover:bg-surface-sunken transition-colors" id="close-conn-modal" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Engine Selector Tabs -->
+<div class="grid grid-cols-3 gap-1 p-1 rounded-md bg-surface-sunken border border-hairline">
+<button class="flex items-center justify-center gap-1.5 py-1.5 rounded-sm bg-surface text-ink font-semibold text-[13px] shadow-xs border border-hairline" type="button">
+<span class="material-symbols-outlined text-[15px] text-primary">database</span>
+<span>PostgreSQL</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-1.5 rounded-sm text-ink-secondary hover:text-ink text-[13px] transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px]">storage</span>
+<span>MySQL 8.0</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-1.5 rounded-sm text-ink-secondary hover:text-ink text-[13px] transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px]">description</span>
+<span>SQLite / Turso</span>
+</button>
+</div>
+<!-- Form Inputs -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 text-[12px]">
+<span class="text-ink-muted">Supported Providers:</span>
+<span class="px-2 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-mono text-[11px]">Neon Cloud</span>
+<span class="px-2 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-mono text-[11px]">Supabase</span>
+<span class="px-2 py-0.5 rounded bg-surface-sunken border border-hairline text-ink font-mono text-[11px]">AWS RDS</span>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[12px] font-semibold text-ink-secondary uppercase tracking-wider">Postgres Connection URI</label>
+<div class="relative">
+<input class="w-full bg-surface border border-hairline-strong text-ink font-mono text-[13px] px-3 py-2 rounded-sm outline-none pr-10 focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="conn-uri-input" type="password" value="postgresql://neondb_owner:npg_********@ep-silent-wave-19.us-east-2.aws.neon.tech/neondb?sslmode=require"/>
+<button class="absolute right-2.5 top-2 text-ink-muted hover:text-ink" onclick="toggleUriVisibility()" type="button">
+<span class="material-symbols-outlined text-[18px]" id="eye-icon">visibility</span>
+</button>
+</div>
+<span class="text-[12px] text-ink-muted">Supports pooler URIs (`pgbouncer=true`). Passwords encrypted at rest with AES-256 GCM.</span>
+</div>
+<!-- SSL Mode & Read-only enforcement indicator -->
+<div class="flex items-center justify-between p-3 rounded-md bg-canvas border border-hairline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-safe text-[20px]">verified</span>
+<div class="flex flex-col">
+<span class="text-[13px] font-medium text-ink">SSL Enforcement</span>
+<span class="text-[11px] text-ink-muted">require / verify-full</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-safe-soft text-safe-ink text-[11px] font-semibold border border-safe/30">
+<span class="material-symbols-outlined text-[12px]">check</span> Enforced
+        </span>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="flex items-center justify-end gap-2 pt-2 border-t border-hairline">
+<button class="px-3.5 py-2 rounded-md bg-surface border border-hairline-strong text-ink hover:bg-surface-hover transition-colors text-[13px] font-medium" id="cancel-conn-modal" type="button">
+        Cancel
+      </button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary hover:bg-primary-active text-on-primary transition-colors text-[13px] font-medium shadow-xs" id="submit-conn-btn" type="button">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span>
+<span>Save &amp; Reflect Schema</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ========================================================= -->
+<!-- 5. JAVASCRIPT LOGIC                                        -->
+<!-- ========================================================= -->
+<script>
+  // Tab Switching
+  function switchSchemaTab(tab) {
+    const tabs = ['columns', 'preview', 'indexes'];
+    tabs.forEach(t => {
+      const btn = document.getElementById(`tab-${t}-btn`);
+      const content = document.getElementById(`tab-${t}-content`);
+      if (t === tab) {
+        btn.className = "pb-2.5 text-primary font-semibold text-[14px] border-b-2 border-primary flex items-center gap-1.5 transition-colors";
+        content.classList.remove('hidden');
+        content.classList.add('flex');
+      } else {
+        btn.className = "pb-2.5 text-ink-muted hover:text-ink font-medium text-[14px] border-b-2 border-transparent flex items-center gap-1.5 transition-colors";
+        content.classList.add('hidden');
+        content.classList.remove('flex');
+      }
+    });
+  }
+
+  // Table Filter Search
+  const searchInput = document.getElementById('table-search-input');
+  const clearBtn = document.getElementById('clear-search-btn');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const val = e.target.value.toLowerCase().trim();
+      if (clearBtn) clearBtn.style.display = val ? 'block' : 'none';
+
+      const items = document.querySelectorAll('.table-nav-item');
+      items.forEach(item => {
+        const tableName = item.getAttribute('data-table') || '';
+        if (tableName.includes(val)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+      }
+    });
+  }
+
+  // Modal Controls
+  const modalBackdrop = document.getElementById('conn-modal-backdrop');
+  const openModalBtn = document.getElementById('open-conn-modal');
+  const closeModalBtn = document.getElementById('close-conn-modal');
+  const cancelModalBtn = document.getElementById('cancel-conn-modal');
+  const submitConnBtn = document.getElementById('submit-conn-btn');
+
+  function openModal() {
+    if (modalBackdrop) modalBackdrop.classList.remove('hidden');
+  }
+  function closeModal() {
+    if (modalBackdrop) modalBackdrop.classList.add('hidden');
+  }
+
+  if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+  if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+  if (submitConnBtn) {
+    submitConnBtn.addEventListener('click', () => {
+      submitConnBtn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">refresh</span> Reflecting...';
+      setTimeout(() => {
+        submitConnBtn.innerHTML = '<span class="material-symbols-outlined text-[15px]">check</span> Connected!';
+        setTimeout(() => {
+          closeModal();
+          submitConnBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">sync_alt</span><span>Save &amp; Reflect Schema</span>';
+        }, 600);
+      }, 1000);
+    });
+  }
+
+  // Connection URI toggle eye
+  function toggleUriVisibility() {
+    const input = document.getElementById('conn-uri-input');
+    const eye = document.getElementById('eye-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      eye.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      eye.textContent = 'visibility';
+    }
+  }
+
+  // Latency & Cache Button Interactions
+  const testConnBtn = document.getElementById('test-conn-btn');
+  if (testConnBtn) {
+    testConnBtn.addEventListener('click', () => {
+      const orig = testConnBtn.innerHTML;
+      testConnBtn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin text-ink-muted">autorenew</span><span>Pinging...</span>';
+      setTimeout(() => {
+        testConnBtn.innerHTML = '<span class="material-symbols-outlined text-[15px] text-safe">check_circle</span><span class="text-safe-ink font-semibold">34ms</span>';
+        setTimeout(() => { testConnBtn.innerHTML = orig; }, 2000);
+      }, 600);
+    });
+  }
+
+  const refreshCacheBtn = document.getElementById('refresh-cache-btn');
+  if (refreshCacheBtn) {
+    refreshCacheBtn.addEventListener('click', () => {
+      const orig = refreshCacheBtn.innerHTML;
+      refreshCacheBtn.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin text-ink-muted">autorenew</span><span>Syncing...</span>';
+      setTimeout(() => {
+        refreshCacheBtn.innerHTML = '<span class="material-symbols-outlined text-[15px] text-safe">done_all</span><span class="text-safe-ink font-semibold">Synced</span>';
+        setTimeout(() => { refreshCacheBtn.innerHTML = orig; }, 2000);
+      }, 700);
+    });
+  }
+</script>
+</body></html>
