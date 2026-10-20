@@ -1,6 +1,6 @@
 /**
- * DataSpeak — CSV Export Button Component (ExportButton.tsx)
- * Triggers formula-sanitized RFC 4180 CSV generation with download feedback.
+ * DataSpeak — PostHog CSV Export Button (ExportButton.tsx)
+ * Triggers formula-sanitized RFC 4180 CSV generation with PostHog styling.
  */
 
 import React, { useState } from 'react';
@@ -46,22 +46,22 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         type="button"
         onClick={handleExport}
         disabled={disabled || rows.length === 0 || isExporting}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-[#e2e4e8] text-[#131416] hover:bg-[#f7f8fa] active:bg-[#ebedee] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-white border border-[#bfc1b7] text-[#23251d] hover:bg-[#eeefe9] active:bg-[#e5e7e0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         title="Export sanitized CSV (RFC 4180)"
       >
         {isExporting ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1b6c80]" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#f7a501]" />
         ) : downloadedName ? (
-          <Check className="h-3.5 w-3.5 text-[#1e7b4f]" />
+          <Check className="h-3.5 w-3.5 text-[#2c8c66]" />
         ) : (
-          <Download className="h-3.5 w-3.5 text-[#5d5f60]" />
+          <Download className="h-3.5 w-3.5 text-[#4d4f46]" />
         )}
         <span>{downloadedName ? 'Downloaded' : 'Export CSV'}</span>
       </button>
 
       {/* Ephemeral Toast Confirmation */}
       {downloadedName && (
-        <div className="absolute right-0 top-full mt-1.5 z-40 bg-[#23251d] text-white text-[11px] px-2.5 py-1.5 rounded-md shadow-overlay border border-neutral-700 whitespace-nowrap animate-in fade-in-50">
+        <div className="absolute right-0 top-full mt-1.5 z-40 bg-[#23251d] text-white text-[11px] px-2.5 py-1.5 rounded-md shadow-lg border border-[#33342d] whitespace-nowrap animate-in fade-in-50">
           Exported {rows.length} rows to {downloadedName}
         </div>
       )}

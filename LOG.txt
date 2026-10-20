@@ -257,5 +257,47 @@ What was changed:
    - Taste lint: node frontend/.agents/skills/design-taste-frontend/scripts/lint.mjs --app frontend/src passed with 0 FAILs.
    - TypeScript compilation & bundle: npm run build passed cleanly in 696ms with 0 errors across 2,626 modules.
 ================================================================================
+[2026-10-20] Frontend Redesign — PostHog Warm Cream & Playful Mascot System (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Design Foundation & Tokens (docs/DESIGN-posthog.md):
+   - Migrated to PostHog's signature warm cream canvas (#eeefe9), crisp white cards with hairline borders (#bfc1b7), deep olive-charcoal typography (#23251d), and olive-gray body text (#4d4f46).
+   - PostHog vibrant yellow-orange CTA button pill (#f7a501, hover #e09400, text #23251d bold) with pill-rounded radius.
+   - Four pastel callout banner family (banner-tip-blue #dceaf6, banner-tip-green #d9eddf, banner-tip-red #f7d6d3, banner-tip-purple #e7d8ee).
+   - PostHog dark code surface (#23251d) for SQL query preview island.
+   - High-contrast 6-series data palette for Recharts (#1d4ed8, #f7a501, #0d9488, #7c44a6, #2563eb, #d946ef).
+
+2. Hand-Drawn PostHog Hedgehog Mascots:
+   - frontend/src/components/common/HedgehogMascot.tsx: Created friendly vector SVG mascot with 7 situational poses:
+     * logo (brand icon with warm eyes and orange snout)
+     * scientist (holding beaker for insights & analytics)
+     * terminal (coding on laptop for SQL previews)
+     * shield (holding security buckler for AST guardrails)
+     * detective (holding magnifying glass for schema exploration)
+     * lounge (friendly greeting on hero screen)
+     * warning (concerned mascot for blocked queries)
+   - frontend/public/favicon.svg: Updated to custom PostHog hedgehog face favicon.
+
+3. Content Integration from LOG.txt:
+   - AppLayout hero deck directly spotlights real achievements from phases 1–5:
+     * 6-table seeded SQLite E-Commerce dataset (orders, products, customers, reviews) with 1-click exploration.
+     * sqlglot AST guardrail engine rejecting mutations (INSERT, UPDATE, DELETE, DROP) with automatic LIMIT 100 row caps.
+     * Cloud engine pooling (Neon, Supabase port 6543, PostgreSQL) with < 20ms reflection.
+     * LangGraph 5-step agent with Groq Llama-3.3-70b-versatile and 2-retry self-correction.
+
+4. Component-Level Polish:
+   - ProtectedRoute: Redesigned sign-in gate with shield mascot, cream canvas, and yellow CTA pill.
+   - Header & Sidebar: Hedgehog logo, live database badge, and detective mascot footer note.
+   - QueryInput: Pill-tab suggestions and 5-step progress stepper in pastel blue callout style.
+   - InsightCard: Pastel blue banner with scientist mascot and bold takeaways.
+   - SqlPreview: Deep olive-charcoal island with line numbers and terminal mascot marginalia.
+   - BlockedNotice: Red left rail with concerned hedgehog mascot, plain English explanation, and zero bypass controls.
+   - DataTable: TanStack Table v8 with right-aligned tabular numerals and formula-sanitized CSV export.
+   - DbConnectionModal: PostHog styling with one-click presets and real-time latency ping.
+
+5. Verification:
+   - TypeScript & Vite build: tsc -b && vite build compiled cleanly in 673ms with 0 errors across 2,627 modules.
+================================================================================
+
 
 

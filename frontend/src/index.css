@@ -1,76 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   DataSpeak — Design System Tokens (framed-sheet style)
-   Strict Anti-Slop Discipline distilled from 247 curated gallery sites & 23 app screens.
-   - Tinted L-frame (#f4f5f6) + Inset White Sheet (#ffffff)
-   - Zero gradients, zero glassmorphism, zero shadows at rest
-   - IBM Plex Sans + IBM Plex Mono (IDs/code/tabular numbers)
-   - Single data accent (#1b6c80) with 3% color share
+   DataSpeak — PostHog Design System (docs/DESIGN-posthog.md)
+   Playful developer-tools system rendered on warm cream canvas (#eeefe9)
+   with olive-gray body (#4d4f46), deep olive-charcoal headlines (#23251d),
+   IBM Plex Sans Variable typography, and a single saturated yellow-orange
+   CTA pill (#f7a501) carrying primary actions.
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Shell & Surfaces ─────────────────────────────────────────── */
-  --ground:                 #f4f5f6;
-  --surface:                #ffffff;
-  --raised:                 #f7f8fa;
-  --active:                 #ebedee;
-  --border:                 #e2e4e8;
-  --rule:                   #eceef0;
-  --control:                #cdced1;
+  /* ── Brand & Accent ────────────────────────────────────────────── */
+  --colors-primary:         #f7a501;   /* PostHog Yellow-Orange CTA */
+  --colors-primary-pressed: #dd9001;
+  --colors-primary-active:  #b17816;
+  --colors-on-primary:      #23251d;   /* Deep olive text on yellow */
 
-  /* ── Text / Ink Ladder (All >= 4.5:1 contrast) ─────────────────── */
-  --text:                   #131416;
-  --muted:                  #5d5f60;
-  --faint:                  #6b6b6b;
+  /* ── Surfaces (Cream Canvas System) ────────────────────────────── */
+  --colors-canvas:          #eeefe9;   /* Warm cream page background */
+  --colors-surface-soft:    #e5e7e0;   /* Secondary button, chip fill */
+  --colors-surface-card:    #ffffff;   /* Pure white card sitting on cream */
+  --colors-surface-doc:     #fcfcfa;   /* Faint cream-warm white */
+  --colors-surface-dark:    #23251d;   /* Deep olive-charcoal code block */
 
-  /* ── Primary Action & Data Accent ──────────────────────────────── */
-  --primary:                #131416;
-  --accent:                 #1b6c80;
+  /* ── Hairline Borders ──────────────────────────────────────────── */
+  --colors-hairline:        #bfc1b7;   /* 1px card border, table rule */
+  --colors-hairline-soft:   #dcdfd2;   /* In-card soft divider rule */
+  --colors-on-dark:         #ffffff;
 
-  /* ── PostHog Olive-Charcoal Dark Code Surface ───────────────────── */
-  --code-bg:                #23251d;
-  --code-ink:               #ffffff;
-  --code-comment:           #9b9c92;
-  --code-keyword:           #62aef0;
-  --code-string:            #8fd19e;
-  --code-number:            #fcab79;
-  --code-flag:              #ff8b82;
+  /* ── Text / Ink Ladder (IBM Plex Sans) ─────────────────────────── */
+  --colors-ink:             #23251d;   /* Headlines, near-black olive-charcoal */
+  --colors-body:            #4d4f46;   /* Paragraph body prose */
+  --colors-charcoal:        #33342d;   /* Emphasized text */
+  --colors-mute:            #6c6e63;   /* Metadata, captions, secondary text */
+  --colors-ash:             #9b9c92;   /* Disabled text */
+  --colors-stone:           #b6b7af;   /* Muted icons */
 
-  /* ── Safety Semantics (Strict Pale Tints with Dark Ink) ────────── */
-  --positive:               #1e7b4f;
-  --pill-positive-bg:       #dcfae5;
-  --pill-positive-ink:      #04250e;
+  /* ── Semantic Pastel Callout Banners (PostHog 4-color family) ──── */
+  --colors-accent-blue:      #2c84e0;
+  --colors-accent-blue-soft: #dceaf6;
+  --colors-link-blue:        #1d4ed8;
+  --colors-link-teal:        #1078a3;
 
-  --negative:               #c4242a;
-  --pill-negative-bg:       #ffedea;
-  --pill-negative-ink:      #831c1e;
+  --colors-accent-green:      #2c8c66;
+  --colors-accent-green-soft: #d9eddf;
 
-  --warning:                #92400e;
-  --pill-warning-bg:        #fffbeb;
-  --pill-warning-ink:       #92400e;
+  --colors-accent-red:        #cd4239;
+  --colors-accent-red-soft:   #f7d6d3;
 
-  --pill-neutral-bg:        #ebedee;
-  --pill-neutral-ink:       #353736;
+  --colors-accent-purple:      #7c44a6;
+  --colors-accent-purple-soft: #e7d8ee;
 
-  /* ── Cohesive Chart Palette (Teal, Slate-Blue, Amber, Steel) ──── */
-  --chart-1:                #1b6c80;
-  --chart-2:                #2f70bb;
-  --chart-3:                #a86f0c;
-  --chart-4:                #4b5563;
-  --chart-grid:             #eceef0;
+  --colors-focus-ring:         rgba(59, 130, 246, 0.5);
+
+  /* ── Chart Series Palette (High contrast PostHog data palette) ─── */
+  --chart-series-1:         #1d4ed8;   /* Royal Blue */
+  --chart-series-2:         #f7a501;   /* PostHog Amber */
+  --chart-series-3:         #1078a3;   /* Teal */
+  --chart-series-4:         #7c44a6;   /* Purple */
+  --chart-series-5:         #2c8c66;   /* Green */
+  --chart-series-6:         #cd4239;   /* Coral */
+  --chart-series-other:     #6c6e63;   /* Muted Olive */
+  --chart-grid:             #dcdfd2;
   --tooltip-bg:             #23251d;
-
-  /* ── Geometry & Layout Tokens ──────────────────────────────────── */
-  --radius-sheet:           16px;
-  --radius-card:            8px;
-  --radius-control:         6px;
-  --radius-chip:            4px;
-  --sheet-inset:            8px;
-  --sidebar-width:          240px;
-  --gap:                    20px;
-  --pad:                    24px;
 }
 
 /* ── Base Reset & Typography Defaults ────────────────────────────── */
@@ -88,57 +80,151 @@ html {
 }
 
 body {
-  font-family: 'IBM Plex Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--ground);
-  color: var(--text);
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--colors-canvas);
+  color: var(--colors-body);
   min-height: 100vh;
+  line-height: 1.5;
 }
 
-/* Tabular Numerals for metrics, table cells, and stats */
+/* Tabular Numerals for metrics, table cells, and numerical stats */
 .tnum,
-[data-tnum="true"],
-.tabular-nums {
+[data-tnum="true"] {
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }
 
-/* Monospace fonts (code, SQL, IDs only) */
+/* Monospace fonts for code blocks and column IDs */
 code, pre, kbd, .font-mono {
-  font-family: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: 'IBM Plex Mono', 'ui-monospace', 'Source Code Pro', monospace;
 }
 
-/* ── Focus Rings & Overlays ──────────────────────────────────────── */
-.focus-ring {
-  outline: none;
-}
-.focus-ring:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+/* ── PostHog Flat Card Architecture (No drop shadows at rest) ────── */
+.posthog-card {
+  background-color: var(--colors-surface-card);
+  border: 1px solid var(--colors-hairline);
+  border-radius: 6px;
 }
 
-/* Real overlays (menus, dialogs) only */
-.shadow-overlay {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+.posthog-card-doc {
+  background-color: var(--colors-surface-doc);
+  border: 1px solid var(--colors-hairline);
+  border-radius: 6px;
 }
 
-/* Flat grey skeleton bars (no gradient shimmer) */
-.skeleton-bar {
-  background-color: var(--active);
-  border-radius: var(--radius-chip);
+.posthog-card-soft {
+  background-color: var(--colors-surface-soft);
+  border: 1px solid var(--colors-hairline);
+  border-radius: 6px;
+}
+
+/* ── PostHog Yellow CTA Pill ─────────────────────────────────────── */
+.posthog-button-primary {
+  background-color: var(--colors-primary);
+  color: var(--colors-on-primary);
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 8px 16px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: background-color 150ms ease, transform 100ms ease;
+  user-select: none;
+}
+.posthog-button-primary:hover {
+  background-color: var(--colors-primary-pressed);
+}
+.posthog-button-primary:active {
+  background-color: var(--colors-primary-active);
+  transform: translateY(1px);
+}
+.posthog-button-primary:disabled {
+  background-color: var(--colors-surface-soft);
+  color: var(--colors-ash);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Rounded pill variant for sticky navigation CTAs */
+.posthog-button-primary-pill {
+  background-color: var(--colors-primary);
+  color: var(--colors-on-primary);
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 8px 18px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  transition: background-color 150ms ease, transform 100ms ease;
+  user-select: none;
+}
+.posthog-button-primary-pill:hover {
+  background-color: var(--colors-primary-pressed);
+}
+.posthog-button-primary-pill:active {
+  background-color: var(--colors-primary-active);
+  transform: translateY(1px);
+}
+
+/* ── PostHog Secondary Button ────────────────────────────────────── */
+.posthog-button-secondary {
+  background-color: var(--colors-surface-soft);
+  color: var(--colors-ink);
+  font-weight: 600;
+  border: 1px solid var(--colors-hairline);
+  border-radius: 6px;
+  padding: 8px 16px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: background-color 150ms ease;
+}
+.posthog-button-secondary:hover {
+  background-color: #dcdfd2;
+}
+
+/* ── PostHog Subtle Shimmer Animation ────────────────────────────── */
+@keyframes ph-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.ph-shimmer {
+  background: linear-gradient(
+    90deg,
+    #e5e7e0 25%,
+    #dcdfd2 37%,
+    #e5e7e0 63%
+  );
+  background-size: 400% 100%;
+  animation: ph-shimmer 1.4s ease infinite;
 }
 
 /* ── Custom Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--control);
+  background: var(--colors-hairline);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--colors-mute);
 }

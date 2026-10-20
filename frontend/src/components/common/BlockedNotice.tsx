@@ -1,11 +1,12 @@
 /**
- * DataSpeak — Blocked Notice Banner (BlockedNotice.tsx)
- * Shown in place of results when a query attempts DDL/DML mutation.
- * Features 4px solid red rail, clear plain-English explanation, and zero bypass controls.
+ * DataSpeak — PostHog Blocked Notice Banner (BlockedNotice.tsx)
+ * Shown in place of results when a query attempts DDL/DML mutations.
+ * Features 4px solid red rail, Hedgehog warning mascot, clear explanation, and zero bypass controls.
  */
 
 import React from 'react';
 import { ShieldAlert, ArrowLeft, HelpCircle } from 'lucide-react';
+import { HedgehogMascot } from './HedgehogMascot';
 
 interface BlockedNoticeProps {
   reason?: string;
@@ -21,31 +22,35 @@ export const BlockedNotice: React.FC<BlockedNoticeProps> = ({
   return (
     <div
       role="alert"
-      className="w-full rounded-lg bg-[#ffedea] border border-[#c4242a] border-l-4 border-l-[#c4242a] p-4 my-3"
+      className="w-full rounded-md bg-[#f7d6d3] border border-[#cd4239] border-l-4 border-l-[#cd4239] p-5 my-4 transition-colors"
     >
-      <div className="flex items-start gap-3">
-        <div className="p-1 rounded-md bg-white text-[#c4242a] shrink-0 mt-0.5 border border-[#c4242a]/30">
-          <ShieldAlert className="h-4 w-4" />
+      <div className="flex items-start gap-4">
+        {/* PostHog Hedgehog Warning Mascot */}
+        <div className="shrink-0 hidden sm:block">
+          <HedgehogMascot pose="warning" size={56} />
         </div>
 
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-[#831c1e] tracking-tight mb-1">
-            Operation blocked: mutation prevented
-          </h3>
+          <div className="flex items-center gap-2 mb-1.5">
+            <ShieldAlert className="h-5 w-5 text-[#cd4239] sm:hidden" />
+            <h3 className="text-base font-bold text-[#23251d] tracking-tight">
+              I can't do that: it would change your data
+            </h3>
+          </div>
 
-          <p className="text-xs text-[#131416] leading-relaxed mb-2">
+          <p className="text-sm text-[#4d4f46] leading-relaxed mb-2.5">
             {reason ||
-              'Your request contains operations that attempt to insert, update, delete, or alter database schemas. DataSpeak is strictly read-only to protect your data.'}
+              'Your request contains operations that attempt to insert, update, delete, or alter database schemas. DataSpeak is strictly read-only to guarantee database safety.'}
           </p>
 
-          <p className="text-xs font-medium text-[#831c1e] mb-3">
+          <p className="text-xs font-bold text-[#cd4239] tracking-wide uppercase mb-3.5">
             Nothing was run. Your database is completely unchanged.
           </p>
 
           {/* Offending Statement Peek (Sanitized) */}
           {blockedSql && (
-            <div className="mb-3 rounded-md bg-[#23251d] text-white p-2.5 font-mono text-xs overflow-x-auto border border-neutral-700">
-              <span className="text-neutral-400 select-none mr-2">-- Refused statement:</span>
+            <div className="mb-4 rounded-md bg-[#23251d] text-white p-3 font-mono text-xs overflow-x-auto border border-[#33342d]">
+              <span className="text-[#9b9c92] select-none mr-2">-- Refused statement:</span>
               <span className="text-[#ff8b82] font-semibold">{blockedSql}</span>
             </div>
           )}
@@ -56,15 +61,15 @@ export const BlockedNotice: React.FC<BlockedNoticeProps> = ({
               <button
                 type="button"
                 onClick={onEditQuestion}
-                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md bg-white border border-[#e2e4e8] text-[#131416] hover:bg-[#f7f8fa] active:bg-[#ebedee] transition-colors"
+                className="posthog-button-secondary text-xs"
               >
-                <ArrowLeft className="h-3.5 w-3.5 text-[#1b6c80]" />
-                Edit question
+                <ArrowLeft className="h-3.5 w-3.5 text-[#1d4ed8]" />
+                <span>Edit my question</span>
               </button>
             )}
 
-            <div className="inline-flex items-center gap-1 text-xs text-[#5d5f60]">
-              <HelpCircle className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-1.5 text-xs text-[#6c6e63]">
+              <HelpCircle className="h-3.5 w-3.5 text-[#1078a3]" />
               <span>Read-only queries (SELECT) are always safe to run.</span>
             </div>
           </div>

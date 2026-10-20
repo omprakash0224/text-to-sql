@@ -1,21 +1,23 @@
 /**
- * DataSpeak — Metric Tile Component (MetricTile.tsx)
- * Framed-sheet style: Scalar KPI tile adhering to app-screens.md.
- * Label above value, tabular numerals, no icons in tinted squares, zero resting shadows.
+ * DataSpeak — PostHog Metric Tile Component (MetricTile.tsx)
+ * Single-value high-impact number tile inside white-on-cream card.
  */
 
 import React from 'react';
+import { TrendingUp, Activity } from 'lucide-react';
 
 interface MetricTileProps {
   label: string;
   value: string | number;
   subtext?: string;
+  icon?: React.ReactNode;
 }
 
 export const MetricTile: React.FC<MetricTileProps> = ({
   label,
   value,
   subtext,
+  icon,
 }) => {
   const formattedVal =
     typeof value === 'number'
@@ -23,18 +25,24 @@ export const MetricTile: React.FC<MetricTileProps> = ({
       : String(value);
 
   return (
-    <div className="w-full rounded-xl bg-white border border-[#e2e4e8] p-5 my-3">
-      <div className="text-xs font-medium text-[#5d5f60] mb-1.5 capitalize">
-        {label}
+    <div className="w-full rounded-md bg-white border border-[#bfc1b7] p-6 my-4 transition-all">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-bold text-[#6c6e63] uppercase tracking-wider">
+          {label}
+        </span>
+        <div className="p-1.5 rounded bg-[#eeefe9] text-[#1078a3] border border-[#dcdfd2]">
+          {icon || <Activity className="h-4 w-4" />}
+        </div>
       </div>
 
-      <div className="text-[32px] font-semibold tracking-tight text-[#131416] tnum leading-tight mb-1">
+      <div className="text-4xl font-extrabold tracking-tight text-[#23251d] tnum mb-1">
         {formattedVal}
       </div>
 
       {subtext && (
-        <div className="text-xs text-[#5d5f60]">
-          {subtext}
+        <div className="flex items-center gap-1.5 text-xs text-[#6c6e63]">
+          <TrendingUp className="h-3.5 w-3.5 text-[#1078a3]" />
+          <span>{subtext}</span>
         </div>
       )}
     </div>

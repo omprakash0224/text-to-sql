@@ -1,7 +1,8 @@
 /**
- * DataSpeak — Top Navigation Bar (Header.tsx)
- * Framed-sheet archetype: 48px height on tinted frame ground (#f4f5f6),
- * persistent Read-only safety badge, database chip switcher, and Clerk authentication.
+ * DataSpeak — PostHog Top Navigation Bar (Header.tsx)
+ * 56px height on warm cream canvas (#eeefe9) with 1px olive hairline (#bfc1b7).
+ * Features PostHog hedgehog wordmark, database switcher chip, persistent Read-only badge,
+ * and the iconic PostHog yellow CTA pill.
  */
 
 import React from 'react';
@@ -16,6 +17,7 @@ import {
   UserButton,
 } from '@clerk/clerk-react';
 import { SafetyBadge } from '../common/SafetyBadge';
+import { HedgehogMascot } from '../common/HedgehogMascot';
 import type { DatabaseConnection } from '../../types';
 
 interface HeaderProps {
@@ -30,49 +32,68 @@ export const Header: React.FC<HeaderProps> = ({
   isClerkConfigured,
 }) => {
   return (
-    <header className="h-12 w-full bg-[#f4f5f6] border-b border-[#e2e4e8] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
-      {/* Brand & Active Database Chip */}
+    <header className="h-14 w-full bg-[#eeefe9] border-b border-[#bfc1b7] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
+      {/* Brand & Hedgehog Wordmark */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-[#131416] text-white flex items-center justify-center font-semibold text-xs">
-            DS
+        <div className="flex items-center gap-2.5">
+          <HedgehogMascot pose="logo" size={32} />
+          <div className="flex flex-col">
+            <span className="font-extrabold text-base tracking-tight text-[#23251d] leading-none">
+              DataSpeak
+            </span>
+            <span className="text-[10px] text-[#6c6e63] font-medium tracking-tight">
+              AI Text-to-SQL
+            </span>
           </div>
-          <span className="font-semibold text-sm tracking-tight text-[#131416] hidden sm:inline">
-            DataSpeak
-          </span>
         </div>
 
-        <div className="h-3.5 w-px bg-[#e2e4e8] mx-1 hidden sm:block" />
+        <div className="h-4 w-px bg-[#bfc1b7] mx-2 hidden sm:block" />
 
-        {/* Database Switcher Chip */}
+        {/* Database Switcher Chip (White Card on Cream) */}
         <button
           type="button"
           onClick={onOpenConnectModal}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#e2e4e8] hover:border-[#1b6c80] text-xs text-[#131416] font-medium transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white border border-[#bfc1b7] hover:border-[#23251d] text-xs text-[#23251d] font-semibold transition-colors shadow-2xs"
           title="Switch or connect database"
         >
-          <Database className="h-3.5 w-3.5 text-[#1b6c80]" />
-          <span className="truncate max-w-[140px] sm:max-w-[220px]">
+          <Database className="h-3.5 w-3.5 text-[#1078a3]" />
+          <span className="truncate max-w-[130px] sm:max-w-[200px]">
             {activeConnection ? activeConnection.name : 'Connect Database'}
           </span>
-          <ChevronDown className="h-3 w-3 text-[#5d5f60]" />
+          {activeConnection && (
+            <span className="text-[10px] text-[#6c6e63] font-mono uppercase bg-[#eeefe9] px-1.5 py-0.5 rounded">
+              {activeConnection.dialect}
+            </span>
+          )}
+          <ChevronDown className="h-3 w-3 text-[#6c6e63]" />
         </button>
       </div>
 
-      {/* Right Controls: Persistent Read-Only Badge & Clerk Auth */}
+      {/* Right Controls: Read-Only Badge, Yellow CTA Pill, and Clerk Auth */}
       <div className="flex items-center gap-3">
-        {/* Mandatory Invariant: Persistent Read-only Badge in Top Bar */}
+        {/* Mandatory Invariant: Persistent Read-only Badge */}
         <SafetyBadge
           variant={activeConnection ? 'readonly' : 'checking'}
           label={activeConnection ? 'Read-only' : 'No Database'}
           tooltipText={
             activeConnection
-              ? `Connected to ${activeConnection.name} (${activeConnection.dialect}). All queries are validated by AST guardrails. DataSpeak cannot mutate data.`
+              ? `Connected to ${activeConnection.name} (${activeConnection.dialect}). sqlglot AST guardrails strictly permit SELECT queries only. Zero data mutation.`
               : 'Connect a database to begin querying.'
           }
         />
 
-        {/* Clerk User Button / Sign In Gate */}
+        {/* PostHog Yellow CTA Pill */}
+        {!activeConnection && (
+          <button
+            type="button"
+            onClick={onOpenConnectModal}
+            className="posthog-button-primary-pill hidden sm:inline-flex"
+          >
+            <span>Connect DB — Free</span>
+          </button>
+        )}
+
+        {/* Clerk Auth Integration */}
         {isClerkConfigured ? (
           <div className="flex items-center">
             <SignedIn>
@@ -80,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: 'h-7 w-7 rounded-full border border-[#e2e4e8]',
+                    avatarBox: 'h-8 w-8 rounded-full border border-[#bfc1b7]',
                   },
                 }}
               />
@@ -89,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
               <SignInButton mode="modal">
                 <button
                   type="button"
-                  className="px-3 py-1 text-xs font-medium rounded-md bg-[#131416] hover:bg-[#222428] text-white transition-colors"
+                  className="posthog-button-primary-pill text-xs"
                 >
                   Sign In
                 </button>
@@ -97,8 +118,9 @@ export const Header: React.FC<HeaderProps> = ({
             </SignedOut>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-[11px] text-[#5d5f60] bg-[#ebedee] px-2 py-0.5 rounded">
-            <span>Dev Mode</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#4d4f46] bg-[#e5e7e0] px-2.5 py-1 rounded-md border border-[#bfc1b7]">
+            <span className="h-2 w-2 rounded-full bg-[#f7a501]" />
+            <span className="text-[11px] font-semibold">Dev Mode</span>
           </div>
         )}
       </div>

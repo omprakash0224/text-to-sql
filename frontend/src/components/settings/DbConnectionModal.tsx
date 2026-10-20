@@ -1,8 +1,7 @@
 /**
- * DataSpeak — Database Connection Modal (DbConnectionModal.tsx)
+ * DataSpeak — PostHog Database Connection Modal (DbConnectionModal.tsx)
  * Features one-click presets for Demo SQLite, PostgreSQL, Neon, and Supabase.
- * Interactive latency testing and strict read-only recommendations.
- * Follows framed-sheet rules: no placeholder examples, no glass, sentence case.
+ * Uses PostHog yellow primary CTA pill and clear read-only guidance.
  */
 
 import React, { useState } from 'react';
@@ -15,6 +14,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Activity,
   Layers,
   Sparkles,
 } from 'lucide-react';
@@ -52,7 +52,6 @@ export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle Preset Selection
   const handleSelectPreset = (preset: PresetType) => {
     setSelectedPreset(preset);
     setTestResult(null);
@@ -78,7 +77,7 @@ export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
       case 'supabase':
         setName('Supabase DB');
         setDialect('postgresql');
-        setPort(6543); // Transaction pooler default
+        setPort(6543);
         setSsl(true);
         break;
     }
@@ -151,284 +150,287 @@ export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-overlay border border-[#e2e4e8] overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl bg-white rounded-md border border-[#bfc1b7] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-[#eceef0] flex items-center justify-between bg-white shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-[#f7f8fa] text-[#1b6c80] flex items-center justify-center border border-[#e2e4e8]">
-              <Database className="h-4 w-4" />
+        <div className="px-6 py-4 border-b border-[#bfc1b7] flex items-center justify-between bg-[#eeefe9] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-md bg-white text-[#1078a3] flex items-center justify-center border border-[#bfc1b7]">
+              <Database className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#131416] tracking-tight">Connect Database</h2>
-              <p className="text-[11px] text-[#5d5f60]">Choose a database preset or enter connection parameters</p>
+              <h2 className="text-base font-bold text-[#23251d] tracking-tight">Connect Database</h2>
+              <p className="text-xs text-[#6c6e63]">Select a ready-to-query preset or provide credentials</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded text-[#5d5f60] hover:text-[#131416] hover:bg-[#ebedee] transition-colors"
+            className="p-1.5 rounded-md text-[#6c6e63] hover:text-[#23251d] hover:bg-[#e5e7e0] transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-4">
+        <div className="p-6 overflow-y-auto space-y-6">
           {/* Preset Selector Grid */}
           <div>
-            <label className="block text-xs font-medium text-[#5d5f60] mb-2">
-              Connection presets
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#6c6e63] mb-3">
+              Connection Preset
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 type="button"
                 onClick={() => handleSelectPreset('sqlite_sample')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3.5 rounded-md border text-left transition-colors ${
                   selectedPreset === 'sqlite_sample'
-                    ? 'border-[#1b6c80] bg-[#f7f8fa] ring-1 ring-[#1b6c80]'
-                    : 'border-[#e2e4e8] bg-white hover:bg-[#f7f8fa]'
+                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501]'
+                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1b6c80] mb-1">
-                  <Sparkles className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1">
+                  <Sparkles className="h-4 w-4 text-[#f7a501]" />
                   <span>Demo SQLite</span>
                 </div>
-                <p className="text-[11px] text-[#5d5f60] leading-tight">Instant e-commerce dataset (zero setup)</p>
+                <p className="text-[11px] text-[#6c6e63] leading-tight">Instant e-commerce dataset (6 tables)</p>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleSelectPreset('postgres')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3.5 rounded-md border text-left transition-colors ${
                   selectedPreset === 'postgres'
-                    ? 'border-[#1b6c80] bg-[#f7f8fa] ring-1 ring-[#1b6c80]'
-                    : 'border-[#e2e4e8] bg-white hover:bg-[#f7f8fa]'
+                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501]'
+                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#131416] mb-1">
-                  <Server className="h-3.5 w-3.5 text-[#1b6c80]" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1">
+                  <Server className="h-4 w-4 text-[#1078a3]" />
                   <span>PostgreSQL</span>
                 </div>
-                <p className="text-[11px] text-[#5d5f60] leading-tight">Standard relational Postgres or AWS RDS</p>
+                <p className="text-[11px] text-[#6c6e63] leading-tight">Standard relational Postgres or AWS RDS</p>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleSelectPreset('neon')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3.5 rounded-md border text-left transition-colors ${
                   selectedPreset === 'neon'
-                    ? 'border-[#1b6c80] bg-[#f7f8fa] ring-1 ring-[#1b6c80]'
-                    : 'border-[#e2e4e8] bg-white hover:bg-[#f7f8fa]'
+                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501]'
+                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#131416] mb-1">
-                  <Zap className="h-3.5 w-3.5 text-[#1b6c80]" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1">
+                  <Zap className="h-4 w-4 text-[#f7a501]" />
                   <span>Neon</span>
                 </div>
-                <p className="text-[11px] text-[#5d5f60] leading-tight">Serverless pooled cloud database</p>
+                <p className="text-[11px] text-[#6c6e63] leading-tight">Serverless pooled cloud database</p>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleSelectPreset('supabase')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
+                className={`p-3.5 rounded-md border text-left transition-colors ${
                   selectedPreset === 'supabase'
-                    ? 'border-[#1b6c80] bg-[#f7f8fa] ring-1 ring-[#1b6c80]'
-                    : 'border-[#e2e4e8] bg-white hover:bg-[#f7f8fa]'
+                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501]'
+                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#131416] mb-1">
-                  <Layers className="h-3.5 w-3.5 text-[#1b6c80]" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1">
+                  <Layers className="h-4 w-4 text-[#7c44a6]" />
                   <span>Supabase</span>
                 </div>
-                <p className="text-[11px] text-[#5d5f60] leading-tight">Port 6543 transaction pooler</p>
+                <p className="text-[11px] text-[#6c6e63] leading-tight">Port 6543 transaction pooler</p>
               </button>
             </div>
           </div>
 
-          {/* Read-Only Safety Disclaimer */}
-          <div className="rounded-lg bg-[#f7f8fa] border border-[#e2e4e8] p-3 flex items-start gap-2.5">
-            <ShieldCheck className="h-4 w-4 text-[#1e7b4f] shrink-0 mt-0.5" />
-            <div className="text-xs text-[#5d5f60] leading-relaxed">
-              <span className="font-semibold text-[#131416]">Zero-trust read-only policy: </span>
-              All queries are validated via sqlglot AST parsing before execution. Mutation statements (INSERT, UPDATE, DELETE, DROP) are strictly refused.
+          {/* Read-Only Safety Callout (Pastel Green Banner) */}
+          <div className="rounded-md bg-[#d9eddf] border border-[#2c8c66]/40 p-4 flex items-start gap-3">
+            <ShieldCheck className="h-5 w-5 text-[#2c8c66] shrink-0 mt-0.5" />
+            <div className="text-xs text-[#23251d] leading-relaxed">
+              <span className="font-bold text-[#17543b]">Zero-Trust Read-Only Protection: </span>
+              Create a read-only database user for DataSpeak. In addition, all queries are parsed into
+              Abstract Syntax Trees (AST) via sqlglot to strictly reject mutation or schema-altering commands.
             </div>
           </div>
 
           {/* Form Fields */}
           {selectedPreset === 'sqlite_sample' ? (
-            <div className="p-3.5 rounded-lg border border-[#e2e4e8] bg-[#f7f8fa] text-xs text-[#5d5f60] space-y-1.5">
-              <div className="font-semibold text-[#131416]">Demo SQLite database included:</div>
-              <p>Contains 6 relational tables with realistic orders, products, and customer records:</p>
+            <div className="p-4 rounded-md border border-[#bfc1b7] bg-[#eeefe9] text-xs text-[#33342d] space-y-2">
+              <div className="font-bold text-[#23251d]">Demo SQLite E-Commerce Database:</div>
+              <p>Includes 6 interrelated tables with realistic prices, foreign keys, and reviews:</p>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {['customers', 'categories', 'products', 'orders', 'order_items', 'reviews'].map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded bg-white border border-[#e2e4e8] text-[11px] text-[#131416]">
+                  <span key={t} className="px-2 py-0.5 rounded bg-white border border-[#bfc1b7] font-mono text-[11px] text-[#23251d] font-semibold">
                     {t}
                   </span>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#131416] mb-1">Connection name</label>
+                <label className="block text-xs font-semibold text-[#33342d] mb-1">Connection Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Analytics Replica"
-                  className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                  placeholder="e.g. Analytics Production"
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#131416] mb-1">Connection string (optional)</label>
+                <label className="block text-xs font-semibold text-[#33342d] mb-1">Connection String (Optional)</label>
                 <input
                   type="text"
                   value={connectionString}
                   onChange={(e) => setConnectionString(e.target.value)}
-                  placeholder="postgresql://user:password@host:5432/dbname?sslmode=require"
-                  className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md font-mono focus:outline-none focus:border-[#1b6c80]"
+                  placeholder="postgresql://user:password@host:port/dbname?sslmode=require"
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md font-mono text-xs focus:outline-none focus:border-[#23251d]"
                 />
-                <p className="text-[11px] text-[#5d5f60] mt-0.5">If provided, this overrides individual host/port fields.</p>
+                <p className="text-[11px] text-[#6c6e63] mt-1">Overrides individual host/port fields if provided.</p>
               </div>
 
               {!connectionString && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-[#131416] mb-1">Host</label>
+                    <label className="block text-xs font-semibold text-[#33342d] mb-1">Host</label>
                     <input
                       type="text"
                       value={host}
                       onChange={(e) => setHost(e.target.value)}
-                      placeholder="ep-cool-lake-123456.us-east-2.aws.neon.tech or localhost"
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                      placeholder="db.example.com or localhost"
+                      className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#131416] mb-1">Port</label>
+                    <label className="block text-xs font-semibold text-[#33342d] mb-1">Port</label>
                     <input
                       type="number"
                       value={port}
                       onChange={(e) => setPort(Number(e.target.value))}
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                      className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-[#131416] mb-1">Database name</label>
+                    <label className="block text-xs font-semibold text-[#33342d] mb-1">Database Name</label>
                     <input
                       type="text"
                       value={database}
                       onChange={(e) => setDatabase(e.target.value)}
                       placeholder="main"
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                      className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-[#131416] mb-1">Username</label>
+                    <label className="block text-xs font-semibold text-[#33342d] mb-1">Username</label>
                     <input
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="readonly_user"
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                      className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-[#131416] mb-1">Password</label>
+                    <label className="block text-xs font-semibold text-[#33342d] mb-1">Password</label>
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-3 py-1.5 text-xs bg-white border border-[#e2e4e8] rounded-md focus:outline-none focus:border-[#1b6c80]"
+                      className="w-full px-3 py-2 text-sm bg-white border border-[#bfc1b7] rounded-md focus:outline-none focus:border-[#23251d]"
                     />
                   </div>
                 </div>
               )}
 
-              {/* Cloud SSL / TLS Toggle */}
               <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
-                  id="ssl-toggle"
+                  id="ssl_toggle"
                   checked={ssl}
                   onChange={(e) => setSsl(e.target.checked)}
-                  className="rounded border-[#e2e4e8] text-[#1b6c80] focus:ring-[#1b6c80]"
+                  className="h-4 w-4 rounded text-[#f7a501] focus:ring-[#f7a501]"
                 />
-                <label htmlFor="ssl-toggle" className="text-xs text-[#131416] select-none cursor-pointer">
-                  Require SSL/TLS encryption (recommended for Neon & Supabase cloud connections)
+                <label htmlFor="ssl_toggle" className="text-xs text-[#33342d] font-semibold">
+                  Enforce SSL/TLS encryption (recommended for Neon & Supabase)
                 </label>
               </div>
             </div>
           )}
 
-          {/* Test Connection Results Card */}
+          {/* Live Test Feedback */}
           {testResult && (
             <div
-              className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 ${
+              className={`p-3.5 rounded-md border text-xs flex items-start gap-2.5 ${
                 testResult.success
-                  ? 'bg-[#dcfae5] border-[#1e7b4f]/40 text-[#04250e]'
-                  : 'bg-[#ffedea] border-[#c4242a]/40 text-[#831c1e]'
+                  ? 'bg-[#d9eddf] border-[#2c8c66] text-[#17543b]'
+                  : 'bg-[#f7d6d3] border-[#cd4239] text-[#86241d]'
               }`}
             >
               {testResult.success ? (
-                <CheckCircle2 className="h-4 w-4 text-[#1e7b4f] shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#2c8c66] mt-0.5" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-[#c4242a] shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 shrink-0 text-[#cd4239] mt-0.5" />
               )}
               <div className="flex-1">
-                <span className="font-semibold">{testResult.success ? 'Connection verified: ' : 'Failed: '}</span>
-                <span>{testResult.message}</span>
+                <div className="font-bold">{testResult.message}</div>
                 {testResult.latency_ms !== undefined && (
-                  <span className="block text-[11px] mt-0.5 tnum">
-                    Latency: {testResult.latency_ms.toFixed(1)}ms · Dialect: {testResult.dialect || 'SQL'}
-                  </span>
+                  <div className="mt-1 flex items-center gap-3 text-[11px] opacity-90 font-mono">
+                    <span className="flex items-center gap-1">
+                      <Activity className="h-3 w-3" /> Latency: {testResult.latency_ms.toFixed(1)}ms
+                    </span>
+                    {testResult.database_version && <span>Version: {testResult.database_version}</span>}
+                  </div>
                 )}
               </div>
             </div>
           )}
 
           {connectError && (
-            <div className="p-3 rounded-lg bg-[#ffedea] border border-[#c4242a]/40 text-[#831c1e] text-xs flex items-center gap-2">
+            <div className="p-3 rounded-md bg-[#f7d6d3] border border-[#cd4239] text-[#86241d] text-xs flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{connectError}</span>
+              <span className="font-semibold">{connectError}</span>
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-5 py-3 border-t border-[#eceef0] bg-[#f7f8fa] flex items-center justify-between shrink-0">
+        {/* Modal Footer */}
+        <div className="px-6 py-4 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={handleTestConnection}
             disabled={isTesting || isConnecting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white border border-[#e2e4e8] text-[#131416] hover:bg-[#ebedee] disabled:opacity-50 transition-colors"
+            className="posthog-button-secondary text-xs"
           >
-            {isTesting && <Loader2 className="h-3 w-3 animate-spin text-[#1b6c80]" />}
-            <span>{isTesting ? 'Testing...' : 'Test connection'}</span>
+            {isTesting && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#f7a501]" />}
+            <span>Test Connection</span>
           </button>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md text-[#5d5f60] hover:text-[#131416] transition-colors"
+              disabled={isConnecting}
+              className="px-3.5 py-2 text-xs font-semibold rounded-md text-[#4d4f46] hover:bg-[#e5e7e0] transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleConnect}
-              disabled={isConnecting || isTesting}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-md bg-[#131416] hover:bg-[#222428] text-white disabled:opacity-50 transition-colors"
+              disabled={isConnecting}
+              className="posthog-button-primary text-xs"
             >
-              {isConnecting && <Loader2 className="h-3 w-3 animate-spin text-white" />}
-              <span>{isConnecting ? 'Connecting...' : 'Connect and index'}</span>
+              {isConnecting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              <span>{selectedPreset === 'sqlite_sample' ? 'Load Sample Database' : 'Connect & Index'}</span>
             </button>
           </div>
         </div>

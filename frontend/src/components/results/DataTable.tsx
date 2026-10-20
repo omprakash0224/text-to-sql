@@ -1,10 +1,7 @@
 /**
- * DataSpeak — Interactive Results Table (DataTable.tsx)
- * Framed-sheet data grid using TanStack Table v8 adhering to app-screens.md:
- * - Sentence-case grey headers (no uppercase, no fill band)
- * - Right-aligned numeric columns with tabular figures
- * - No zebra striping, quiet 1px row dividers
- * - Density toggle (comfortable 44px vs compact 32px)
+ * DataSpeak — PostHog Interactive Results Table (DataTable.tsx)
+ * Tabular data grid using TanStack Table v8 on warm cream canvas.
+ * Supports sorting, pagination, density switching, type glyphs, and CSV export.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -49,10 +46,9 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
-  // Detect Column Type for Glyph and Alignment
-  const isColNumeric = (colName: string, firstVal?: unknown) => {
+  const getColTypeGlyph = (colName: string, firstVal?: unknown) => {
     const name = colName.toLowerCase();
-    return (
+    if (
       name.includes('id') ||
       name.includes('count') ||
       name.includes('total') ||
@@ -60,30 +56,22 @@ export const DataTable: React.FC<DataTableProps> = ({
       name.includes('amount') ||
       name.includes('sum') ||
       name.includes('revenue') ||
-      name.includes('qty') ||
       typeof firstVal === 'number'
-    );
-  };
-
-  const getColTypeGlyph = (colName: string, firstVal?: unknown) => {
-    const name = colName.toLowerCase();
-    if (isColNumeric(name, firstVal)) {
-      return <Hash className="h-3 w-3 text-[#1b6c80]" />;
+    ) {
+      return <Hash className="h-3 w-3 text-[#1d4ed8]" />;
     }
     if (name.includes('date') || name.includes('time') || name.includes('at')) {
-      return <Calendar className="h-3 w-3 text-[#2f70bb]" />;
+      return <Calendar className="h-3 w-3 text-[#1078a3]" />;
     }
     if (typeof firstVal === 'boolean') {
-      return <ToggleLeft className="h-3 w-3 text-[#a86f0c]" />;
+      return <ToggleLeft className="h-3 w-3 text-[#7c44a6]" />;
     }
-    return <Type className="h-3 w-3 text-[#5d5f60]" />;
+    return <Type className="h-3 w-3 text-[#6c6e63]" />;
   };
 
-  // Build Column Definitions for TanStack Table
   const tableColumns = useMemo<ColumnDef<Record<string, unknown>>[]>(() => {
     return columns.map((colKey) => {
       const firstNonNull = rows.find((r) => r[colKey] !== null && r[colKey] !== undefined)?.[colKey];
-      const isNum = isColNumeric(colKey, firstNonNull);
 
       return {
         accessorKey: colKey,
@@ -92,19 +80,15 @@ export const DataTable: React.FC<DataTableProps> = ({
           return (
             <div
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className={`flex items-center gap-1.5 cursor-pointer select-none group ${
-                isNum ? 'justify-end' : 'justify-start'
-              }`}
+              className="flex items-center gap-1.5 cursor-pointer select-none group"
             >
-              <span className="opacity-70">{getColTypeGlyph(colKey, firstNonNull)}</span>
-              <span className="font-medium text-[#5d5f60] text-xs">
-                {colKey.replace(/_/g, ' ')}
-              </span>
-              <span className="text-[#5d5f60] group-hover:text-[#131416]">
+              <span className="opacity-75">{getColTypeGlyph(colKey, firstNonNull)}</span>
+              <span className="font-bold text-[#23251d] text-xs font-mono">{colKey}</span>
+              <span className="text-[#9b9c92] group-hover:text-[#23251d]">
                 {isSorted === 'asc' ? (
-                  <ArrowUp className="h-3 w-3 text-[#1b6c80]" />
+                  <ArrowUp className="h-3 w-3 text-[#1d4ed8]" />
                 ) : isSorted === 'desc' ? (
-                  <ArrowDown className="h-3 w-3 text-[#1b6c80]" />
+                  <ArrowDown className="h-3 w-3 text-[#1d4ed8]" />
                 ) : (
                   <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
@@ -115,7 +99,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         cell: (info) => {
           const val = info.getValue();
           if (val === null || val === undefined) {
-            return <div className={isNum ? 'text-right' : 'text-left'}><span className="text-[#5d5f60] font-sans">—</span></div>;
+            return <span className="text-[#9b9c92] italic font-sans">—</span>;
           }
 
           if (typeof val === 'number') {
@@ -126,39 +110,31 @@ export const DataTable: React.FC<DataTableProps> = ({
               colKey.toLowerCase().includes('total');
 
             return (
-              <div className="text-right">
-                <span className="tnum font-medium text-[#131416]">
-                  {isCurrency
-                    ? `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : val.toLocaleString()}
-                </span>
-              </div>
+              <span className="tnum font-bold text-[#23251d]">
+                {isCurrency
+                  ? `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : val.toLocaleString()}
+              </span>
             );
           }
 
           if (typeof val === 'boolean') {
             return (
-              <div className="text-left">
-                <span
-                  className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-medium ${
-                    val ? 'bg-[#dcfae5] text-[#04250e]' : 'bg-[#ebedee] text-[#5d5f60]'
-                  }`}
-                >
-                  {val ? 'true' : 'false'}
-                </span>
-              </div>
+              <span
+                className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                  val ? 'bg-[#d9eddf] text-[#17543b]' : 'bg-[#e5e7e0] text-[#4d4f46]'
+                }`}
+              >
+                {val ? 'TRUE' : 'FALSE'}
+              </span>
             );
           }
 
           if (typeof val === 'object') {
-            return (
-              <div className="text-left font-mono text-xs text-[#5d5f60]">
-                {JSON.stringify(val)}
-              </div>
-            );
+            return <span className="font-mono text-xs text-[#4d4f46]">{JSON.stringify(val)}</span>;
           }
 
-          return <div className="text-left text-[#131416]">{String(val)}</div>;
+          return <span className="text-[#23251d]">{String(val)}</span>;
         },
       };
     });
@@ -181,20 +157,20 @@ export const DataTable: React.FC<DataTableProps> = ({
     },
   });
 
-  const rowHeightClass = density === 'comfortable' ? 'h-11 px-3.5 py-2.5' : 'h-8 px-3 py-1 text-xs';
+  const rowHeightClass = density === 'comfortable' ? 'h-11 px-4 py-2.5' : 'h-8 px-3 py-1 text-xs';
 
   return (
-    <div className="w-full rounded-xl bg-white border border-[#e2e4e8] overflow-hidden my-3">
+    <div className="w-full rounded-md bg-white border border-[#bfc1b7] overflow-hidden my-4 transition-all">
       {/* Table Toolbar */}
-      <div className="h-12 px-3.5 bg-white border-b border-[#eceef0] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <TableIcon className="h-3.5 w-3.5 text-[#1b6c80]" />
-          <h3 className="text-xs font-semibold text-[#131416]">Results</h3>
-          <span className="text-[11px] text-[#5d5f60] tnum bg-[#ebedee] px-2 py-0.5 rounded-full">
+      <div className="h-14 px-4 bg-white border-b border-[#dcdfd2] flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <TableIcon className="h-4 w-4 text-[#1078a3]" />
+          <h3 className="text-sm font-bold text-[#23251d]">Results Table</h3>
+          <span className="text-xs text-[#4d4f46] tnum bg-[#eeefe9] border border-[#bfc1b7] px-2 py-0.5 rounded-full font-bold">
             {rows.length} {rows.length === 1 ? 'row' : 'rows'}
           </span>
           {executionTimeMs !== undefined && (
-            <span className="text-[11px] text-[#5d5f60] tnum hidden sm:inline">
+            <span className="text-[11px] text-[#6c6e63] tnum font-mono hidden sm:inline">
               ({executionTimeMs.toFixed(0)}ms)
             </span>
           )}
@@ -203,24 +179,24 @@ export const DataTable: React.FC<DataTableProps> = ({
         {/* Toolbar Actions */}
         <div className="flex items-center gap-2">
           {/* Density Toggle */}
-          <div className="inline-flex rounded-md bg-[#ebedee] p-0.5 text-xs text-[#5d5f60]">
+          <div className="inline-flex rounded-md bg-[#e5e7e0] border border-[#bfc1b7] p-0.5 text-xs text-[#4d4f46]">
             <button
               type="button"
               onClick={() => setDensity('comfortable')}
-              className={`p-1 rounded transition-colors ${
-                density === 'comfortable' ? 'bg-white text-[#131416] border border-[#e2e4e8]' : 'hover:text-[#131416]'
+              className={`p-1.5 rounded transition-colors ${
+                density === 'comfortable' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7]' : 'hover:text-[#23251d]'
               }`}
-              title="Comfortable density (44px)"
+              title="Comfortable Density (44px)"
             >
               <Maximize2 className="h-3 w-3" />
             </button>
             <button
               type="button"
               onClick={() => setDensity('compact')}
-              className={`p-1 rounded transition-colors ${
-                density === 'compact' ? 'bg-white text-[#131416] border border-[#e2e4e8]' : 'hover:text-[#131416]'
+              className={`p-1.5 rounded transition-colors ${
+                density === 'compact' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7]' : 'hover:text-[#23251d]'
               }`}
-              title="Compact density (32px)"
+              title="Compact Density (32px)"
             >
               <Minimize2 className="h-3 w-3" />
             </button>
@@ -237,14 +213,14 @@ export const DataTable: React.FC<DataTableProps> = ({
 
       {/* Grid Container */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
+        <table className="w-full text-left text-xs border-collapse">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-[#eceef0]">
+              <tr key={headerGroup.id} className="bg-[#eeefe9] border-b border-[#bfc1b7]">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="h-9 px-3.5 text-xs font-normal text-[#5d5f60] whitespace-nowrap select-none"
+                    className="h-10 px-4 text-xs font-bold text-[#23251d] whitespace-nowrap select-none"
                   >
                     {header.isPlaceholder
                       ? null
@@ -255,10 +231,10 @@ export const DataTable: React.FC<DataTableProps> = ({
             ))}
           </thead>
 
-          <tbody className="divide-y divide-[#eceef0]">
+          <tbody className="divide-y divide-[#dcdfd2]">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length || 1} className="py-8 text-center text-xs text-[#5d5f60]">
+                <td colSpan={columns.length || 1} className="py-12 text-center text-xs text-[#6c6e63]">
                   No rows returned from this query
                 </td>
               </tr>
@@ -266,12 +242,12 @@ export const DataTable: React.FC<DataTableProps> = ({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-[#f7f8fa] transition-colors"
+                  className="hover:bg-[#eeefe9]/50 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className={`${rowHeightClass} whitespace-nowrap text-[#131416]`}
+                      className={`${rowHeightClass} whitespace-nowrap text-[#23251d]`}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
@@ -283,31 +259,45 @@ export const DataTable: React.FC<DataTableProps> = ({
         </table>
       </div>
 
-      {/* Pagination Controls */}
-      {table.getPageCount() > 1 && (
-        <div className="h-10 px-3.5 bg-white border-t border-[#eceef0] flex items-center justify-between text-xs text-[#5d5f60]">
-          <span className="tnum">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} ({rows.length} total)
-          </span>
+      {/* Table Pagination Footer */}
+      {rows.length > 0 && (
+        <div className="h-12 px-4 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between text-xs text-[#4d4f46]">
+          <div className="tnum">
+            Showing{' '}
+            <span className="font-bold text-[#23251d]">
+              {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+            </span>{' '}
+            to{' '}
+            <span className="font-bold text-[#23251d]">
+              {Math.min(
+                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                rows.length
+              )}
+            </span>{' '}
+            of <span className="font-bold text-[#23251d]">{rows.length}</span> rows
+          </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="p-1 rounded border border-[#e2e4e8] hover:bg-[#f7f8fa] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              title="Previous page"
+              className="p-1.5 rounded hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
+              title="Previous Page"
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <ChevronLeft className="h-4 w-4" />
             </button>
+            <span className="px-2 font-bold text-[#23251d] tnum">
+              {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
+            </span>
             <button
               type="button"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="p-1 rounded border border-[#e2e4e8] hover:bg-[#f7f8fa] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              title="Next page"
+              className="p-1.5 rounded hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
+              title="Next Page"
             >
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

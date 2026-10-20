@@ -1,7 +1,8 @@
 import { useEffect, type FC, type ReactNode } from 'react';
 import { useAuth, SignInButton } from '@clerk/clerk-react';
-import { Lock, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, ShieldCheck } from 'lucide-react';
 import { setAuthTokenGetter } from '../../services/api';
+import { HedgehogMascot } from '../common/HedgehogMascot';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,13 +16,13 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
   // If Clerk is not configured with a valid key, allow dev preview with quiet notice
   if (!isClerkConfigured) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <div className="bg-[#fffbeb] border-b border-[#fde68a] px-4 py-2 text-center text-xs text-[#92400e]">
+      <div className="flex flex-col min-h-screen bg-[#eeefe9]">
+        <div className="bg-[#fef3c7] border-b border-[#fde68a] px-4 py-2 text-center text-xs text-[#78350f]">
           <div className="flex items-center justify-center gap-2">
-            <AlertCircle className="h-4 w-4 text-[#92400e] shrink-0" />
+            <ShieldCheck className="h-4 w-4 text-[#d97706] shrink-0" />
             <span>
-              <strong>Development Mode:</strong> Clerk Publishable Key is not configured.
-              Add <code className="bg-[#fef3c7] px-1.5 py-0.5 rounded text-[#78350f] font-mono">VITE_CLERK_PUBLISHABLE_KEY</code> in <code className="font-mono">.env</code> to activate live authentication.
+              <strong>Development Preview Mode:</strong> Clerk Publishable Key is not configured.
+              Add <code className="bg-[#fde68a] px-1.5 py-0.5 rounded text-[#78350f] font-mono font-semibold">VITE_CLERK_PUBLISHABLE_KEY</code> in <code className="font-mono">.env</code> for production authentication.
             </span>
           </div>
         </div>
@@ -54,11 +55,11 @@ const ClerkAuthGate: FC<{ children: ReactNode }> = ({ children }) => {
   // Loading state
   if (!isLoaded && !isPreview) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 bg-[#f4f5f6]">
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-[#e2e4e8] bg-white p-8 text-center max-w-sm w-full">
-          <Loader2 className="h-6 w-6 animate-spin text-[#1b6c80]" />
-          <h1 className="text-sm font-medium text-[#131416]">Verifying session...</h1>
-          <p className="text-xs text-[#5d5f60]">Checking authentication status with Clerk</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 bg-[#eeefe9]">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#bfc1b7] bg-white p-8 text-center max-w-sm w-full shadow-none">
+          <Loader2 className="h-6 w-6 animate-spin text-[#f7a501]" />
+          <h1 className="text-sm font-bold text-[#23251d]">Verifying session...</h1>
+          <p className="text-xs text-[#4d4f46]">Checking authentication status with Clerk</p>
         </div>
       </div>
     );
@@ -67,28 +68,33 @@ const ClerkAuthGate: FC<{ children: ReactNode }> = ({ children }) => {
   // Unauthenticated state
   if (!isSignedIn && !isPreview) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-10 bg-[#f4f5f6]">
-        <div className="max-w-md w-full rounded-2xl border border-[#e2e4e8] bg-white p-6 sm:p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#ebedee] text-[#131416] mb-5">
-            <Lock className="h-5 w-5" />
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-10 bg-[#eeefe9]">
+        <div className="max-w-md w-full rounded-xl border border-[#bfc1b7] bg-white p-6 sm:p-8 text-center shadow-none">
+          <div className="mx-auto flex justify-center mb-4">
+            <HedgehogMascot pose="shield" size={80} />
           </div>
 
-          <h1 className="text-xl font-semibold tracking-tight text-[#131416] mb-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-[#23251d] mb-2 font-display">
             Sign in to DataSpeak
           </h1>
-          <p className="text-sm text-[#5d5f60] mb-6 leading-relaxed px-2">
-            Connect your relational databases, inspect schemas, and query in plain English with verified read-only guardrails.
+          <p className="text-sm text-[#4d4f46] mb-6 leading-relaxed px-2">
+            Connect your relational databases, inspect live schemas, and query in natural language with strict AST-verified read-only guardrails.
           </p>
 
           <SignInButton mode="modal">
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#131416] hover:bg-[#222428] px-4 py-2.5 text-sm font-medium text-white transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#f7a501] hover:bg-[#e09400] px-5 py-3 text-sm font-bold text-[#23251d] shadow-sm transition-all border border-[#d48c00]"
             >
-              <Sparkles className="h-4 w-4 text-[#62aef0]" />
+              <Sparkles className="h-4 w-4 text-[#23251d]" />
               <span>Sign in with Clerk</span>
             </button>
           </SignInButton>
+
+          <div className="mt-6 pt-4 border-t border-[#f0f1ec] text-xs text-[#8f9188] flex items-center justify-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#3b82f6]" />
+            <span>SQLite & PostgreSQL • Zero DDL/DML mutation allowed</span>
+          </div>
         </div>
       </div>
     );

@@ -1,11 +1,12 @@
 /**
- * DataSpeak — AI Summary Callout (InsightCard.tsx)
- * Framed-sheet style: Leading every response with plain-English insights, bold figures,
- * and traceable "Based on X rows · View generated SQL" verification link.
+ * DataSpeak — PostHog AI Narrative Summary (InsightCard.tsx)
+ * Pastel blue callout banner (#dceaf6) with inline emoji, scientist mascot marginalia,
+ * bold takeaways, and traceable "Based on X rows · View Generated SQL" verification link.
  */
 
 import React, { useState } from 'react';
-import { Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
+import { Copy, Check, ExternalLink } from 'lucide-react';
+import { HedgehogMascot } from '../common/HedgehogMascot';
 
 interface InsightCardProps {
   summary: string;
@@ -29,39 +30,40 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   if (!summary) return null;
 
   return (
-    <div className="w-full rounded-xl bg-[#f7f8fa] border border-[#e2e4e8] p-5 my-3">
-      {/* Header */}
+    <div className="w-full rounded-md bg-[#dceaf6] border border-[#2c84e0]/30 p-5 my-4 transition-colors">
+      {/* Header with Mascot Marginalia */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded-md bg-white border border-[#e2e4e8] text-[#1b6c80]">
-            <Sparkles className="h-3.5 w-3.5" />
-          </div>
-          <span className="text-xs font-semibold text-[#131416]">
-            Executive summary
+          <span className="text-base select-none">💡</span>
+          <span className="text-xs font-bold text-[#1d4ed8] uppercase tracking-wider">
+            AI Narrative Insight
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="inline-flex items-center gap-1 text-xs text-[#5d5f60] hover:text-[#131416] px-2 py-0.5 rounded hover:bg-[#ebedee] transition-colors"
-          title="Copy summary text"
-        >
-          {copied ? <Check className="h-3.5 w-3.5 text-[#1e7b4f]" /> : <Copy className="h-3.5 w-3.5" />}
-          <span className="text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <HedgehogMascot pose="scientist" size={28} className="hidden sm:inline-block" />
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1 text-xs text-[#4d4f46] hover:text-[#23251d] px-2 py-1 rounded hover:bg-white/60 transition-colors border border-transparent hover:border-[#bfc1b7]"
+            title="Copy insight summary"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-[#2c8c66]" /> : <Copy className="h-3.5 w-3.5" />}
+            <span className="text-[11px] font-semibold">{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Summary Narrative Body */}
-      <div className="text-sm text-[#131416] leading-relaxed font-normal mb-3">
+      <div className="text-[15px] text-[#23251d] leading-relaxed font-normal mb-3.5">
         {summary}
       </div>
 
       {/* Traceability Footer */}
-      <div className="pt-2.5 border-t border-[#eceef0] flex items-center justify-between text-xs text-[#5d5f60]">
+      <div className="pt-2.5 border-t border-[#2c84e0]/20 flex items-center justify-between text-xs text-[#4d4f46]">
         <span>
           Based on{' '}
-          <strong className="text-[#131416] tnum font-semibold">
+          <strong className="text-[#23251d] tnum font-bold">
             {rowCount !== undefined ? rowCount.toLocaleString() : 'queried'}
           </strong>{' '}
           {rowCount === 1 ? 'row' : 'rows'}
@@ -71,9 +73,9 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           <button
             type="button"
             onClick={onViewSql}
-            className="inline-flex items-center gap-1 font-medium text-[#1b6c80] hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-[#1078a3] hover:underline"
           >
-            <span>View generated SQL</span>
+            <span>View Generated SQL</span>
             <ExternalLink className="h-3 w-3" />
           </button>
         )}
