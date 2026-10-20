@@ -39,6 +39,11 @@ export function useQueryExecution() {
   const timerRefs = useRef<number[]>([]);
   const cooldownTimerRef = useRef<number | null>(null);
   const hasMigratedRef = useRef(false);
+  // Throttle history fetches: track the last time we actually fired a request
+  // so rapid concurrent callers (query completions, migrations) coalesce.
+  const lastLoadHistoryAt = useRef<number>(0);
+  const loadHistoryThrottleMs = 3000; // minimum 3s between real fetches
+
 
   // Clear timers on unmount
   useEffect(() => {
@@ -89,8 +94,18 @@ export function useQueryExecution() {
   // ── Fetch Server Query History ────────────────────────────────────────────
   const loadHistory = useCallback(
     async (params?: { q?: string; saved_only?: boolean }) => {
+      // Throttle: skip background auto-refreshes that happen too frequently.
+      // User-triggered searches (params.q set) always bypass this guard.
+      const now = Date.now();
+      const isUserSearch = typeof params?.q === 'string' && params.q.length > 0;
+      if (!isUserSearch && now - lastLoadHistoryAt.current < loadHistoryThrottleMs) {
+        return;
+      }
+      lastLoadHistoryAt.current = now;
+
       try {
         setIsHistoryLoading(true);
+
         const res = await historyService.list({ ...params, limit: 100 });
         setHistory((prevHistory) => {
           return res.items.map((serverItem) => {

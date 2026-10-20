@@ -93,7 +93,6 @@ export const QueryHistory: React.FC<QueryHistoryProps> = ({
 
     return (
       <div
-        key={item.id}
         className={`group bg-white rounded-lg border p-4 shadow-2xs transition-all flex items-start justify-between gap-4 ${
           isSelected
             ? 'border-[#0075de] ring-1 ring-[#0075de]/30'
@@ -224,7 +223,7 @@ export const QueryHistory: React.FC<QueryHistoryProps> = ({
           </div>
 
           <div className="grid grid-cols-1 gap-2.5">
-            {savedItems.map((item) => renderHistoryCard(item, true))}
+            {savedItems.map((item) => <React.Fragment key={item.id}>{renderHistoryCard(item, true)}</React.Fragment>)}
           </div>
         </div>
       )}
@@ -260,7 +259,7 @@ export const QueryHistory: React.FC<QueryHistoryProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-2.5">
-            {recentItems.map((item) => renderHistoryCard(item, false))}
+            {recentItems.map((item) => <React.Fragment key={item.id}>{renderHistoryCard(item, false)}</React.Fragment>)}
           </div>
         )}
       </div>

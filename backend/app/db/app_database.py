@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.pool import NullPool, StaticPool
-from sqlalchemy import text
+
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
@@ -131,6 +131,11 @@ async def init_app_db(database_url: Optional[str] = None) -> None:
     """
     Initializes the application database connection pool and creates tables if needed.
     Safely logs a warning if database service is not yet ready rather than halting process.
+
+    IMPORTANT: For PostgreSQL (asyncpg), DDL statements like CREATE TABLE run inside a
+    transaction that must be explicitly committed. We call conn.commit() after create_all
+    so the query_history table is durably created and visible to subsequent queries.
+    SQLite autocommits DDL, so the commit is a safe no-op there.
     """
     global _app_engine, _app_session_factory
 
@@ -143,9 +148,9 @@ async def init_app_db(database_url: Optional[str] = None) -> None:
             autoflush=False,
         )
 
-        # Test ping & auto-create tables in dev/test
-        async with _app_engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
+        # Test ping & auto-create tables.
+        # Use begin() so the DDL transaction is committed automatically on success.
+        async with _app_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
         logger.info("Application database initialized successfully")

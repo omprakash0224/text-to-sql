@@ -79,28 +79,35 @@ apiClient.interceptors.response.use(
         })
       );
     } else if (error.response?.status === 429) {
-      // Rate limit hit: extract Retry-After header or default to 60 seconds
-      const headers = error.response.headers;
-      const retryAfterHeader = headers ? (headers['retry-after'] || headers['Retry-After']) : null;
-      let retryAfter = 60;
-      if (retryAfterHeader) {
-        const parsed = parseInt(String(retryAfterHeader), 10);
-        if (!isNaN(parsed) && parsed > 0) {
-          retryAfter = parsed;
+      // Rate limit hit: only trigger query cooldown banner for the query endpoint.
+      // History, import, and connection endpoints have their own rate tiers and
+      // must not block the query input for the user.
+      const requestUrl = error.config?.url || '';
+      const isQueryEndpoint = requestUrl.includes('/api/v1/queries/ask');
+
+      if (isQueryEndpoint) {
+        const headers = error.response.headers;
+        const retryAfterHeader = headers ? (headers['retry-after'] || headers['Retry-After']) : null;
+        let retryAfter = 60;
+        if (retryAfterHeader) {
+          const parsed = parseInt(String(retryAfterHeader), 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            retryAfter = parsed;
+          }
         }
+        const detailMsg =
+          (error.response.data as { detail?: string } | undefined)?.detail ||
+          'Rate limit exceeded. Please wait before retrying.';
+        window.dispatchEvent(
+          new CustomEvent('dataspeak:ratelimit', {
+            detail: {
+              retryAfter,
+              message: detailMsg,
+              url: requestUrl,
+            },
+          })
+        );
       }
-      const detailMsg =
-        (error.response.data as { detail?: string } | undefined)?.detail ||
-        'Rate limit exceeded. Please wait before retrying.';
-      window.dispatchEvent(
-        new CustomEvent('dataspeak:ratelimit', {
-          detail: {
-            retryAfter,
-            message: detailMsg,
-            url: error.config?.url,
-          },
-        })
-      );
     }
     return Promise.reject(error);
   }
