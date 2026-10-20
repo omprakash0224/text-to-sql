@@ -439,4 +439,33 @@ What was changed:
    - Backend test suite: pytest backend/tests/ executed with 125 passed, 0 failures (100% pass rate).
    - Frontend production build: tsc -b && vite build succeeded with 0 errors across 2,624 transformed modules.
 ================================================================================
+[2026-10-20] Bug Fix — LLM Model Resolution & Null-Safe Handler ('NoneType' strip fix) (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Root Cause Analysis:
+   - When running the backend server from the workspace root (d:\text-to-sql), SettingsConfigDict(env_file=[".env", "../.env"]) failed to find backend/.env, falling back to default GROQ_MODEL="llama-3.3-70b-versatile".
+   - Groq account did not have access to llama-3.3-70b-versatile (returning HTTP 404), which automatically triggered fallback to OpenRouter.
+   - OpenRouter fallback was configured with a reasoning/safety model or free tier alias which returned null message content (e.g., content: null, finish_reason: length).
+   - In backend/app/agent/llm.py, _call_openrouter returned None.
+   - In backend/app/agent/graph.py, extract_sql_from_text(None) invoked text.strip(), raising AttributeError: 'NoneType' object has no attribute 'strip'.
+2. Applied Fixes:
+   - backend/app/core/config.py:
+     * Added "backend/.env" to SettingsConfigDict env_file search path: [".env", "backend/.env", "../.env"], guaranteeing .env variables are loaded regardless of whether the server is launched from repository root or backend folder.
+     * Updated default models to available models: GROQ_MODEL="qwen/qwen3.8-27b" and OPENROUTER_MODEL="minimax/minimax-m3.1-flash:free".
+   - backend/.env & .env:
+     * Set GROQ_MODEL=qwen/qwen3.8-27b (verified ultra-fast ~22ms response).
+     * Set OPENROUTER_MODEL=minimax/minimax-m3.1-flash:free (verified reliable SQL + summary generation).
+     * Synchronized root .env with backend/.env.
+   - backend/app/agent/llm.py:
+     * Enhanced _call_openrouter and ainvoke to strictly validate that returned content is a non-empty string. If null or empty, extracts reasoning if present or raises ValueError to trigger next fallback/heuristic.
+     * Guarded mock handlers to never return None as a string.
+   - backend/app/agent/graph.py:
+     * Made extract_sql_from_text null-safe: handles text: Optional[str], returning empty string if None or whitespace.
+   - backend/app/services/summary_service.py:
+     * Guarded summary.strip() against None and filtered literal "none" / "null" strings, falling back to rule-based heuristic summary.
+3. Verification & Zero Regression:
+   - Backend unit test suite: 128 tests passing (100% pass rate, 3 new tests covering null-safe extraction, summary fallback, and OpenRouter null handling).
+   - Live query test: Successfully executed user's exact query ("Show total record counts and summary of categories") against SQLite demo database with Groq qwen/qwen3.8-27b, generating clean SQL, 5 rows, pie chart, and executive summary.
+   - Frontend production build: tsc -b && vite build compiled cleanly in 800ms with 0 errors.
+================================================================================
 

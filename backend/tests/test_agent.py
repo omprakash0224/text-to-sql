@@ -38,6 +38,12 @@ def test_extract_sql_plain_string():
     assert extract_sql_from_text(text) == "SELECT count(*) FROM orders"
 
 
+def test_extract_sql_none_and_empty():
+    assert extract_sql_from_text(None) == ""
+    assert extract_sql_from_text("") == ""
+    assert extract_sql_from_text("   ") == ""
+
+
 # ── 2. Chart Recommendation Heuristic Tests ──────────────────────────────────
 
 def test_chart_recommender_empty_dataset():
@@ -108,6 +114,23 @@ async def test_summary_single_scalar():
         rows=[{"customer_count": 42}],
     )
     assert "Customer Count is 42" in summary
+
+
+@pytest.mark.asyncio
+async def test_summary_none_llm_response():
+    """Ensure summary_service falls back cleanly if LLM returns None or empty string."""
+    from app.agent.llm import LLMClient
+    mock_client = LLMClient()
+    mock_client.set_mock_handler(lambda msgs: None)
+
+    summary = await summary_service.generate_summary(
+        user_question="Top products",
+        columns=["name", "price"],
+        rows=[{"name": "Widget A", "price": 19.99}, {"name": "Widget B", "price": 29.99}],
+        llm=mock_client,
+    )
+    assert "Top products" in summary
+    assert "Widget A" in summary
 
 
 # ── 4. Query Executor Tests ──────────────────────────────────────────────────
@@ -260,3 +283,28 @@ async def test_agent_graph_max_retries_cap(tmp_path):
     finally:
         default_llm_client.set_mock_handler(None)
         await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_llm_client_null_content_openrouter_fallback(monkeypatch):
+    """Ensure LLMClient gracefully handles null or empty responses without raising AttributeError."""
+    from app.agent.llm import LLMClient
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "GROQ_API_KEY", "")
+    monkeypatch.setattr(settings, "OPENROUTER_API_KEY", "sk-test")
+    monkeypatch.setattr(settings, "ENVIRONMENT", "development")
+
+    client = LLMClient()
+
+    # Mock _call_openrouter to simulate an empty response from OpenRouter
+    async def mock_call_openrouter(*args, **kwargs):
+        raise ValueError("OpenRouter returned null or empty message content")
+
+    monkeypatch.setattr(client, "_call_openrouter", mock_call_openrouter)
+
+    res = await client.ainvoke([{"role": "user", "content": "customer query"}])
+    assert isinstance(res, str)
+    assert len(res) > 0
+    assert "customers" in res

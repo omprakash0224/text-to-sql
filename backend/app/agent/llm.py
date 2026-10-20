@@ -55,8 +55,8 @@ class LLMClient:
                 res = self._mock_handler(messages)
                 if hasattr(res, "__await__"):
                     res = await res
-                return str(res)
-            return str(self._mock_handler)
+                return "" if res is None else str(res)
+            return "" if self._mock_handler is None else str(self._mock_handler)
 
         settings = get_settings()
 
@@ -86,9 +86,10 @@ class LLMClient:
                     max_tokens=max_tokens,
                 )
                 response = await groq_llm.ainvoke(normalized_messages)
-                if isinstance(response.content, str):
-                    return response.content
-                return str(response.content)
+                content = response.content if isinstance(response.content, str) else str(response.content)
+                if content and content.strip():
+                    return content.strip()
+                raise ValueError("Groq returned empty response content")
             except Exception as exc:
                 logger.warn(
                     "Groq LLM invocation failed, attempting fallback to OpenRouter",
@@ -99,19 +100,22 @@ class LLMClient:
         if settings.OPENROUTER_API_KEY and settings.OPENROUTER_API_KEY.strip():
             try:
                 logger.debug("Calling OpenRouter fallback LLM", model=settings.OPENROUTER_MODEL)
-                return await self._call_openrouter(
+                content = await self._call_openrouter(
                     normalized_messages,
                     model=settings.OPENROUTER_MODEL,
                     temperature=temperature,
                     max_tokens=max_tokens,
                     api_key=settings.OPENROUTER_API_KEY,
                 )
+                if content and content.strip():
+                    return content.strip()
+                raise ValueError("OpenRouter returned empty response content")
             except Exception as exc:
                 logger.warn("OpenRouter invocation failed", error=str(exc))
 
         # 4. If in test or dev mode with no keys configured, provide a safe synthetic response
         if settings.ENVIRONMENT in ("test", "development"):
-            logger.warn("No LLM API keys configured in development/test. Generating heuristic response.")
+            logger.warn("No functional LLM provider available in development/test. Generating heuristic response.")
             return self._heuristic_offline_response(normalized_messages)
 
         raise LLMProviderError(
@@ -157,7 +161,21 @@ class LLMClient:
             )
             resp.raise_for_status()
             data = resp.json()
-            return data["choices"][0]["message"]["content"]
+            choices = data.get("choices")
+            if not choices or not isinstance(choices, list):
+                raise ValueError(f"OpenRouter response missing choices: {data}")
+
+            message = choices[0].get("message", {})
+            content = message.get("content")
+
+            # If content is null, check if reasoning exists (e.g. reasoning models)
+            if content is None or not str(content).strip():
+                reasoning = message.get("reasoning")
+                if reasoning and isinstance(reasoning, str) and reasoning.strip():
+                    return reasoning.strip()
+                raise ValueError("OpenRouter returned null or empty message content")
+
+            return str(content).strip()
 
     def _heuristic_offline_response(self, messages: List[BaseMessage]) -> str:
         """Fallback heuristic for dev environments without configured API keys."""
