@@ -17,6 +17,10 @@ import type {
   DatabaseConnection,
   DatabaseSchema,
   QueryResult,
+  QueryHistoryItem,
+  QueryHistoryListResponse,
+  DeleteHistoryResponse,
+  BatchImportResponse,
 } from '../types';
 
 // API base URL: defaults to empty string so requests leverage Vite proxy (/api/v1)
@@ -63,7 +67,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// ── Response Interceptor: Error Handling & 401 Detection ────────────────────
+// ── Response Interceptor: Error Handling, 401 & 429 Detection ───────────────
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
@@ -74,6 +78,36 @@ apiClient.interceptors.response.use(
           detail: { url: error.config?.url },
         })
       );
+    } else if (error.response?.status === 429) {
+      // Rate limit hit: only trigger query cooldown banner for the query endpoint.
+      // History, import, and connection endpoints have their own rate tiers and
+      // must not block the query input for the user.
+      const requestUrl = error.config?.url || '';
+      const isQueryEndpoint = requestUrl.includes('/api/v1/queries/ask');
+
+      if (isQueryEndpoint) {
+        const headers = error.response.headers;
+        const retryAfterHeader = headers ? (headers['retry-after'] || headers['Retry-After']) : null;
+        let retryAfter = 60;
+        if (retryAfterHeader) {
+          const parsed = parseInt(String(retryAfterHeader), 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            retryAfter = parsed;
+          }
+        }
+        const detailMsg =
+          (error.response.data as { detail?: string } | undefined)?.detail ||
+          'Rate limit exceeded. Please wait before retrying.';
+        window.dispatchEvent(
+          new CustomEvent('dataspeak:ratelimit', {
+            detail: {
+              retryAfter,
+              message: detailMsg,
+              url: requestUrl,
+            },
+          })
+        );
+      }
     }
     return Promise.reject(error);
   }
@@ -170,3 +204,88 @@ export const queryService = {
     return res.data;
   },
 };
+
+// ── Server-Side Query History Service ───────────────────────────────────────
+export const historyService = {
+  /**
+   * List paginated query history with optional filtering.
+   */
+  async list(params?: {
+    saved_only?: boolean;
+    q?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<QueryHistoryListResponse> {
+    const res = await apiClient.get<QueryHistoryListResponse>('/api/v1/history', {
+      params,
+    });
+    return res.data;
+  },
+
+  /**
+   * Get a specific query history record by ID.
+   */
+  async get(id: string): Promise<QueryHistoryItem> {
+    const res = await apiClient.get<QueryHistoryItem>(`/api/v1/history/${id}`);
+    return res.data;
+  },
+
+  /**
+   * Toggle saved / starred bookmark status for a query.
+   */
+  async toggleSave(id: string): Promise<QueryHistoryItem> {
+    const res = await apiClient.post<QueryHistoryItem>(`/api/v1/history/${id}/toggle-save`);
+    return res.data;
+  },
+
+  /**
+   * Delete a specific query from history.
+   */
+  async delete(id: string): Promise<DeleteHistoryResponse> {
+    const res = await apiClient.delete<DeleteHistoryResponse>(`/api/v1/history/${id}`);
+    return res.data;
+  },
+
+  /**
+   * Clear all recent unsaved queries for current user while preserving saved queries.
+   */
+  async clearRecent(): Promise<DeleteHistoryResponse> {
+    const res = await apiClient.delete<DeleteHistoryResponse>('/api/v1/history');
+    return res.data;
+  },
+
+  /**
+   * One-time batch import of historical queries from localStorage.
+   */
+  async importLocal(items: QueryHistoryItem[]): Promise<BatchImportResponse> {
+    // Map items to match backend QueryHistoryImport schema cleanly
+    const payloadItems = items.map((item) => ({
+      id: item.id,
+      question: item.question,
+      sql: item.sql || item.result?.sql || '',
+      status: item.status || item.result?.status || 'success',
+      execution_time_ms:
+        item.execution_time_ms ??
+        item.result?.executionTimeMs ??
+        item.result?.execution_time_ms ??
+        0,
+      row_count:
+        item.row_count ??
+        item.result?.rowCount ??
+        item.result?.row_count ??
+        (item.result?.rows?.length ?? 0),
+      chart_config: item.chart_config || item.result?.chart || undefined,
+      summary: item.summary || item.result?.summary || undefined,
+      error_message: item.error_message || item.result?.error_message || undefined,
+      is_saved: Boolean(item.is_saved ?? item.isSaved),
+      database_name: item.database_name || 'database',
+      created_at: item.created_at || item.timestamp || new Date().toISOString(),
+    }));
+
+    const res = await apiClient.post<BatchImportResponse>('/api/v1/history/import', {
+      items: payloadItems,
+    });
+    return res.data;
+  },
+};
+

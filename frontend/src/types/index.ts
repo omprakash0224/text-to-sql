@@ -154,9 +154,41 @@ export interface AppNotification {
 export interface QueryHistoryItem {
   id: string;
   question: string;
-  timestamp: string;
-  result: QueryResult;
+  timestamp?: string;
+  created_at?: string;
+  updated_at?: string;
+  database_name?: string;
+  sql?: string;
+  status?: 'success' | 'error' | 'blocked';
+  execution_time_ms?: number;
+  row_count?: number;
+  chart_config?: ChartConfig;
+  summary?: string;
+  error_message?: string;
+  result?: QueryResult;
   isSaved?: boolean;
+  is_saved?: boolean;
+}
+
+export interface QueryHistoryListResponse {
+  items: QueryHistoryItem[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface DeleteHistoryResponse {
+  success: boolean;
+  message: string;
+  id?: string;
+  deleted_count?: number;
+}
+
+export interface BatchImportResponse {
+  success: boolean;
+  imported_count: number;
+  message: string;
 }
 
 export type ProgressStepId =

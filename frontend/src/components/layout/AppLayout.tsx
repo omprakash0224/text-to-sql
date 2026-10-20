@@ -64,12 +64,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ isClerkConfigured }) => {
     steps,
     error: queryError,
     history,
+    isHistoryLoading,
+    rateLimitCooldown,
     executeQuestion,
     cancelQuery,
     toggleSaveHistory,
     deleteHistoryItem,
+    clearRecentHistory,
     selectHistoryItem,
     resetCurrentQuery,
+    loadHistory,
   } = useQueryExecution();
 
   const [externalPrompt, setExternalPrompt] = useState<string>('');
@@ -368,6 +372,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ isClerkConfigured }) => {
                   onOpenConnectModal={() => setIsModalOpen(true)}
                   externalPrompt={externalPrompt}
                   defaultSuggestions={dynamicSuggestions}
+                  rateLimitCooldown={rateLimitCooldown}
                 />
 
                 {/* Error Notice */}
@@ -504,12 +509,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ isClerkConfigured }) => {
         {activeView === 'history' && (
           <QueryHistory
             history={history}
+            isLoading={isHistoryLoading}
             onSelectQuery={(item) => {
               selectHistoryItem(item);
               setActiveView('query');
             }}
             onToggleSave={toggleSaveHistory}
             onDelete={deleteHistoryItem}
+            onClearRecent={clearRecentHistory}
+            onSearch={(q) => loadHistory({ q })}
             currentQuestion={currentQuestion}
           />
         )}

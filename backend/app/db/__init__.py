@@ -24,6 +24,14 @@ from app.db.executor import (
     QueryExecutor,
     QueryExecutionError,
 )
+from app.db.app_database import (
+    init_app_db,
+    close_app_db,
+    get_app_db,
+    create_app_engine,
+    normalize_app_database_url,
+)
+from app.db.repositories.history_repository import HistoryRepository
 
 __all__ = [
     "build_async_engine",
@@ -37,5 +45,11 @@ __all__ = [
     "ActiveDatabaseSession",
     "QueryExecutor",
     "QueryExecutionError",
+    "init_app_db",
+    "close_app_db",
+    "get_app_db",
+    "create_app_engine",
+    "normalize_app_database_url",
+    "HistoryRepository",
 ]
 

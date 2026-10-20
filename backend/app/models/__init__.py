@@ -23,6 +23,16 @@ from app.models.query import (
     ChartConfigResponse,
     QueryAskResponse,
 )
+from app.models.history import (
+    QueryHistoryItem,
+    QueryHistoryItemResponse,
+    QueryHistoryCreate,
+    QueryHistoryImport,
+    QueryHistoryBatchImportRequest,
+    QueryHistoryListResponse,
+    DeleteHistoryResponse,
+    BatchImportResponse,
+)
 
 __all__ = [
     "AuthenticatedUser",
@@ -39,5 +49,13 @@ __all__ = [
     "QueryAskRequest",
     "ChartConfigResponse",
     "QueryAskResponse",
+    "QueryHistoryItem",
+    "QueryHistoryItemResponse",
+    "QueryHistoryCreate",
+    "QueryHistoryImport",
+    "QueryHistoryBatchImportRequest",
+    "QueryHistoryListResponse",
+    "DeleteHistoryResponse",
+    "BatchImportResponse",
 ]
 

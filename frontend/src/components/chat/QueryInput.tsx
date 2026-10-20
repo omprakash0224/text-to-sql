@@ -4,6 +4,7 @@
  * Hero / Linear-inspired craft:
  * Crisp white card, subtle hairline border, auto-expanding textarea,
  * bottom bar with active DB pill, keyboard helper, and blue circular arrow button.
+ * Displays live countdown banner and disables inputs when rate-limited.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -14,6 +15,7 @@ import {
   CheckCircle2,
   Loader2,
   ShieldAlert,
+  AlertTriangle,
 } from 'lucide-react';
 import type { QueryProgressStep, DatabaseConnection } from '../../types';
 
@@ -26,6 +28,7 @@ interface QueryInputProps {
   onOpenConnectModal: () => void;
   externalPrompt?: string;
   defaultSuggestions?: string[];
+  rateLimitCooldown?: number | null;
 }
 
 const FALLBACK_SUGGESTIONS = [
@@ -43,9 +46,12 @@ export const QueryInput: React.FC<QueryInputProps> = ({
   onOpenConnectModal,
   externalPrompt,
   defaultSuggestions = FALLBACK_SUGGESTIONS,
+  rateLimitCooldown,
 }) => {
   const [prompt, setPrompt] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const isRateLimited = Boolean(rateLimitCooldown && rateLimitCooldown > 0);
 
   // Sync external prompt when user clicks a suggestion chip or schema table
   useEffect(() => {
@@ -68,7 +74,7 @@ export const QueryInput: React.FC<QueryInputProps> = ({
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!prompt.trim() || isRunning) return;
+    if (!prompt.trim() || isRunning || isRateLimited) return;
     if (!activeConnection) {
       onOpenConnectModal();
       return;
@@ -84,6 +90,7 @@ export const QueryInput: React.FC<QueryInputProps> = ({
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
+    if (isRateLimited) return;
     setPrompt(suggestion);
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -94,6 +101,20 @@ export const QueryInput: React.FC<QueryInputProps> = ({
 
   return (
     <section className="w-full flex flex-col gap-2.5">
+      {/* Rate Limit Alert Banner */}
+      {isRateLimited && (
+        <div className="bg-[#fdf0d0] border border-[#f7a501]/50 border-l-4 border-l-[#f7a501] rounded-lg p-3 sm:p-4 text-[13px] text-[#6e4600] flex items-center gap-3 shadow-2xs animate-in fade-in-50 duration-200">
+          <AlertTriangle className="h-4.5 w-4.5 text-[#f7a501] shrink-0" />
+          <div className="flex-1">
+            <span className="font-semibold">Query rate limit reached:</span> You can ask another question in{' '}
+            <span className="font-mono font-bold text-[#b45309] bg-[#faebd0] px-1.5 py-0.5 rounded">
+              {rateLimitCooldown}s
+            </span>
+            .
+          </div>
+        </div>
+      )}
+
       {/* Execution Progress Stepper */}
       {isRunning && (
         <div className="bg-[#eaf3fc] border border-[#c9e0f6] rounded-lg p-4 sm:p-5 shadow-2xs animate-in fade-in-50 duration-200">
@@ -143,17 +164,27 @@ export const QueryInput: React.FC<QueryInputProps> = ({
       )}
 
       {/* Main Prompt Card */}
-      <div className="bg-white rounded-xl border border-[#dddddd] p-4 sm:p-5 shadow-2xs focus-within:border-[#0075de] focus-within:ring-2 focus-within:ring-[#0075de]/20 transition-all">
+      <div
+        className={`bg-white rounded-xl border p-4 sm:p-5 shadow-2xs transition-all ${
+          isRateLimited
+            ? 'border-[#f7a501]/40 bg-[#fafafa]'
+            : 'border-[#dddddd] focus-within:border-[#0075de] focus-within:ring-2 focus-within:ring-[#0075de]/20'
+        }`}
+      >
         <textarea
           ref={textareaRef}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isRunning}
+          disabled={isRunning || isRateLimited}
           rows={2}
           id="prompt-input"
-          placeholder="Ask anything about your database in plain English..."
-          className="w-full bg-transparent resize-none border-0 p-0 text-[#0d0d0d] text-[16px] sm:text-[17px] leading-relaxed placeholder:text-[#a39e98] focus:ring-0 focus:outline-none"
+          placeholder={
+            isRateLimited
+              ? `Cooldown active (${rateLimitCooldown}s remaining)...`
+              : 'Ask anything about your database in plain English...'
+          }
+          className="w-full bg-transparent resize-none border-0 p-0 text-[#0d0d0d] text-[16px] sm:text-[17px] leading-relaxed placeholder:text-[#a39e98] focus:ring-0 focus:outline-none disabled:text-[#a39e98] disabled:cursor-not-allowed"
         />
 
         <div className="flex items-center justify-between pt-3 border-t border-[#eeeeec] mt-1">
@@ -181,7 +212,7 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               <button
                 type="button"
                 onClick={onCancel}
-                className="w-9 h-9 rounded-full bg-[#f7d6d3] hover:bg-[#f3bcba] text-[#cd4239] flex items-center justify-center transition-colors shadow-2xs"
+                className="w-9 h-9 rounded-full bg-[#f7d6d3] hover:bg-[#f3bcba] text-[#cd4239] flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
                 title="Cancel query execution"
               >
                 <Square className="h-3.5 w-3.5 fill-current" />
@@ -190,9 +221,9 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               <button
                 type="button"
                 onClick={() => handleSubmit()}
-                disabled={!prompt.trim()}
+                disabled={!prompt.trim() || isRateLimited}
                 className="w-9 h-9 rounded-full bg-[#0075de] hover:bg-[#005bab] active:scale-95 disabled:bg-[#efeeec] disabled:text-[#a39e98] text-white flex items-center justify-center transition-all shadow-2xs cursor-pointer disabled:cursor-not-allowed"
-                title="Ask question"
+                title={isRateLimited ? `Rate limited (${rateLimitCooldown}s)` : 'Ask question'}
               >
                 <ArrowUp className="h-4.5 w-4.5 stroke-[2.5]" />
               </button>
@@ -211,8 +242,9 @@ export const QueryInput: React.FC<QueryInputProps> = ({
             <button
               key={sug}
               type="button"
+              disabled={isRateLimited}
               onClick={() => handleSelectSuggestion(sug)}
-              className="shrink-0 px-3 py-1 bg-white hover:bg-[#f8fafc] text-[#31302e] hover:text-[#0d0d0d] text-[13px] rounded-full border border-[#e6e6e6] transition-colors shadow-2xs cursor-pointer"
+              className="shrink-0 px-3 py-1 bg-white hover:bg-[#f8fafc] disabled:opacity-50 disabled:cursor-not-allowed text-[#31302e] hover:text-[#0d0d0d] text-[13px] rounded-full border border-[#e6e6e6] transition-colors shadow-2xs cursor-pointer"
             >
               {sug}
             </button>
