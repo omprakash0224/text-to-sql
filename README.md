@@ -70,3 +70,11 @@ Verify frontend TypeScript compilation:
 cd frontend
 npm run build
 ```
+
+---
+
+## 🌐 Production Deployment
+
+DataSpeak is ready to deploy to production with Vercel (Frontend), Render or Google Cloud Run (Backend), Neon (Serverless PostgreSQL), and Upstash (Redis rate limiting).
+
+👉 **See the complete, step-by-step [DEPLOYMENT.md](file:///d:/text-to-sql/DEPLOYMENT.md) for full instructions, infrastructure setup, and cost analysis ($0 free tier vs $7–$27 production tier).**

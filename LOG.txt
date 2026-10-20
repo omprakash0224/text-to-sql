@@ -468,4 +468,30 @@ What was changed:
    - Live query test: Successfully executed user's exact query ("Show total record counts and summary of categories") against SQLite demo database with Groq qwen/qwen3.8-27b, generating clean SQL, 5 rows, pie chart, and executive summary.
    - Frontend production build: tsc -b && vite build compiled cleanly in 800ms with 0 errors.
 ================================================================================
+[2026-10-20] Production Deployment Plan & Artifacts (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Deployment Guide & Architecture (DEPLOYMENT.md):
+   - Created comprehensive production deployment guide with end-to-end topology diagram:
+     * Frontend: Vercel Edge CDN (Vite + React 19 + Tailwind v4 SPA).
+     * Backend Option A: Render Web Service (native Python / Docker, zero-downtime deploys, built-in SSL).
+     * Backend Option B: Google Cloud Run (serverless container, scale-to-zero, Google Artifact Registry, high concurrency).
+     * Internal Database: Neon Serverless PostgreSQL with PgBouncer connection pooling (`sslmode=require`).
+     * Rate Limiter & Cache: Upstash Serverless Redis (`rediss://` TLS protocol).
+     * Auth: Clerk Production instance with JWKS RS256 token verification.
+     * LLMs: Groq (primary: `qwen/qwen3.8-27b`) and OpenRouter (fallback: `minimax/minimax-m3.1-flash:free`).
+   - Detailed cost analysis:
+     * Free / Hobby Tier: $0.00 / month across all services (Vercel, Render/Cloud Run, Neon, Upstash, Clerk, Groq).
+     * Production / Startup Tier: ~$7.00 - $27.00 / month (always-on Render Starter or Cloud Run, Neon, Upstash, Clerk).
+   - Render vs Google Cloud Run decision matrix comparing complexity, cold starts, concurrency, and costs.
+   - Sequential 8-step smoke test checklist for production verification.
+   - Troubleshooting guide for CORS, mixed content, cold starts, and cloud SSL.
+2. Deployment Artifacts Created:
+   - frontend/vercel.json: Configured SPA rewrite rule (mapping /(.*) to /index.html) and security headers (nosniff, DENY framing, XSS protection).
+   - backend/Dockerfile: Multi-stage lightweight Python 3.11-slim container with curl health check and non-root execution.
+   - backend/.dockerignore: Filtered temporary files, virtualenvs, cache, and tests.
+   - backend/entrypoint.sh: Automated container startup script applying Alembic migrations before launching Uvicorn.
+3. Documentation Linking:
+   - README.md: Added reference to DEPLOYMENT.md.
+================================================================================
 
