@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.auth import get_current_user
 from app.core.logging import get_logger
+from app.core.rate_limit import RateLimiter, RateLimitResult
 from app.db.connection import (
     build_async_engine,
     test_connection,
@@ -41,6 +42,9 @@ router = APIRouter(prefix="/connections", tags=["connections"])
 async def test_database_connection(
     request: ConnectionTestRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
+    _rate_limit: RateLimitResult = Depends(
+        RateLimiter(times=30, seconds=60, namespace="connections")
+    ),
 ) -> ConnectionTestResponse:
     """Test connectivity against the target database."""
     logger.info("Testing database connection", user_id=current_user.user_id, is_sample=request.is_sample_db)
@@ -56,6 +60,9 @@ async def test_database_connection(
 async def connect_database(
     request: ConnectionConnectRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
+    _rate_limit: RateLimitResult = Depends(
+        RateLimiter(times=30, seconds=60, namespace="connections")
+    ),
 ) -> ConnectionInfoResponse:
     """Connect to database, reflect schema, and store in tenant session cache."""
     logger.info("Establishing database connection", user_id=current_user.user_id, is_sample=request.is_sample_db)

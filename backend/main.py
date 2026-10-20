@@ -44,11 +44,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         port=settings.BACKEND_PORT,
     )
 
+    # Initialize internal application database
+    from app.db.app_database import close_app_db, init_app_db
+    await init_app_db()
+
+    # Initialize Redis client for rate limiting
+    from app.core.redis import close_redis, init_redis
+    init_redis()
+
     yield  # ── Application runs here ──────────────────────────────────────────
 
     logger.info("DataSpeak backend shutting down")
     from app.db.session_manager import session_manager
     await session_manager.dispose_all_sessions()
+    await close_app_db()
+    await close_redis()
 
 
 # ── FastAPI application instance ─────────────────────────────────────────────

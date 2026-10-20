@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dataspeak-postgres
+    environment:
+      POSTGRES_USER: dataspeak_app
+      POSTGRES_PASSWORD: dataspeak_secure_pass
+      POSTGRES_DB: dataspeak_internal
+    ports:
+      - "5432:5432"
+    volumes:
+      - dataspeak_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataspeak_app -d dataspeak_internal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: dataspeak-redis
+    command: redis-server --save "" --appendonly no
+    ports:
+      - "6379:6379"
+    volumes:
+      - dataspeak_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  dataspeak_pgdata:
+    name: dataspeak_pgdata
+  dataspeak_redisdata:
+    name: dataspeak_redisdata

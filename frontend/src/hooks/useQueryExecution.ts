@@ -1,12 +1,18 @@
 /**
- * DataSpeak — Query Execution & History Hook
+ * DataSpeak — Query Execution & History Hook (useQueryExecution.ts)
  * Manages query execution lifecycle, realistic progress stepper transitions,
- * and persistent query history.
+ * server-persisted query history with optimistic updates, legacy localStorage migration,
+ * and HTTP 429 rate limit cooldown tracking.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { queryService } from '../services/api';
-import type { QueryResult, QueryHistoryItem, QueryProgressStep, ProgressStepId } from '../types';
+import { queryService, historyService } from '../services/api';
+import type {
+  QueryResult,
+  QueryHistoryItem,
+  QueryProgressStep,
+  ProgressStepId,
+} from '../types';
 
 const INITIAL_STEPS: QueryProgressStep[] = [
   { id: 'reading_schema', label: 'Reading your database schema', status: 'pending' },
@@ -25,31 +31,22 @@ export function useQueryExecution() {
   const [steps, setSteps] = useState<QueryProgressStep[]>(INITIAL_STEPS);
   const [activeStepId, setActiveStepId] = useState<ProgressStepId | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<QueryHistoryItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [history, setHistory] = useState<QueryHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(false);
+  const [rateLimitCooldown, setRateLimitCooldown] = useState<number | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const timerRefs = useRef<number[]>([]);
-
-  // Sync history to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(history.slice(0, 30)));
-    } catch (e) {
-      console.warn('Could not save query history to localStorage:', e);
-    }
-  }, [history]);
+  const cooldownTimerRef = useRef<number | null>(null);
+  const hasMigratedRef = useRef(false);
 
   // Clear timers on unmount
   useEffect(() => {
     return () => {
       timerRefs.current.forEach((id) => clearTimeout(id));
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+      }
     };
   }, []);
 
@@ -58,6 +55,115 @@ export function useQueryExecution() {
     timerRefs.current = [];
   };
 
+  // ── Rate Limit 429 Event Listener & Countdown ─────────────────────────────
+  useEffect(() => {
+    const handleRateLimit = (e: Event) => {
+      const customEvent = e as CustomEvent<{ retryAfter?: number; message?: string }>;
+      const retrySec = customEvent.detail?.retryAfter || 60;
+      setRateLimitCooldown(retrySec);
+
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+      }
+
+      cooldownTimerRef.current = window.setInterval(() => {
+        setRateLimitCooldown((prev) => {
+          if (prev === null || prev <= 1) {
+            if (cooldownTimerRef.current) {
+              clearInterval(cooldownTimerRef.current);
+              cooldownTimerRef.current = null;
+            }
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+
+    window.addEventListener('dataspeak:ratelimit', handleRateLimit);
+    return () => {
+      window.removeEventListener('dataspeak:ratelimit', handleRateLimit);
+    };
+  }, []);
+
+  // ── Fetch Server Query History ────────────────────────────────────────────
+  const loadHistory = useCallback(
+    async (params?: { q?: string; saved_only?: boolean }) => {
+      try {
+        setIsHistoryLoading(true);
+        const res = await historyService.list({ ...params, limit: 100 });
+        setHistory((prevHistory) => {
+          return res.items.map((serverItem) => {
+            const existing = prevHistory.find(
+              (h) => h.id === serverItem.id || h.question === serverItem.question
+            );
+            return {
+              ...serverItem,
+              isSaved: Boolean(serverItem.is_saved ?? serverItem.isSaved),
+              timestamp: serverItem.created_at || serverItem.timestamp || new Date().toISOString(),
+              result:
+                existing?.result ||
+                serverItem.result ||
+                (serverItem.sql
+                  ? {
+                      sql: serverItem.sql,
+                      columns: [],
+                      rows: [],
+                      rowCount: serverItem.row_count,
+                      row_count: serverItem.row_count,
+                      executionTimeMs: serverItem.execution_time_ms,
+                      execution_time_ms: serverItem.execution_time_ms,
+                      chart: serverItem.chart_config,
+                      summary: serverItem.summary,
+                      status: serverItem.status || 'success',
+                      error_message: serverItem.error_message,
+                    }
+                  : undefined),
+            };
+          });
+        });
+      } catch (err) {
+        console.warn('Failed to load server query history:', err);
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    },
+    []
+  );
+
+  // ── One-Time Legacy localStorage Migration & Initial Load ─────────────────
+  useEffect(() => {
+    if (hasMigratedRef.current) return;
+    hasMigratedRef.current = true;
+
+    const initHistory = async () => {
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              console.info(`Migrating ${parsed.length} local queries to server...`);
+              await historyService.importLocal(parsed);
+              localStorage.removeItem(LOCAL_STORAGE_HISTORY_KEY);
+              localStorage.setItem('dataspeak_query_history_migrated_v1', 'true');
+            }
+          } catch (parseErr) {
+            console.warn('Corrupt localStorage history, skipping migration:', parseErr);
+            localStorage.removeItem(LOCAL_STORAGE_HISTORY_KEY);
+          }
+        }
+      } catch (importErr) {
+        console.warn('Failed to import localStorage queries to server:', importErr);
+      }
+
+      await loadHistory();
+    };
+
+    initHistory();
+  }, [loadHistory]);
+
+  // ── Execute Natural Language Query ────────────────────────────────────────
   const executeQuestion = useCallback(
     async (question: string): Promise<QueryResult | null> => {
       if (!question.trim()) return null;
@@ -121,15 +227,28 @@ export function useQueryExecution() {
 
         setCurrentResult(result);
 
-        // Add to history
+        // Optimistically insert to local list with full result object
+        const tempId = `temp-${Date.now()}`;
         const newHistoryItem: QueryHistoryItem = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          id: tempId,
           question,
+          sql: result.sql,
+          status: result.status,
+          execution_time_ms: result.executionTimeMs ?? result.execution_time_ms,
+          row_count: result.rowCount ?? result.row_count ?? result.rows?.length,
+          chart_config: result.chart,
+          summary: result.summary,
+          error_message: result.error_message,
+          created_at: new Date().toISOString(),
           timestamp: new Date().toISOString(),
           result,
           isSaved: false,
+          is_saved: false,
         };
         setHistory((prev) => [newHistoryItem, ...prev.filter((item) => item.question !== question)]);
+
+        // Reload server history so server-generated ID replaces tempId
+        loadHistory().catch((err) => console.warn('History background reload failed:', err));
 
         return result;
       } catch (err: unknown) {
@@ -139,13 +258,16 @@ export function useQueryExecution() {
             ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Query execution failed.'
             : 'Failed to process natural language query.';
         setError(msg);
+
+        // Refresh history even on error, since backend records failed queries too
+        loadHistory().catch(() => {});
         return null;
       } finally {
         setIsRunning(false);
         setActiveStepId(null);
       }
     },
-    []
+    [loadHistory]
   );
 
   const cancelQuery = useCallback(() => {
@@ -158,19 +280,87 @@ export function useQueryExecution() {
     setSteps(INITIAL_STEPS);
   }, []);
 
-  const toggleSaveHistory = useCallback((id: string) => {
-    setHistory((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isSaved: !item.isSaved } : item))
-    );
-  }, []);
+  // ── Star / Bookmark Toggle with Optimistic UI ─────────────────────────────
+  const toggleSaveHistory = useCallback(
+    async (id: string) => {
+      // Optimistic update
+      setHistory((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const nextVal = !(item.is_saved ?? item.isSaved);
+            return { ...item, isSaved: nextVal, is_saved: nextVal };
+          }
+          return item;
+        })
+      );
 
-  const deleteHistoryItem = useCallback((id: string) => {
-    setHistory((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+      try {
+        const updated = await historyService.toggleSave(id);
+        setHistory((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? { ...item, isSaved: updated.is_saved, is_saved: updated.is_saved }
+              : item
+          )
+        );
+      } catch (err) {
+        console.error('Failed to toggle save on server:', err);
+        // Rollback on error
+        await loadHistory();
+      }
+    },
+    [loadHistory]
+  );
 
+  // ── Delete Single History Item with Optimistic UI ─────────────────────────
+  const deleteHistoryItem = useCallback(
+    async (id: string) => {
+      const prevItems = history;
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+
+      try {
+        await historyService.delete(id);
+      } catch (err) {
+        console.error('Failed to delete query history item on server:', err);
+        setHistory(prevItems);
+      }
+    },
+    [history]
+  );
+
+  // ── Clear Recent Unsaved History with Optimistic UI ───────────────────────
+  const clearRecentHistory = useCallback(async () => {
+    const prevItems = history;
+    setHistory((prev) => prev.filter((item) => item.is_saved || item.isSaved));
+
+    try {
+      await historyService.clearRecent();
+    } catch (err) {
+      console.error('Failed to clear recent query history on server:', err);
+      setHistory(prevItems);
+    }
+  }, [history]);
+
+  // ── Select Query from History ─────────────────────────────────────────────
   const selectHistoryItem = useCallback((item: QueryHistoryItem) => {
     setCurrentQuestion(item.question);
-    setCurrentResult(item.result);
+    if (item.result) {
+      setCurrentResult(item.result);
+    } else {
+      setCurrentResult({
+        sql: item.sql || '',
+        columns: [],
+        rows: [],
+        rowCount: item.row_count,
+        row_count: item.row_count,
+        executionTimeMs: item.execution_time_ms,
+        execution_time_ms: item.execution_time_ms,
+        chart: item.chart_config,
+        summary: item.summary,
+        status: item.status || 'success',
+        error_message: item.error_message,
+      });
+    }
     setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: 'completed' })));
   }, []);
 
@@ -189,12 +379,16 @@ export function useQueryExecution() {
     activeStepId,
     error,
     history,
+    isHistoryLoading,
+    rateLimitCooldown,
     executeQuestion,
     cancelQuery,
     toggleSaveHistory,
     deleteHistoryItem,
+    clearRecentHistory,
     selectHistoryItem,
     resetCurrentQuery,
     setCurrentResult,
+    loadHistory,
   };
 }

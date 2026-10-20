@@ -58,6 +58,16 @@ class Settings(BaseSettings):
     # ── Demo Database ─────────────────────────────────────────────────────────
     DEMO_DATABASE_URL: str = "sqlite+aiosqlite:///./demo_ecommerce.db"
 
+    # ── Internal Application Database (Query History, Bookmarks) ──────────────
+    APP_DATABASE_URL: str = "postgresql+asyncpg://dataspeak_app:dataspeak_secure_pass@localhost:5432/dataspeak_internal"
+
+    # ── Redis Cache & Rate Limiting ───────────────────────────────────────────
+    REDIS_URL: str = "redis://localhost:6379/0"
+    RATE_LIMIT_QUERY_PER_MINUTE: int = 20
+    RATE_LIMIT_GLOBAL_PER_MINUTE: int = 120
+    RATE_LIMIT_BURST_CAP: int = 5
+    RATE_LIMIT_ENABLED: bool = True
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

@@ -5,9 +5,10 @@ Purpose: Living log of project status, architectural changes, and rationale.
 Maintained across all implementation phases in accordance with AGENTS.md.
 
 Current Status Overview:
-- Active Phase: Phase 5 (Frontend Interface & Visualization) - IMPLEMENTED & VERIFIED
-- Prior Phase: Phase 4 (AI Agent Orchestration - LangGraph + Groq/OpenRouter) - COMPLETED
-- Next Phase: Phase 6 (Testing, Hardening & Documentation)
+- Completed Phases:
+  * Phases 1–5: Core MVP, Auth & Guardrails, DB Connections, LangGraph Agent, Frontend PostHog UI
+  * DB & Rate Limit Infra Phases 1–6: PostgreSQL Docker/Neon, Redis Docker/Upstash, Sliding Window Rate Limiting, Server History REST API, Frontend Migration & Cooldown Banner, Hardening & Zero-Regression Verification
+- Current State: 100% Passing Tests (125/125 backend tests passed), Clean Frontend Build (0 errors)
 
 
 --------------------------------------------------------------------------------
@@ -298,6 +299,144 @@ What was changed:
 5. Verification:
    - TypeScript & Vite build: tsc -b && vite build compiled cleanly in 673ms with 0 errors across 2,627 modules.
 ================================================================================
-
-
+[2026-10-20] DB & Rate Limit Infra — Phase 1: Local Docker, Settings & Dependencies (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Docker Compose Configuration (docker-compose.yml):
+   - Defined postgres service (postgres:16-alpine) on port 5432 with healthcheck (pg_isready), dedicated volume (dataspeak_pgdata), and credentials for dataspeak_internal.
+   - Defined redis service (redis:7-alpine) on port 6379 with healthcheck (redis-cli ping), dedicated volume (dataspeak_redisdata), and disabled persistence for caching/rate-limiting efficiency.
+2. Configuration & Environment Integration:
+   - backend/app/core/config.py: Added APP_DATABASE_URL, REDIS_URL, RATE_LIMIT_QUERY_PER_MINUTE (20), RATE_LIMIT_GLOBAL_PER_MINUTE (120), RATE_LIMIT_BURST_CAP (5), and RATE_LIMIT_ENABLED (True).
+   - .env.example: Added commented specifications for Docker dev and Neon / Upstash production targets.
+   - backend/.env: Injected development defaults matching Docker Compose topology.
+3. Backend Dependencies:
+   - backend/requirements.txt: Added redis (>=5.0.0), alembic (>=1.13.0), and fakeredis (>=2.20.0). Installed in virtual environment.
+4. Quickstart Documentation & Tests:
+   - README.md: Added Docker compose launch instructions, health checks, ports, credentials, and quickstart commands.
+   - backend/tests/test_config.py: 2 new unit tests validating environment loading and docker-compose service definitions.
+   - Zero Regression: All 98 backend tests passing with 0 failures.
+================================================================================
+[2026-10-20] DB & Rate Limit Infra — Phase 2: App Database, ORM & Migrations (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Pydantic v2 History Schemas (backend/app/models/history.py):
+   - Defined QueryHistoryItem, QueryHistoryCreate, QueryHistoryImport, QueryHistoryBatchImportRequest, and QueryHistoryListResponse.
+   - Centralized exports in backend/app/models/__init__.py.
+2. SQLAlchemy 2.0 ORM Entity (backend/app/models/history_entity.py):
+   - Created Base and QueryHistoryItemModel mapped to query_history table.
+   - Configured columns: id (UUID string), user_id (Clerk tenant index), database_name, question, sql, status, execution_time_ms, row_count, chart_config (JSON/JSONB), summary, error_message, is_saved, created_at, and updated_at.
+   - Added composite indexes: idx_query_history_user_created, idx_query_history_user_saved.
+   - Implemented model-to-Pydantic converter method: to_pydantic().
+3. Async App Database Factory (backend/app/db/app_database.py):
+   - Built normalize_app_database_url supporting postgresql+asyncpg://, Neon/Supabase SSL contexts, pooler statement cache disabling (statement_cache_size=0), and SQLite test mode.
+   - Configured create_app_engine with AsyncAdaptedQueuePool (pool_size=10, max_overflow=20, pool_pre_ping=True).
+   - Implemented init_app_db, close_app_db, get_session_factory, and FastAPI dependency get_app_db().
+   - Hooked init_app_db() and close_app_db() into backend/main.py lifespan for automated lifecycle management.
+4. Repository Layer (backend/app/db/repositories/history_repository.py):
+   - HistoryRepository implementing:
+     * create_query_history: Persists query execution records.
+     * list_query_history: Paginated listing with multi-tenant user_id filtering, case-insensitive question/SQL search, and is_saved filtering.
+     * get_by_id: Tenant-guarded single record retrieval.
+     * toggle_save_query: Atomic bookmark toggle for user-owned queries.
+     * delete_query_history_item: Tenant-guarded record removal.
+     * clear_recent_history: Bulk deletes unsaved queries while preserving starred items.
+     * batch_import_history: Idempotent legacy localStorage batch import.
+5. Alembic Migrations:
+   - Configured backend/alembic.ini and backend/alembic/env.py for asyncpg execution.
+   - Created initial migration backend/alembic/versions/001_create_query_history_table.py.
+   - Verified alembic heads command outputs 001_initial_history (head).
+6. Verification & Zero Regression:
+   - backend/tests/test_history_db.py: 8 new unit/integration tests covering URL normalization, CRUD operations, tenant isolation, search, pagination, bookmark toggling, and localStorage batch import.
+   - All 106 backend tests passing with 0 failures across the entire suite.
+================================================================================
+[2026-10-20] DB & Rate Limit Infra — Phase 3: Redis Engine & Sliding Window Limiter (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Async Redis Connection Manager (backend/app/core/redis.py):
+   - Configured async Redis client with socket timeout (2s), retry policies, and SSL negotiation for Upstash (rediss://).
+   - Implemented init_redis, close_redis, get_redis_client, ping_redis, set_redis_client, and reset_redis_client.
+   - Built fail-open resilience when Redis is unconfigured or temporarily offline.
+   - Integrated Redis connection initialization and graceful closing into backend/main.py lifespan.
+2. Sliding-Window Rate Limiting Engine (backend/app/core/rate_limit.py):
+   - Implemented sub-millisecond sliding window algorithm via Redis sorted sets (ZSET).
+   - Atomic evaluation pipeline: prunes expired scores (ZREMRANGEBYSCORE), inspects active counts (ZCARD), records timestamped members with UUIDs, and updates key TTL.
+   - Computes standard RFC headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, and Retry-After.
+   - Handles client identification by authenticated user_id or IP address (X-Forwarded-For compliant).
+3. FastAPI Reusable Dependency (RateLimiter):
+   - Created RateLimiter(times, seconds, namespace) dependency.
+   - Enforced HTTP 429 Too Many Requests when limits are exceeded with detailed retry headers.
+   - Injects rate limit headers on responses for real-time frontend feedback.
+4. Route Protection Integration:
+   - Attached RateLimiter to POST /api/v1/queries/ask (strict 20 queries/min tier).
+   - Attached RateLimiter to POST /api/v1/connections/test and POST /api/v1/connections/connect (30 requests/min tier).
+5. Verification & Zero Regression:
+   - Created backend/tests/test_rate_limiter.py: 6 unit and integration tests using fakeredis verifying ping, under-limit counters, over-limit blocking, window replenishment, fail-open behavior, and HTTP 429 response status.
+   - Full test suite: 112 passed, 0 failures across all backend tests.
+================================================================================
+[2026-10-20] DB & Rate Limit Infra — Phase 4: Query History REST API & Auto-Recording (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Pydantic v2 History Models Refinements (backend/app/models/history.py):
+   - Added QueryHistoryItemResponse alias, DeleteHistoryResponse, and BatchImportResponse models.
+   - Centralized exports in backend/app/models/__init__.py.
+2. Query History REST Router (backend/app/api/v1/history.py):
+   - GET /api/v1/history: Paginated history listing with saved_only filter, case-insensitive question/SQL keyword search, page/limit parameters, and total_pages derivation. Protected by RateLimiter(60/min).
+   - GET /api/v1/history/{id}: Fetch full record details with 404 tenant ownership guard.
+   - POST /api/v1/history/{id}/toggle-save: Atomic bookmark star toggle with tenant ownership guard.
+   - DELETE /api/v1/history/{id}: Permanent removal of individual user-owned records.
+   - DELETE /api/v1/history: Clear all recent unsaved queries while preserving starred bookmarks.
+   - POST /api/v1/history/import: Idempotent batch import endpoint for client-side localStorage migration.
+   - Mounted history_router under /api/v1/history in backend/app/api/v1/__init__.py.
+3. Automatic Query Recording (backend/app/api/v1/queries.py):
+   - Injected get_app_db dependency into ask_query endpoint.
+   - When query processing concludes (success, blocked, or error), builds QueryHistoryCreate payload with target database dialect/name and persists to query_history table.
+   - Wrapped in fail-open try/except block to guarantee user query answers are never disrupted if app database is temporarily slow or unavailable.
+4. Verification & Zero Regression:
+   - Created backend/tests/test_history_api.py: 7 integration tests covering 401 unauthenticated blocking, empty history state, batch import, listing, search filtering, bookmark toggling, single deletion, unsaved history clearing, strict multi-tenant isolation, and end-to-end auto-recording through /queries/ask.
+   - Full test suite: 119 passed, 0 failures across all backend tests.
+================================================================================
+[2026-10-20] DB & Rate Limit Infra — Phase 5: Frontend Migration & Enhanced UI (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Frontend API Service Updates (frontend/src/services/api.ts):
+   - Configured Axios response interceptor to intercept HTTP 429 Too Many Requests, extract Retry-After header, and dispatch a custom 'dataspeak:ratelimit' window event with cooldown seconds and error message.
+   - Implemented historyService with methods: list(params), get(id), toggleSave(id), delete(id), clearRecent(), and importLocal(items) with payload normalization matching backend schema.
+2. Legacy localStorage Auto-Migration & Server-Side Sync (frontend/src/hooks/useQueryExecution.ts):
+   - Added one-time migration hook that inspects localStorage ('dataspeak_query_history_v1'), batch imports existing queries via historyService.importLocal(), marks migration completed, and cleans up local storage.
+   - Synchronizes query history directly from server PostgreSQL database as primary source of truth.
+   - Implemented optimistic UI updates for bookmarking (toggleSaveHistory) and query deletion (deleteHistoryItem) with rollback capability.
+   - Added clearRecentHistory() with optimistic cleanup preserving starred queries.
+   - Added 'dataspeak:ratelimit' event listener with 1-second countdown interval driving rateLimitCooldown state.
+   - Automatically refreshes server history following query completion (success, blocked, or error).
+3. Enhanced Query History Component (frontend/src/components/chat/QueryHistory.tsx):
+   - Updated cards to display server-provided metadata: row_count, execution_time_ms, created_at timestamp, database_name pill, and status badges (Blocked, Error).
+   - Added 'Clear recent' button in the Recent Queries header (only displayed when recent queries exist), with confirmation dialog preserving saved/bookmarked queries.
+   - Added responsive search filter with debounced server search callback support.
+4. Rate Limit UI & Cooldown Feedback (frontend/src/components/chat/QueryInput.tsx & AppLayout.tsx):
+   - Integrated live amber Caution banner displaying dynamic countdown: 'Query rate limit reached: You can ask another question in {rateLimitCooldown}s.'
+   - Disabled prompt textarea and submission button during active cooldown to prevent redundant rejected requests.
+   - Wired rateLimitCooldown, clearRecentHistory, and history loading states through AppLayout.
+5. Verification & Zero Regression:
+   - Frontend production build: tsc -b && vite build succeeded with 0 errors (built in 617ms).
+   - Backend test suite: pytest backend/tests/ executed cleanly with 119 passed, 0 failures.
+================================================================================
+[2026-10-20] DB & Rate Limit Infra — Phase 6: Testing, Hardening & Zero-Regression Verification (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Rate Limiter Unit & Integration Test Suite (backend/tests/test_rate_limiter.py):
+   - Added test_strict_tier_20_requests_allowed_21st_429: Verifies production rate tier (20 requests/min) allowing exactly 20 requests with decremented X-RateLimit-Remaining headers, and rejecting the 21st request with HTTP 429 and accurate Retry-After header.
+   - Added test_get_client_ip_headers: Tests robust IP resolution handling multi-hop proxies (X-Forwarded-For) and reverse-proxy setups (X-Real-IP).
+   - Added test_rate_limiter_bypass_when_disabled: Tests that when RATE_LIMIT_ENABLED is False, rate checks are bypassed cleanly without errors.
+   - Verified sliding window counter, expiration replenishment, and fail-open resilience when Redis is unconfigured or unavailable.
+2. Query History API & Multi-Tenant Isolation Suite (backend/tests/test_history_api.py):
+   - Verified 401 unauthenticated blocking across all history endpoints.
+   - Verified 100% tenant isolation: Alice cannot view, retrieve by ID, star/bookmark, or delete Bob's queries.
+   - Added test_get_single_history_item_by_id: Tests complete retrieval of detailed query record.
+   - Added test_auto_record_blocked_guardrail_query: Tests that when an AST guardrail blocks a query (e.g. mutation statement), it is auto-persisted with status='blocked' and error_message.
+   - Added test_pagination_and_page_limits: Tests multi-page pagination, limit, offset, and total_pages calculations.
+   - Tested clear_recent_history removing unsaved queries while preserving starred items.
+3. Zero-Regression Verification:
+   - Backend test suite: pytest backend/tests/ executed with 125 passed, 0 failures (100% pass rate).
+   - Frontend production build: tsc -b && vite build succeeded with 0 errors across 2,624 transformed modules.
+================================================================================
 
