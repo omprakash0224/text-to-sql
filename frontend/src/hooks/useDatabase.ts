@@ -49,10 +49,14 @@ export function useDatabase(isClerkReady: boolean) {
     try {
       const conn = await connectionService.connect(params);
       setActiveConnection(conn);
-      // Fetch reflected schema
-      const sch = await schemaService.get();
-      setSchema(sch);
       setIsModalOpen(false);
+      // Fetch reflected schema
+      try {
+        const sch = await schemaService.get();
+        setSchema(sch);
+      } catch (schErr) {
+        console.warn('Could not immediately fetch schema:', schErr);
+      }
       return conn;
     } catch (err: unknown) {
       const msg =

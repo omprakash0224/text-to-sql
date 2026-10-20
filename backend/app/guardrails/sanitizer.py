@@ -15,6 +15,7 @@ from app.guardrails.validator import (
     SQLGuardrailValidator,
     ValidationResult,
     default_validator,
+    normalize_sqlglot_dialect,
 )
 
 logger = get_logger("guardrails.sanitizer")
@@ -73,8 +74,9 @@ def sanitize_and_format_sql(
     """
     Apply row limit rules and render clean dialect-specific SQL string from AST.
     """
+    target_dialect = normalize_sqlglot_dialect(dialect)
     bounded_ast = apply_row_limit(ast, default_limit=default_limit, max_limit=max_limit)
-    return bounded_ast.sql(dialect=dialect)
+    return bounded_ast.sql(dialect=target_dialect)
 
 
 def validate_and_sanitize_sql(
@@ -90,8 +92,9 @@ def validate_and_sanitize_sql(
     2. Injects / clamps query row limits.
     3. Returns enriched ValidationResult with sanitized_sql.
     """
+    target_dialect = normalize_sqlglot_dialect(dialect)
     v = validator or default_validator
-    result = v.validate(sql=sql, dialect=dialect)
+    result = v.validate(sql=sql, dialect=target_dialect)
 
     if not result.is_valid or result.ast is None:
         return result
@@ -99,7 +102,7 @@ def validate_and_sanitize_sql(
     try:
         sanitized = sanitize_and_format_sql(
             ast=result.ast,
-            dialect=dialect,
+            dialect=target_dialect,
             default_limit=default_limit,
             max_limit=max_limit,
         )
