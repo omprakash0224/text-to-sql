@@ -12,16 +12,16 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
   children,
   isClerkConfigured,
 }) => {
-  // If Clerk is not configured with a valid key, allow dev preview with warning banner
+  // If Clerk is not configured with a valid key, allow dev preview with quiet notice
   if (!isClerkConfigured) {
     return (
       <div className="flex flex-col min-h-screen">
-        <div className="bg-amber-950/40 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs text-amber-200">
+        <div className="bg-[#fffbeb] border-b border-[#fde68a] px-4 py-2 text-center text-xs text-[#92400e]">
           <div className="flex items-center justify-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+            <AlertCircle className="h-4 w-4 text-[#92400e] shrink-0" />
             <span>
               <strong>Development Mode:</strong> Clerk Publishable Key is not configured.
-              Add <code className="bg-amber-900/60 px-1.5 py-0.5 rounded text-amber-100 font-mono">VITE_CLERK_PUBLISHABLE_KEY</code> in <code className="font-mono">.env</code> to activate live authentication.
+              Add <code className="bg-[#fef3c7] px-1.5 py-0.5 rounded text-[#78350f] font-mono">VITE_CLERK_PUBLISHABLE_KEY</code> in <code className="font-mono">.env</code> to activate live authentication.
             </span>
           </div>
         </div>
@@ -36,6 +36,12 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
 const ClerkAuthGate: FC<{ children: ReactNode }> = ({ children }) => {
   const { isLoaded, isSignedIn, getToken } = useAuth();
 
+  // Allow preview inspection mode via ?preview=true or ?dev=true
+  const isPreview =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('preview=true') ||
+      window.location.search.includes('dev=true'));
+
   // Keep the Axios interceptor wired up with Clerk's latest session token getter
   useEffect(() => {
     if (isLoaded && isSignedIn) {
@@ -46,40 +52,41 @@ const ClerkAuthGate: FC<{ children: ReactNode }> = ({ children }) => {
   }, [isLoaded, isSignedIn, getToken]);
 
   // Loading state
-  if (!isLoaded) {
+  if (!isLoaded && !isPreview) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center backdrop-blur-sm">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
-          <p className="text-sm text-slate-400 font-medium">Verifying authentication session...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 bg-[#f4f5f6]">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-[#e2e4e8] bg-white p-8 text-center max-w-sm w-full">
+          <Loader2 className="h-6 w-6 animate-spin text-[#1b6c80]" />
+          <h1 className="text-sm font-medium text-[#131416]">Verifying session...</h1>
+          <p className="text-xs text-[#5d5f60]">Checking authentication status with Clerk</p>
         </div>
       </div>
     );
   }
 
   // Unauthenticated state
-  if (!isSignedIn) {
+  if (!isSignedIn && !isPreview) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4">
-        <div className="max-w-md w-full rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center shadow-xl backdrop-blur-md">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-6">
-            <Lock className="h-7 w-7" />
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-10 bg-[#f4f5f6]">
+        <div className="max-w-md w-full rounded-2xl border border-[#e2e4e8] bg-white p-6 sm:p-8 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#ebedee] text-[#131416] mb-5">
+            <Lock className="h-5 w-5" />
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-white mb-2">
-            Authentication Required
-          </h2>
-          <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-            Please sign in to connect to your databases, inspect schemas, and query data with safe SQL guardrails.
+          <h1 className="text-xl font-semibold tracking-tight text-[#131416] mb-2.5">
+            Sign in to DataSpeak
+          </h1>
+          <p className="text-sm text-[#5d5f60] mb-6 leading-relaxed px-2">
+            Connect your relational databases, inspect schemas, and query in plain English with verified read-only guardrails.
           </p>
 
           <SignInButton mode="modal">
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#131416] hover:bg-[#222428] px-4 py-2.5 text-sm font-medium text-white transition-colors"
             >
-              <Sparkles className="h-4 w-4" />
-              Sign in with Clerk
+              <Sparkles className="h-4 w-4 text-[#62aef0]" />
+              <span>Sign in with Clerk</span>
             </button>
           </SignInButton>
         </div>

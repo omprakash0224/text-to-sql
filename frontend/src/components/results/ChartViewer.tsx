@@ -1,7 +1,10 @@
 /**
  * DataSpeak — Dynamic Chart Viewer (ChartViewer.tsx)
- * High-contrast Recharts container supporting Bar, Line, and Donut/Pie charts.
- * Strictly enforces DESIGN.md palette (NO red/green; 6 curated PostHog series colors).
+ * Framed-sheet chart visualizer adhering strictly to app-screens.md:
+ * - One primary hue per chart (#1b6c80)
+ * - Faint gridlines, square / 4px top radius on bars
+ * - 4-hue palette max for categorical parts of a whole (zero red/green/purple)
+ * - No redundant legends for single-series charts
  */
 
 import React, { useState } from 'react';
@@ -18,9 +21,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
 } from 'recharts';
-import { BarChart3, LineChart as LineIcon, PieChart as PieIcon, SlidersHorizontal } from 'lucide-react';
+import { BarChart3, LineChart as LineIcon, PieChart as PieIcon } from 'lucide-react';
 import type { ChartConfig, ChartType } from '../../types';
 
 interface ChartViewerProps {
@@ -29,15 +31,12 @@ interface ChartViewerProps {
   columns: string[];
 }
 
-// 6 Curated Categorical Series Colors from DESIGN.md (Deliberately zero red/green)
+// 4 Cohesive Chart Series Colors (Teal, Slate-Blue, Amber, Steel) - No purple, no red/green
 const CHART_SERIES = [
-  '#0075de', // Series 1: Notion Blue
-  '#f7a501', // Series 2: PostHog Amber
-  '#2a9d99', // Series 3: Teal
-  '#7c44a6', // Series 4: Purple
-  '#62aef0', // Series 5: Sky
-  '#d6409f', // Series 6: Pink
-  '#a39e98', // Other: Muted Slate
+  '#1b6c80', // Series 1: Primary Teal
+  '#2f70bb', // Series 2: Slate Blue
+  '#a86f0c', // Series 3: Amber
+  '#4b5563', // Series 4: Steel
 ];
 
 export const ChartViewer: React.FC<ChartViewerProps> = ({
@@ -45,7 +44,6 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
   rows,
   columns,
 }) => {
-  // Infer active chart type (defaulting to config recommendation, fallback to bar)
   const initialType: ChartType =
     config?.type && config.type !== 'none' ? config.type : 'bar';
 
@@ -88,8 +86,8 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
     columns[1] ||
     'value';
 
-  // Format data for chart (slice to top 20 to maintain high readability)
-  const chartData = rows.slice(0, 20).map((row) => ({
+  // Format data for chart (slice to top 15 to maintain high readability)
+  const chartData = rows.slice(0, 15).map((row) => ({
     ...row,
     [xKey]: String(row[xKey] ?? 'Unknown'),
     [yKey]: typeof row[yKey] === 'number' ? row[yKey] : Number(row[yKey]) || 0,
@@ -99,26 +97,26 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
     return null;
   }
 
-  // Custom PostHog Dark Tooltip
+  // Custom Dark Tooltip
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderCustomTooltip = (props: any) => {
     const { active, payload, label } = props;
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg bg-[#23251d] text-white p-3 shadow-xl border border-neutral-700 text-xs">
-          <p className="font-semibold text-neutral-200 mb-1">{label}</p>
+        <div className="rounded-md bg-[#23251d] text-white p-2.5 shadow-overlay border border-neutral-700 text-xs">
+          <p className="font-medium text-neutral-200 mb-1">{label}</p>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {payload.map((entry: any, index: number) => (
             <p key={`item-${index}`} className="flex items-center gap-2 tnum">
               <span
-                className="h-2.5 w-2.5 rounded-full"
+                className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: entry.color || CHART_SERIES[0] }}
               />
               <span className="text-neutral-400 capitalize">{entry.name}:</span>
-              <span className="font-bold text-white">
+              <span className="font-semibold text-white">
                 {typeof entry.value === 'number'
                   ? entry.value.toLocaleString(undefined, { maximumFractionDigits: 2 })
-                  : String(entry.value)}
+                  : entry.value}
               </span>
             </p>
           ))}
@@ -129,150 +127,155 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
   };
 
   return (
-    <div className="w-full rounded-xl bg-white border border-[#e6e6e6] p-6 shadow-2xs my-4 transition-all">
-      {/* Header & Chart Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-[#eeeeec]">
+    <div className="w-full rounded-xl bg-white border border-[#e2e4e8] p-5 my-3">
+      {/* Chart Header */}
+      <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#eceef0]">
         <div>
-          <h3 className="text-base font-semibold text-[#0d0d0d] tracking-tight">
-            {config?.title || `${yKey.replace(/_/g, ' ').toUpperCase()} by ${xKey.replace(/_/g, ' ')}`}
+          <h3 className="text-xs font-semibold text-[#131416]">
+            {config?.title || `${yKey.replace(/_/g, ' ')} by ${xKey.replace(/_/g, ' ')}`}
           </h3>
-          <p className="text-xs text-[#615d59]">Automated data visualization with zero chartjunk</p>
+          <p className="text-[11px] text-[#5d5f60]">
+            Showing top {chartData.length} records
+          </p>
         </div>
 
-        {/* Chart Type Segmented Switcher */}
-        <div className="flex items-center gap-1.5 bg-[#efeeec] p-1 rounded-lg">
+        {/* Chart Type Selector */}
+        <div className="flex items-center gap-1 bg-[#ebedee] p-0.5 rounded-md text-xs">
           <button
             type="button"
             onClick={() => setActiveChartType('bar')}
-            className={`p-1.5 rounded-md text-xs flex items-center gap-1 font-medium transition-all ${
+            className={`p-1.5 rounded transition-colors ${
               activeChartType === 'bar'
-                ? 'bg-white text-[#0d0d0d] shadow-2xs'
-                : 'text-[#615d59] hover:text-[#0d0d0d]'
+                ? 'bg-white text-[#131416] border border-[#e2e4e8]'
+                : 'text-[#5d5f60] hover:text-[#131416]'
             }`}
-            title="Bar Chart"
+            title="Bar chart"
           >
-            <BarChart3 className="h-3.5 w-3.5 text-[#0075de]" />
-            <span className="hidden sm:inline">Bar</span>
+            <BarChart3 className="h-3.5 w-3.5" />
           </button>
-
           <button
             type="button"
             onClick={() => setActiveChartType('line')}
-            className={`p-1.5 rounded-md text-xs flex items-center gap-1 font-medium transition-all ${
+            className={`p-1.5 rounded transition-colors ${
               activeChartType === 'line'
-                ? 'bg-white text-[#0d0d0d] shadow-2xs'
-                : 'text-[#615d59] hover:text-[#0d0d0d]'
+                ? 'bg-white text-[#131416] border border-[#e2e4e8]'
+                : 'text-[#5d5f60] hover:text-[#131416]'
             }`}
-            title="Line Chart"
+            title="Line chart"
           >
-            <LineIcon className="h-3.5 w-3.5 text-[#f7a501]" />
-            <span className="hidden sm:inline">Line</span>
+            <LineIcon className="h-3.5 w-3.5" />
           </button>
-
           <button
             type="button"
             onClick={() => setActiveChartType('pie')}
-            className={`p-1.5 rounded-md text-xs flex items-center gap-1 font-medium transition-all ${
+            className={`p-1.5 rounded transition-colors ${
               activeChartType === 'pie'
-                ? 'bg-white text-[#0d0d0d] shadow-2xs'
-                : 'text-[#615d59] hover:text-[#0d0d0d]'
+                ? 'bg-white text-[#131416] border border-[#e2e4e8]'
+                : 'text-[#5d5f60] hover:text-[#131416]'
             }`}
-            title="Pie / Donut Chart"
+            title="Donut chart"
           >
-            <PieIcon className="h-3.5 w-3.5 text-[#2a9d99]" />
-            <span className="hidden sm:inline">Donut</span>
+            <PieIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Render Chart Area */}
-      <div className="h-72 w-full">
+      {/* Chart Canvas */}
+      <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          {activeChartType === 'line' ? (
-            <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e6e6e6" vertical={false} />
+          {activeChartType === 'bar' ? (
+            <BarChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 24 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eceef0" />
               <XAxis
                 dataKey={xKey}
-                tick={{ fontSize: 11, fill: '#615d59' }}
+                tick={{ fontSize: 11, fill: '#5d5f60' }}
+                interval={0}
+                tickFormatter={(val) =>
+                  String(val).length > 12 ? `${String(val).substring(0, 10)}...` : String(val)
+                }
+                axisLine={false}
                 tickLine={false}
-                axisLine={{ stroke: '#dddddd' }}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#615d59' }}
-                tickLine={false}
+                tick={{ fontSize: 11, fill: '#5d5f60' }}
                 axisLine={false}
-                tickFormatter={(val) => (typeof val === 'number' && val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val))}
+                tickLine={false}
+                tickFormatter={(v) =>
+                  typeof v === 'number' && v >= 1000
+                    ? `${(v / 1000).toFixed(1)}k`
+                    : String(v)
+                }
+              />
+              <Tooltip content={renderCustomTooltip} />
+              <Bar
+                dataKey={yKey}
+                fill={CHART_SERIES[0]}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={48}
+              />
+            </BarChart>
+          ) : activeChartType === 'line' ? (
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 24 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eceef0" />
+              <XAxis
+                dataKey={xKey}
+                tick={{ fontSize: 11, fill: '#5d5f60' }}
+                interval={0}
+                tickFormatter={(val) =>
+                  String(val).length > 12 ? `${String(val).substring(0, 10)}...` : String(val)
+                }
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: '#5d5f60' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) =>
+                  typeof v === 'number' && v >= 1000
+                    ? `${(v / 1000).toFixed(1)}k`
+                    : String(v)
+                }
               />
               <Tooltip content={renderCustomTooltip} />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey={yKey}
-                stroke="#0075de"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: '#0075de', strokeWidth: 2, stroke: '#ffffff' }}
-                activeDot={{ r: 6, fill: '#005bab' }}
+                stroke={CHART_SERIES[0]}
+                strokeWidth={2}
+                dot={{ r: 3, fill: CHART_SERIES[0] }}
+                activeDot={{ r: 5 }}
               />
             </LineChart>
-          ) : activeChartType === 'pie' ? (
+          ) : (
             <PieChart>
               <Tooltip content={renderCustomTooltip} />
-              <Legend
-                formatter={(val) => <span className="text-xs text-[#31302e] font-medium">{val}</span>}
-              />
               <Pie
-                data={chartData.slice(0, 7)}
+                data={chartData.slice(0, 6)}
                 dataKey={yKey}
                 nameKey={xKey}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={95}
-                paddingAngle={3}
+                innerRadius={55}
+                outerRadius={85}
+                paddingAngle={2}
               >
-                {chartData.slice(0, 7).map((_, index) => (
+                {chartData.slice(0, 6).map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={CHART_SERIES[index % CHART_SERIES.length]}
-                    stroke="#ffffff"
-                    strokeWidth={2}
                   />
                 ))}
               </Pie>
             </PieChart>
-          ) : (
-            <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e6e6e6" vertical={false} />
-              <XAxis
-                dataKey={xKey}
-                tick={{ fontSize: 11, fill: '#615d59' }}
-                tickLine={false}
-                axisLine={{ stroke: '#dddddd' }}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#615d59' }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => (typeof val === 'number' && val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val))}
-              />
-              <Tooltip content={renderCustomTooltip} />
-              <Bar dataKey={yKey} radius={[4, 4, 0, 0]}>
-                {chartData.map((_, index) => (
-                  <Cell
-                    key={`bar-cell-${index}`}
-                    fill={CHART_SERIES[index % CHART_SERIES.length]}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
           )}
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between text-[11px] text-[#a39e98] pt-2 border-t border-[#eeeeec]">
-        <span className="flex items-center gap-1">
-          <SlidersHorizontal className="h-3 w-3" /> Showing top {Math.min(chartData.length, 20)} records
-        </span>
-        <span>Categorical Series (Zero safety colors used)</span>
       </div>
     </div>
   );

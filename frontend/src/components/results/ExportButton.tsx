@@ -46,22 +46,22 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         type="button"
         onClick={handleExport}
         disabled={disabled || rows.length === 0 || isExporting}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white border border-[#dddddd] text-[#0d0d0d] hover:bg-[#f8fafc] active:bg-[#efeeec] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-[#e2e4e8] text-[#131416] hover:bg-[#f7f8fa] active:bg-[#ebedee] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         title="Export sanitized CSV (RFC 4180)"
       >
         {isExporting ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#0075de]" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1b6c80]" />
         ) : downloadedName ? (
-          <Check className="h-3.5 w-3.5 text-[#2c8c66]" />
+          <Check className="h-3.5 w-3.5 text-[#1e7b4f]" />
         ) : (
-          <Download className="h-3.5 w-3.5 text-[#615d59]" />
+          <Download className="h-3.5 w-3.5 text-[#5d5f60]" />
         )}
         <span>{downloadedName ? 'Downloaded' : 'Export CSV'}</span>
       </button>
 
       {/* Ephemeral Toast Confirmation */}
       {downloadedName && (
-        <div className="absolute right-0 top-full mt-1.5 z-40 bg-[#23251d] text-white text-[11px] px-2.5 py-1.5 rounded-md shadow-lg border border-neutral-700 whitespace-nowrap animate-in fade-in-50">
+        <div className="absolute right-0 top-full mt-1.5 z-40 bg-[#23251d] text-white text-[11px] px-2.5 py-1.5 rounded-md shadow-overlay border border-neutral-700 whitespace-nowrap animate-in fade-in-50">
           Exported {rows.length} rows to {downloadedName}
         </div>
       )}

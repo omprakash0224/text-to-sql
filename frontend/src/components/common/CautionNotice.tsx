@@ -1,5 +1,5 @@
 /**
- * DataSpeak — Caution Notice Banner (DESIGN.md)
+ * DataSpeak — Caution Notice Banner (CautionNotice.tsx)
  * For safe-but-altered outcomes (e.g. automatic LIMIT 100 applied, query timeout, truncated results).
  */
 
@@ -24,23 +24,23 @@ export const CautionNotice: React.FC<CautionNoticeProps> = ({
   return (
     <div
       role="status"
-      className={`w-full rounded-xl bg-[#fdf0d0] border border-[#f7a501] border-l-4 border-l-[#f7a501] p-4 shadow-sm my-3 ${className}`}
+      className={`w-full rounded-lg bg-[#fffbeb] border border-[#fde68a] border-l-4 border-l-[#92400e] p-3.5 my-2.5 ${className}`}
     >
-      <div className="flex items-start gap-3">
-        <div className="p-1 rounded-md bg-white/60 text-[#f7a501] shrink-0 mt-0.5">
-          <AlertTriangle className="h-4 w-4" />
+      <div className="flex items-start gap-2.5">
+        <div className="p-1 rounded bg-white text-[#92400e] shrink-0 mt-0.5 border border-[#fde68a]">
+          <AlertTriangle className="h-3.5 w-3.5" />
         </div>
 
         <div className="flex-1">
-          <h4 className="text-sm font-semibold text-[#6e4600] mb-0.5">{title}</h4>
-          <p className="text-xs text-[#31302e] leading-relaxed">{message}</p>
+          <h4 className="text-xs font-semibold text-[#92400e] mb-0.5">{title}</h4>
+          <p className="text-xs text-[#5d5f60] leading-relaxed">{message}</p>
         </div>
 
         {actionText && onAction && (
           <button
             type="button"
             onClick={onAction}
-            className="text-xs font-medium text-[#0075de] hover:underline shrink-0 flex items-center gap-1"
+            className="text-xs font-medium text-[#1b6c80] hover:underline shrink-0 flex items-center gap-1"
           >
             <span>{actionText}</span>
             <Info className="h-3 w-3" />

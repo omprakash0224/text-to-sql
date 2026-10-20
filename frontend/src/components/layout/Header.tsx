@@ -1,7 +1,7 @@
 /**
  * DataSpeak — Top Navigation Bar (Header.tsx)
- * 56px height, persistent Read-only safety badge, database chip switcher,
- * and Clerk authentication controls.
+ * Framed-sheet archetype: 48px height on tinted frame ground (#f4f5f6),
+ * persistent Read-only safety badge, database chip switcher, and Clerk authentication.
  */
 
 import React from 'react';
@@ -30,32 +30,32 @@ export const Header: React.FC<HeaderProps> = ({
   isClerkConfigured,
 }) => {
   return (
-    <header className="h-14 w-full bg-[#f6f5f4] border-b border-[#e6e6e6] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
+    <header className="h-12 w-full bg-[#f4f5f6] border-b border-[#e2e4e8] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
       {/* Brand & Active Database Chip */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-[#0075de] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+          <div className="h-7 w-7 rounded-md bg-[#131416] text-white flex items-center justify-center font-semibold text-xs">
             DS
           </div>
-          <span className="font-bold text-base tracking-tight text-[#0d0d0d] hidden sm:inline">
+          <span className="font-semibold text-sm tracking-tight text-[#131416] hidden sm:inline">
             DataSpeak
           </span>
         </div>
 
-        <div className="h-4 w-px bg-[#dddddd] mx-1 hidden sm:block" />
+        <div className="h-3.5 w-px bg-[#e2e4e8] mx-1 hidden sm:block" />
 
         {/* Database Switcher Chip */}
         <button
           type="button"
           onClick={onOpenConnectModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#dddddd] hover:border-[#0075de]/50 text-xs text-[#0d0d0d] font-medium transition-all shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#e2e4e8] hover:border-[#1b6c80] text-xs text-[#131416] font-medium transition-colors"
           title="Switch or connect database"
         >
-          <Database className="h-3.5 w-3.5 text-[#0075de]" />
-          <span className="truncate max-w-[140px] sm:max-w-[200px]">
+          <Database className="h-3.5 w-3.5 text-[#1b6c80]" />
+          <span className="truncate max-w-[140px] sm:max-w-[220px]">
             {activeConnection ? activeConnection.name : 'Connect Database'}
           </span>
-          <ChevronDown className="h-3 w-3 text-[#a39e98]" />
+          <ChevronDown className="h-3 w-3 text-[#5d5f60]" />
         </button>
       </div>
 
@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: 'h-8 w-8 rounded-full border border-[#dddddd]',
+                    avatarBox: 'h-7 w-7 rounded-full border border-[#e2e4e8]',
                   },
                 }}
               />
@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
               <SignInButton mode="modal">
                 <button
                   type="button"
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#0075de] hover:bg-[#005bab] text-white transition-colors"
+                  className="px-3 py-1 text-xs font-medium rounded-md bg-[#131416] hover:bg-[#222428] text-white transition-colors"
                 >
                   Sign In
                 </button>
@@ -97,9 +97,8 @@ export const Header: React.FC<HeaderProps> = ({
             </SignedOut>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-[#615d59] bg-[#efeeec] px-2.5 py-1 rounded-md">
-            <span className="h-2 w-2 rounded-full bg-[#f7a501]" />
-            <span className="text-[11px] font-medium">Dev Auth</span>
+          <div className="flex items-center gap-1.5 text-[11px] text-[#5d5f60] bg-[#ebedee] px-2 py-0.5 rounded">
+            <span>Dev Mode</span>
           </div>
         )}
       </div>

@@ -1,68 +1,76 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   DataSpeak — Design System Tokens (DESIGN.md)
-   A warm paper analytics workspace inspired by Notion, Linear, Airtable, and PostHog.
+   DataSpeak — Design System Tokens (framed-sheet style)
+   Strict Anti-Slop Discipline distilled from 247 curated gallery sites & 23 app screens.
+   - Tinted L-frame (#f4f5f6) + Inset White Sheet (#ffffff)
+   - Zero gradients, zero glassmorphism, zero shadows at rest
+   - IBM Plex Sans + IBM Plex Mono (IDs/code/tabular numbers)
+   - Single data accent (#1b6c80) with 3% color share
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Structural Brand Accent (Notion Blue) ─────────────────────── */
-  --ds-primary:             #0075de;
-  --ds-primary-active:      #005bab;
-  --ds-primary-soft:        #eaf3fc;
-  --ds-primary-soft-border: #c9e0f6;
-  --ds-on-primary:          #ffffff;
+  /* ── Shell & Surfaces ─────────────────────────────────────────── */
+  --ground:                 #f4f5f6;
+  --surface:                #ffffff;
+  --raised:                 #f7f8fa;
+  --active:                 #ebedee;
+  --border:                 #e2e4e8;
+  --rule:                   #eceef0;
+  --control:                #cdced1;
 
-  /* ── Surfaces (Notion Warm Paper Canvas) ───────────────────────── */
-  --ds-canvas:              #f6f5f4;
-  --ds-surface:             #ffffff;
-  --ds-surface-sunken:      #efeeec;
-  --ds-surface-hover:       #f8fafc;
-  --ds-hairline:            #e6e6e6;
-  --ds-hairline-strong:     #dddddd;
-  --ds-hairline-soft:       #eeeeec;
+  /* ── Text / Ink Ladder (All >= 4.5:1 contrast) ─────────────────── */
+  --text:                   #131416;
+  --muted:                  #5d5f60;
+  --faint:                  #6b6b6b;
 
-  /* ── Text / Ink Ladder (Notion Ink) ───────────────────────────── */
-  --ds-ink:                 #0d0d0d;
-  --ds-ink-secondary:       #31302e;
-  --ds-ink-muted:           #615d59;
-  --ds-ink-faint:           #a39e98;
+  /* ── Primary Action & Data Accent ──────────────────────────────── */
+  --primary:                #131416;
+  --accent:                 #1b6c80;
 
-  /* ── Code & Dark Island (PostHog Olive-Charcoal) ───────────────── */
-  --ds-code-bg:             #23251d;
-  --ds-code-ink:            #ffffff;
-  --ds-code-comment:        #9b9c92;
-  --ds-code-keyword:        #62aef0;
-  --ds-code-string:         #8fd19e;
-  --ds-code-number:         #fcab79;
-  --ds-code-flag:           #ff8b82;
+  /* ── PostHog Olive-Charcoal Dark Code Surface ───────────────────── */
+  --code-bg:                #23251d;
+  --code-ink:               #ffffff;
+  --code-comment:           #9b9c92;
+  --code-keyword:           #62aef0;
+  --code-string:            #8fd19e;
+  --code-number:            #fcab79;
+  --code-flag:              #ff8b82;
 
-  /* ── Safety Semantics (PostHog Safety Trio) ────────────────────── */
-  --ds-safe:                #2c8c66;
-  --ds-safe-soft:           #d9eddf;
-  --ds-safe-ink:            #17543b;
+  /* ── Safety Semantics (Strict Pale Tints with Dark Ink) ────────── */
+  --positive:               #1e7b4f;
+  --pill-positive-bg:       #dcfae5;
+  --pill-positive-ink:      #04250e;
 
-  --ds-blocked:             #cd4239;
-  --ds-blocked-soft:        #f7d6d3;
-  --ds-blocked-ink:         #86241d;
+  --negative:               #c4242a;
+  --pill-negative-bg:       #ffedea;
+  --pill-negative-ink:      #831c1e;
 
-  --ds-caution:             #f7a501;
-  --ds-caution-soft:        #fdf0d0;
-  --ds-caution-ink:         #6e4600;
+  --warning:                #92400e;
+  --pill-warning-bg:        #fffbeb;
+  --pill-warning-ink:       #92400e;
 
-  --ds-neutral-soft:        #e5e7e0;
+  --pill-neutral-bg:        #ebedee;
+  --pill-neutral-ink:       #353736;
 
-  /* ── Chart Series Palette (PostHog - NO red/green) ─────────────── */
-  --ds-series-1:            #0075de;
-  --ds-series-2:            #f7a501;
-  --ds-series-3:            #2a9d99;
-  --ds-series-4:            #7c44a6;
-  --ds-series-5:            #62aef0;
-  --ds-series-6:            #d6409f;
-  --ds-series-other:        #a39e98;
-  --ds-chart-grid:          #e6e6e6;
-  --ds-tooltip-bg:          #23251d;
+  /* ── Cohesive Chart Palette (Teal, Slate-Blue, Amber, Steel) ──── */
+  --chart-1:                #1b6c80;
+  --chart-2:                #2f70bb;
+  --chart-3:                #a86f0c;
+  --chart-4:                #4b5563;
+  --chart-grid:             #eceef0;
+  --tooltip-bg:             #23251d;
+
+  /* ── Geometry & Layout Tokens ──────────────────────────────────── */
+  --radius-sheet:           16px;
+  --radius-card:            8px;
+  --radius-control:         6px;
+  --radius-chip:            4px;
+  --sheet-inset:            8px;
+  --sidebar-width:          240px;
+  --gap:                    20px;
+  --pad:                    24px;
 }
 
 /* ── Base Reset & Typography Defaults ────────────────────────────── */
@@ -80,73 +88,57 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--ds-canvas);
-  color: var(--ds-ink);
+  font-family: 'IBM Plex Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--ground);
+  color: var(--text);
   min-height: 100vh;
-  letter-spacing: -0.011em;
 }
 
 /* Tabular Numerals for metrics, table cells, and stats */
 .tnum,
-[data-tnum="true"] {
+[data-tnum="true"],
+.tabular-nums {
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }
 
-/* Monospace fonts */
+/* Monospace fonts (code, SQL, IDs only) */
 code, pre, kbd, .font-mono {
-  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ── Elevation & Focus Shadows ───────────────────────────────────── */
-.shadow-flat {
-  box-shadow: none;
-  border: 1px solid var(--ds-hairline);
+/* ── Focus Rings & Overlays ──────────────────────────────────────── */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-.shadow-prompt-focus {
-  border-color: var(--ds-primary);
-  box-shadow: 0 0 0 2px rgba(0, 117, 222, 0.25), 0 4px 18px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
+/* Real overlays (menus, dialogs) only */
+.shadow-overlay {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.shadow-floating {
-  box-shadow: 0 23px 52px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.05);
-}
-
-/* ── Subtle Shimmer Animation for Skeletons ──────────────────────── */
-@keyframes ds-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--ds-surface-sunken) 25%,
-    #e8e7e4 37%,
-    var(--ds-surface-sunken) 63%
-  );
-  background-size: 400% 100%;
-  animation: ds-shimmer 1.4s ease infinite;
+/* Flat grey skeleton bars (no gradient shimmer) */
+.skeleton-bar {
+  background-color: var(--active);
+  border-radius: var(--radius-chip);
 }
 
 /* ── Custom Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--ds-hairline-strong);
+  background: var(--control);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ds-ink-faint);
+  background: var(--muted);
 }

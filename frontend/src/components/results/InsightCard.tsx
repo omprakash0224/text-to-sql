@@ -1,7 +1,7 @@
 /**
  * DataSpeak — AI Summary Callout (InsightCard.tsx)
- * Notion-style callout leading every response with plain-English insights, bold figures,
- * and traceable "Based on X rows · View SQL" verification link.
+ * Framed-sheet style: Leading every response with plain-English insights, bold figures,
+ * and traceable "Based on X rows · View generated SQL" verification link.
  */
 
 import React, { useState } from 'react';
@@ -29,39 +29,39 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   if (!summary) return null;
 
   return (
-    <div className="w-full rounded-xl bg-[#eaf3fc] border border-[#c9e0f6] p-6 shadow-2xs my-4 transition-all">
+    <div className="w-full rounded-xl bg-[#f7f8fa] border border-[#e2e4e8] p-5 my-3">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[#0075de]/10 text-[#0075de]">
-            <Sparkles className="h-4 w-4" />
+          <div className="p-1 rounded-md bg-white border border-[#e2e4e8] text-[#1b6c80]">
+            <Sparkles className="h-3.5 w-3.5" />
           </div>
-          <span className="text-xs font-bold text-[#005bab] uppercase tracking-wider">
-            AI Narrative Summary
+          <span className="text-xs font-semibold text-[#131416]">
+            Executive summary
           </span>
         </div>
 
         <button
           type="button"
           onClick={handleCopy}
-          className="inline-flex items-center gap-1 text-xs text-[#615d59] hover:text-[#0d0d0d] p-1 rounded hover:bg-[#c9e0f6]/50 transition-colors"
-          title="Copy insight summary"
+          className="inline-flex items-center gap-1 text-xs text-[#5d5f60] hover:text-[#131416] px-2 py-0.5 rounded hover:bg-[#ebedee] transition-colors"
+          title="Copy summary text"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-[#2c8c66]" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-3.5 w-3.5 text-[#1e7b4f]" /> : <Copy className="h-3.5 w-3.5" />}
           <span className="text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
         </button>
       </div>
 
       {/* Summary Narrative Body */}
-      <div className="text-[15px] text-[#0d0d0d] leading-relaxed font-normal mb-4">
+      <div className="text-sm text-[#131416] leading-relaxed font-normal mb-3">
         {summary}
       </div>
 
       {/* Traceability Footer */}
-      <div className="pt-3 border-t border-[#c9e0f6]/60 flex items-center justify-between text-xs text-[#615d59]">
+      <div className="pt-2.5 border-t border-[#eceef0] flex items-center justify-between text-xs text-[#5d5f60]">
         <span>
           Based on{' '}
-          <strong className="text-[#0d0d0d] tnum font-semibold">
+          <strong className="text-[#131416] tnum font-semibold">
             {rowCount !== undefined ? rowCount.toLocaleString() : 'queried'}
           </strong>{' '}
           {rowCount === 1 ? 'row' : 'rows'}
@@ -71,9 +71,9 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           <button
             type="button"
             onClick={onViewSql}
-            className="inline-flex items-center gap-1 font-medium text-[#0075de] hover:underline"
+            className="inline-flex items-center gap-1 font-medium text-[#1b6c80] hover:underline"
           >
-            <span>View Generated SQL</span>
+            <span>View generated SQL</span>
             <ExternalLink className="h-3 w-3" />
           </button>
         )}

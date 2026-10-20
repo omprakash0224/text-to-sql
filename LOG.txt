@@ -226,5 +226,36 @@ What was changed:
 8. Verification:
    - Production build verified: tsc -b && vite build compiled cleanly in 1.19s with 0 errors across 2,626 transformed modules.
 ================================================================================
+[2026-10-20] Frontend Taste Redesign — anti-slop framed-sheet architecture (COMPLETED)
+--------------------------------------------------------------------------------
+What was changed:
+1. Art Direction & Style Deal:
+   - Dealt `framed-sheet` style for analytics from taste-skill library:
+     * Tinted L-frame (#f4f5f6) housing 48px header and 240px sidebar.
+     * Inset white sheet (#ffffff) with 8px-10px inset, 16px soft radius, 1px border (#e2e4e8), and zero shadows at rest.
+     * Typography: Dealt IBM Plex Sans (400, 500, 600) + IBM Plex Mono (IDs/keys/code/numeric tables) loaded via Google Fonts. Tabular numerals (.tnum / tabular-nums) across all numerical metrics.
+     * Color budget (< 3%): Restraint in chrome, primary action near-black (#131416), data series teal (#1b6c80), slate blue (#2f70bb), amber (#a86f0c).
+
+2. Elimination of Banned Slop Tells:
+   - Removed all gradients (bg-gradient-*, linear-gradient).
+   - Removed all indigo/violet assistant palette references.
+   - Removed all micro-labels (uppercase tracking-wider) replaced by sentence case.
+   - Removed emojis (🛡️ replaced with clean Lucide ShieldAlert icon).
+   - Removed placeholder data (example.com replaced with realistic Neon cloud host).
+   - Removed all resting card shadows (shadow-sm, shadow-2xs, shadow-lg, shadow-xl) in favor of 1px borders and subtle tone steps.
+   - Replaced all transition-all with targeted transition-colors and transition-opacity.
+   - Removed pulse and bounce looping animations.
+   - Ensured all text contrast meets or exceeds 4.5:1 WCAG AA standards.
+
+3. Substantive Screen Enhancements:
+   - Inset White Sheet Canvas: Replaced empty hero void with a high-utility Exploration Deck featuring 4 clickable cards (Orders, Products, Customers, Reviews) connected to the demo SQLite schema for instant natural language querying.
+   - Added clear h1 ("Natural Language Database Analytics") and descriptive subline.
+   - DataTable: Implemented right-aligned numeric columns with tabular numbers, sentence-case unbanded headers, and clean pagination.
+   - MetricTile & ChartViewer: Single-series hue (#1b6c80), faint horizontal-only grid lines (#eceef0), square/4px bar corners, and dark tooltip.
+
+4. Verification:
+   - Taste lint: node frontend/.agents/skills/design-taste-frontend/scripts/lint.mjs --app frontend/src passed with 0 FAILs.
+   - TypeScript compilation & bundle: npm run build passed cleanly in 696ms with 0 errors across 2,626 modules.
+================================================================================
 
 

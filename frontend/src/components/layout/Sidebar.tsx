@@ -1,7 +1,7 @@
 /**
  * DataSpeak — Application Sidebar Component (Sidebar.tsx)
- * 264px width on warm paper canvas. Houses New Question action, Schema Explorer,
- * Query History, and Connection Status footer.
+ * Framed-sheet archetype: 240px width on tinted frame (#f4f5f6).
+ * Houses New Question action, Schema Explorer, Query History, and Connection status tile.
  */
 
 import React, { useState } from 'react';
@@ -55,51 +55,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [activeTab, setActiveTab] = useState<'schema' | 'history'>('schema');
 
   return (
-    <aside className="w-64 sm:w-68 bg-[#f6f5f4] border-r border-[#e6e6e6] flex flex-col h-[calc(100vh-3.5rem)] shrink-0 select-none">
+    <aside className="w-60 bg-[#f4f5f6] border-r border-[#e2e4e8] flex flex-col h-[calc(100vh-3rem)] shrink-0 select-none">
       {/* Top Action: New Question Button */}
-      <div className="p-3 border-b border-[#eeeeec]">
+      <div className="p-2.5 border-b border-[#e2e4e8]">
         <button
           type="button"
           onClick={onNewQuestion}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-white border border-[#dddddd] hover:border-[#0075de]/50 text-[#0d0d0d] hover:bg-[#f8fafc] active:bg-[#efeeec] transition-all shadow-2xs"
+          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-white border border-[#e2e4e8] hover:border-[#1b6c80] text-[#131416] hover:bg-[#f7f8fa] active:bg-[#ebedee] transition-colors"
         >
-          <Plus className="h-4 w-4 text-[#0075de]" />
+          <Plus className="h-3.5 w-3.5 text-[#1b6c80]" />
           <span>New Question</span>
         </button>
       </div>
 
       {/* Segmented Tab Switcher (Schema vs History) */}
-      <div className="px-3 pt-3">
-        <div className="grid grid-cols-2 p-1 rounded-lg bg-[#efeeec] text-xs font-medium text-[#615d59]">
+      <div className="px-2.5 pt-2.5">
+        <div className="grid grid-cols-2 p-0.5 rounded-md bg-[#ebedee] text-xs font-medium text-[#5d5f60]">
           <button
             type="button"
             onClick={() => setActiveTab('schema')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${
               activeTab === 'schema'
-                ? 'bg-white text-[#0d0d0d] shadow-2xs font-semibold'
-                : 'hover:text-[#0d0d0d]'
+                ? 'bg-white text-[#131416] font-medium border border-[#e2e4e8]'
+                : 'hover:text-[#131416]'
             }`}
           >
-            <Table2 className="h-3.5 w-3.5 text-[#0075de]" />
+            <Table2 className="h-3.5 w-3.5 text-[#1b6c80]" />
             <span>Schema</span>
             {schema?.tables && (
-              <span className="text-[10px] text-[#a39e98] tnum">({schema.tables.length})</span>
+              <span className="text-[10px] text-[#5d5f60] tnum">({schema.tables.length})</span>
             )}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('history')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${
               activeTab === 'history'
-                ? 'bg-white text-[#0d0d0d] shadow-2xs font-semibold'
-                : 'hover:text-[#0d0d0d]'
+                ? 'bg-white text-[#131416] font-medium border border-[#e2e4e8]'
+                : 'hover:text-[#131416]'
             }`}
           >
-            <History className="h-3.5 w-3.5 text-[#f7a501]" />
+            <History className="h-3.5 w-3.5 text-[#a86f0c]" />
             <span>History</span>
             {history.length > 0 && (
-              <span className="text-[10px] text-[#a39e98] tnum">({history.length})</span>
+              <span className="text-[10px] text-[#5d5f60] tnum">({history.length})</span>
             )}
           </button>
         </div>
@@ -126,13 +126,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Connection Status Tile */}
-      <div className="p-3 bg-[#f6f5f4] border-t border-[#eeeeec] shrink-0">
+      <div className="p-2.5 bg-[#f4f5f6] border-t border-[#e2e4e8] shrink-0">
         {activeConnection ? (
-          <div className="p-2.5 rounded-lg bg-white border border-[#dddddd] shadow-2xs space-y-2">
+          <div className="p-2.5 rounded-lg bg-white border border-[#e2e4e8] space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 truncate">
-                <Database className="h-3.5 w-3.5 text-[#0075de] shrink-0" />
-                <span className="text-xs font-semibold text-[#0d0d0d] truncate">
+                <Database className="h-3.5 w-3.5 text-[#1b6c80] shrink-0" />
+                <span className="text-xs font-medium text-[#131416] truncate">
                   {activeConnection.name}
                 </span>
               </div>
@@ -140,16 +140,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 type="button"
                 onClick={onDisconnectDatabase}
                 title="Disconnect database"
-                className="text-[#a39e98] hover:text-[#cd4239] p-1 rounded hover:bg-[#efeeec] transition-colors"
+                className="text-[#5d5f60] hover:text-[#c4242a] p-1 rounded hover:bg-[#ebedee] transition-colors"
               >
                 <Power className="h-3.5 w-3.5" />
               </button>
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-[#615d59]">
-              <span className="font-mono uppercase">{activeConnection.dialect}</span>
-              <span className="inline-flex items-center gap-1 text-[#17543b] font-medium">
-                <ShieldCheck className="h-3 w-3 text-[#2c8c66]" /> Read-only
+            <div className="flex items-center justify-between text-[11px] text-[#5d5f60]">
+              <span className="uppercase">{activeConnection.dialect}</span>
+              <span className="inline-flex items-center gap-1 text-[#04250e] font-medium">
+                <ShieldCheck className="h-3 w-3 text-[#1e7b4f]" /> Read-only
               </span>
             </div>
           </div>
@@ -157,9 +157,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onOpenConnectModal}
-            className="w-full py-2 text-xs font-semibold rounded-lg bg-[#eaf3fc] hover:bg-[#c9e0f6] text-[#0075de] transition-colors flex items-center justify-center gap-1.5"
+            className="w-full py-1.5 text-xs font-medium rounded-md bg-white hover:bg-[#f7f8fa] border border-[#e2e4e8] text-[#131416] transition-colors flex items-center justify-center gap-1.5"
           >
-            <Database className="h-3.5 w-3.5" />
+            <Database className="h-3.5 w-3.5 text-[#1b6c80]" />
             <span>Connect Database</span>
           </button>
         )}
