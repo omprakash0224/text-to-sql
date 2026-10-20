@@ -25,23 +25,23 @@ export const MetricTile: React.FC<MetricTileProps> = ({
       : String(value);
 
   return (
-    <div className="w-full rounded-md bg-white border border-[#bfc1b7] p-6 my-4 transition-all">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-[#6c6e63] uppercase tracking-wider">
+    <div className="w-full rounded-xl bg-white border border-[#bfc1b7] p-6 sm:p-8 my-6 sm:my-8 shadow-sm transition-all">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs sm:text-sm font-bold text-[#6c6e63] uppercase tracking-wider">
           {label}
         </span>
-        <div className="p-1.5 rounded bg-[#eeefe9] text-[#1078a3] border border-[#dcdfd2]">
-          {icon || <Activity className="h-4 w-4" />}
+        <div className="p-2 rounded-lg bg-[#eeefe9] text-[#1078a3] border border-[#dcdfd2]">
+          {icon || <Activity className="h-5 w-5" />}
         </div>
       </div>
 
-      <div className="text-4xl font-extrabold tracking-tight text-[#23251d] tnum mb-1">
+      <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#23251d] tnum mb-2">
         {formattedVal}
       </div>
 
       {subtext && (
-        <div className="flex items-center gap-1.5 text-xs text-[#6c6e63]">
-          <TrendingUp className="h-3.5 w-3.5 text-[#1078a3]" />
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-[#4d4f46] leading-relaxed">
+          <TrendingUp className="h-4 w-4 text-[#1078a3]" />
           <span>{subtext}</span>
         </div>
       )}

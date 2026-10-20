@@ -157,48 +157,51 @@ export const DataTable: React.FC<DataTableProps> = ({
     },
   });
 
-  const rowHeightClass = density === 'comfortable' ? 'h-11 px-4 py-2.5' : 'h-8 px-3 py-1 text-xs';
+  const rowHeightClass =
+    density === 'comfortable'
+      ? 'h-13 px-6 sm:px-8 py-3 text-xs sm:text-sm'
+      : 'h-9 px-4 sm:px-6 py-1.5 text-xs';
 
   return (
-    <div className="w-full rounded-md bg-white border border-[#bfc1b7] overflow-hidden my-4 transition-all">
+    <div className="w-full rounded-xl bg-white border border-[#bfc1b7] shadow-sm overflow-hidden my-6 sm:my-8 transition-all">
       {/* Table Toolbar */}
-      <div className="h-14 px-4 bg-white border-b border-[#dcdfd2] flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <TableIcon className="h-4 w-4 text-[#1078a3]" />
-          <h3 className="text-sm font-bold text-[#23251d]">Results Table</h3>
-          <span className="text-xs text-[#4d4f46] tnum bg-[#eeefe9] border border-[#bfc1b7] px-2 py-0.5 rounded-full font-bold">
+      <div className="h-16 px-6 sm:px-8 bg-white border-b border-[#dcdfd2] flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <TableIcon className="h-5 w-5 text-[#1078a3]" />
+          <h3 className="text-sm sm:text-base font-bold text-[#23251d]">Results Table</h3>
+          <span className="text-xs text-[#4d4f46] tnum bg-[#eeefe9] border border-[#bfc1b7] px-3 py-1 rounded-full font-bold">
             {rows.length} {rows.length === 1 ? 'row' : 'rows'}
           </span>
           {executionTimeMs !== undefined && (
-            <span className="text-[11px] text-[#6c6e63] tnum font-mono hidden sm:inline">
+            <span className="text-xs text-[#6c6e63] tnum font-mono hidden sm:inline">
               ({executionTimeMs.toFixed(0)}ms)
             </span>
           )}
         </div>
 
         {/* Toolbar Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Density Toggle */}
-          <div className="inline-flex rounded-md bg-[#e5e7e0] border border-[#bfc1b7] p-0.5 text-xs text-[#4d4f46]">
+          <div className="inline-flex rounded-lg bg-[#e5e7e0] border border-[#bfc1b7] p-1 text-xs text-[#4d4f46]">
             <button
               type="button"
               onClick={() => setDensity('comfortable')}
-              className={`p-1.5 rounded transition-colors ${
-                density === 'comfortable' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7]' : 'hover:text-[#23251d]'
+              className={`p-1.5 rounded-md transition-colors ${
+                density === 'comfortable' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7] shadow-2xs' : 'hover:text-[#23251d]'
               }`}
-              title="Comfortable Density (44px)"
+              title="Comfortable Density"
             >
-              <Maximize2 className="h-3 w-3" />
+              <Maximize2 className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={() => setDensity('compact')}
-              className={`p-1.5 rounded transition-colors ${
-                density === 'compact' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7]' : 'hover:text-[#23251d]'
+              className={`p-1.5 rounded-md transition-colors ${
+                density === 'compact' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7] shadow-2xs' : 'hover:text-[#23251d]'
               }`}
-              title="Compact Density (32px)"
+              title="Compact Density"
             >
-              <Minimize2 className="h-3 w-3" />
+              <Minimize2 className="h-3.5 w-3.5" />
             </button>
           </div>
 
@@ -220,7 +223,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="h-10 px-4 text-xs font-bold text-[#23251d] whitespace-nowrap select-none"
+                    className="h-12 px-6 sm:px-8 text-xs font-bold text-[#23251d] whitespace-nowrap select-none"
                   >
                     {header.isPlaceholder
                       ? null
@@ -234,7 +237,7 @@ export const DataTable: React.FC<DataTableProps> = ({
           <tbody className="divide-y divide-[#dcdfd2]">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length || 1} className="py-12 text-center text-xs text-[#6c6e63]">
+                <td colSpan={columns.length || 1} className="py-16 text-center text-sm text-[#6c6e63]">
                   No rows returned from this query
                 </td>
               </tr>
@@ -261,7 +264,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
       {/* Table Pagination Footer */}
       {rows.length > 0 && (
-        <div className="h-12 px-4 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between text-xs text-[#4d4f46]">
+        <div className="h-14 px-6 sm:px-8 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between text-xs sm:text-sm text-[#4d4f46]">
           <div className="tnum">
             Showing{' '}
             <span className="font-bold text-[#23251d]">
@@ -277,24 +280,24 @@ export const DataTable: React.FC<DataTableProps> = ({
             of <span className="font-bold text-[#23251d]">{rows.length}</span> rows
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="p-1.5 rounded hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
+              className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
               title="Previous Page"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="px-2 font-bold text-[#23251d] tnum">
+            <span className="px-3 font-bold text-[#23251d] tnum">
               {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
             </span>
             <button
               type="button"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="p-1.5 rounded hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
+              className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
               title="Next Page"
             >
               <ChevronRight className="h-4 w-4" />

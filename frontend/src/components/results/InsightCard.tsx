@@ -30,37 +30,37 @@ export const InsightCard: React.FC<InsightCardProps> = ({
   if (!summary) return null;
 
   return (
-    <div className="w-full rounded-md bg-[#dceaf6] border border-[#2c84e0]/30 p-5 my-4 transition-colors">
+    <div className="w-full rounded-xl bg-[#dceaf6] border border-[#2c84e0]/30 p-6 sm:p-8 my-6 sm:my-8 shadow-sm transition-colors">
       {/* Header with Mascot Marginalia */}
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base select-none">💡</span>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg select-none">💡</span>
           <span className="text-xs font-bold text-[#1d4ed8] uppercase tracking-wider">
             AI Narrative Insight
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <HedgehogMascot pose="scientist" size={28} className="hidden sm:inline-block" />
+        <div className="flex items-center gap-3">
+          <HedgehogMascot pose="scientist" size={32} className="hidden sm:inline-block" />
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex items-center gap-1 text-xs text-[#4d4f46] hover:text-[#23251d] px-2 py-1 rounded hover:bg-white/60 transition-colors border border-transparent hover:border-[#bfc1b7]"
+            className="inline-flex items-center gap-1.5 text-xs text-[#4d4f46] hover:text-[#23251d] px-3.5 py-1.5 rounded-lg hover:bg-white/70 transition-colors border border-transparent hover:border-[#bfc1b7] shadow-2xs"
             title="Copy insight summary"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-[#2c8c66]" /> : <Copy className="h-3.5 w-3.5" />}
-            <span className="text-[11px] font-semibold">{copied ? 'Copied' : 'Copy'}</span>
+            <span className="text-xs font-semibold">{copied ? 'Copied' : 'Copy'}</span>
           </button>
         </div>
       </div>
 
-      {/* Summary Narrative Body */}
-      <div className="text-[15px] text-[#23251d] leading-relaxed font-normal mb-3.5">
+      {/* Summary Narrative Body (Constrained to max-w-prose, 65ch–75ch) */}
+      <div className="max-w-prose text-base text-[#23251d] leading-relaxed font-normal mb-5">
         {summary}
       </div>
 
       {/* Traceability Footer */}
-      <div className="pt-2.5 border-t border-[#2c84e0]/20 flex items-center justify-between text-xs text-[#4d4f46]">
+      <div className="pt-3.5 border-t border-[#2c84e0]/20 flex items-center justify-between text-xs text-[#4d4f46]">
         <span>
           Based on{' '}
           <strong className="text-[#23251d] tnum font-bold">
@@ -73,10 +73,10 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           <button
             type="button"
             onClick={onViewSql}
-            className="inline-flex items-center gap-1 font-semibold text-[#1078a3] hover:underline"
+            className="inline-flex items-center gap-1.5 font-bold text-[#1078a3] hover:underline"
           >
             <span>View Generated SQL</span>
-            <ExternalLink className="h-3 w-3" />
+            <ExternalLink className="h-3.5 w-3.5" />
           </button>
         )}
       </div>

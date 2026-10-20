@@ -99,23 +99,25 @@ code, pre, kbd, .font-mono {
   font-family: 'IBM Plex Mono', 'ui-monospace', 'Source Code Pro', monospace;
 }
 
-/* ── PostHog Flat Card Architecture (No drop shadows at rest) ────── */
+/* ── PostHog Flat & Soft Shadow Card Architecture ───────────────── */
 .posthog-card {
   background-color: var(--colors-surface-card);
   border: 1px solid var(--colors-hairline);
-  border-radius: 6px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(35, 37, 29, 0.05);
 }
 
 .posthog-card-doc {
   background-color: var(--colors-surface-doc);
   border: 1px solid var(--colors-hairline);
-  border-radius: 6px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(35, 37, 29, 0.05);
 }
 
 .posthog-card-soft {
   background-color: var(--colors-surface-soft);
   border: 1px solid var(--colors-hairline);
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 /* ── PostHog Yellow CTA Pill ─────────────────────────────────────── */
@@ -123,19 +125,21 @@ code, pre, kbd, .font-mono {
   background-color: var(--colors-primary);
   color: var(--colors-on-primary);
   font-weight: 700;
-  border-radius: 6px;
-  padding: 8px 16px;
-  height: 40px;
+  border-radius: 9999px;
+  padding: 10px 20px; /* px-5 py-2.5 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-size: 14px;
-  transition: background-color 150ms ease, transform 100ms ease;
+  line-height: 1.25;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
   user-select: none;
 }
 .posthog-button-primary:hover {
   background-color: var(--colors-primary-pressed);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
 }
 .posthog-button-primary:active {
   background-color: var(--colors-primary-active);
@@ -146,6 +150,7 @@ code, pre, kbd, .font-mono {
   color: var(--colors-ash);
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 /* Rounded pill variant for sticky navigation CTAs */
@@ -154,18 +159,20 @@ code, pre, kbd, .font-mono {
   color: var(--colors-on-primary);
   font-weight: 700;
   border-radius: 9999px;
-  padding: 8px 18px;
-  height: 38px;
+  padding: 10px 20px; /* px-5 py-2.5 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 13px;
-  transition: background-color 150ms ease, transform 100ms ease;
+  font-size: 14px;
+  line-height: 1.25;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
   user-select: none;
 }
 .posthog-button-primary-pill:hover {
   background-color: var(--colors-primary-pressed);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
 }
 .posthog-button-primary-pill:active {
   background-color: var(--colors-primary-active);
@@ -178,18 +185,19 @@ code, pre, kbd, .font-mono {
   color: var(--colors-ink);
   font-weight: 600;
   border: 1px solid var(--colors-hairline);
-  border-radius: 6px;
-  padding: 8px 16px;
-  height: 40px;
+  border-radius: 8px;
+  padding: 6px 14px; /* px-3.5 py-1.5 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 14px;
-  transition: background-color 150ms ease;
+  font-size: 13px;
+  line-height: 1.25;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 .posthog-button-secondary:hover {
   background-color: #dcdfd2;
+  border-color: var(--colors-ink);
 }
 
 /* ── PostHog Subtle Shimmer Animation ────────────────────────────── */

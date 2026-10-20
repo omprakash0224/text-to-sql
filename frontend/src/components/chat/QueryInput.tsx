@@ -90,16 +90,16 @@ export const QueryInput: React.FC<QueryInputProps> = ({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-3">
+    <div className="w-full max-w-3xl mx-auto space-y-4">
       {/* PostHog Pastel Blue Stepper Banner during Query Execution */}
       {isRunning && (
-        <div className="rounded-md bg-[#dceaf6] border border-[#2c84e0]/30 p-4 animate-in fade-in-50 duration-200">
-          <div className="flex items-center gap-2 mb-3 text-xs font-bold text-[#1d4ed8]">
-            <span className="text-sm">⚡</span>
+        <div className="rounded-xl bg-[#dceaf6] border border-[#2c84e0]/30 p-6 sm:p-7 shadow-sm animate-in fade-in-50 duration-200">
+          <div className="flex items-center gap-2.5 mb-4 text-xs sm:text-sm font-bold text-[#1d4ed8]">
+            <span className="text-base">⚡</span>
             <span>Orchestrating Text-to-SQL with Groq Llama 3.3 70B & AST Guardrails...</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {steps.map((step) => {
               const isCompleted = step.status === 'completed';
               const isActive = step.status === 'active';
@@ -108,7 +108,7 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center gap-2.5 text-xs transition-colors ${
+                  className={`flex items-center gap-3 text-xs sm:text-sm transition-colors ${
                     isBlocked
                       ? 'text-[#cd4239] font-bold'
                       : isCompleted
@@ -119,17 +119,17 @@ export const QueryInput: React.FC<QueryInputProps> = ({
                   }`}
                 >
                   {isBlocked ? (
-                    <ShieldAlert className="h-4 w-4 text-[#cd4239] shrink-0" />
+                    <ShieldAlert className="h-4.5 w-4.5 text-[#cd4239] shrink-0" />
                   ) : isCompleted ? (
                     <CheckCircle2
-                      className={`h-4 w-4 shrink-0 ${
+                      className={`h-4.5 w-4.5 shrink-0 ${
                         step.id === 'validating_guardrails' ? 'text-[#2c8c66]' : 'text-[#4d4f46]'
                       }`}
                     />
                   ) : isActive ? (
-                    <Loader2 className="h-4 w-4 text-[#1d4ed8] animate-spin shrink-0" />
+                    <Loader2 className="h-4.5 w-4.5 text-[#1d4ed8] animate-spin shrink-0" />
                   ) : (
-                    <div className="h-4 w-4 rounded-full border border-[#bfc1b7] shrink-0" />
+                    <div className="h-4.5 w-4.5 rounded-full border border-[#bfc1b7] shrink-0" />
                   )}
                   <span>{step.label}</span>
                 </div>
@@ -141,9 +141,9 @@ export const QueryInput: React.FC<QueryInputProps> = ({
 
       {/* Main Prompt Input Box (White Card on Cream) */}
       <div
-        className={`relative rounded-md bg-white border transition-all ${
+        className={`relative rounded-xl bg-white border shadow-sm transition-all ${
           isFocused
-            ? 'border-[#23251d] ring-2 ring-[#3b82f6]/40'
+            ? 'border-[#23251d] ring-2 ring-[#3b82f6]/40 shadow-md'
             : 'border-[#bfc1b7] hover:border-[#23251d]'
         }`}
       >
@@ -161,35 +161,35 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               ? `Ask anything about ${activeConnection.name}...`
               : 'Connect a database first to start querying in plain English...'
           }
-          className="w-full px-4 pt-3.5 pb-2 bg-transparent text-sm text-[#23251d] placeholder-[#6c6e63] resize-none focus:outline-none leading-relaxed disabled:opacity-60"
+          className="w-full px-5 pt-4 pb-3 bg-transparent text-sm sm:text-base text-[#23251d] placeholder-[#6c6e63] resize-none focus:outline-none leading-relaxed disabled:opacity-60"
         />
 
         {/* Input Footer Row */}
-        <div className="px-4 py-2.5 flex items-center justify-between border-t border-[#dcdfd2] text-xs bg-[#fcfcfa] rounded-b-md">
+        <div className="px-5 py-3 flex items-center justify-between border-t border-[#dcdfd2] text-xs bg-[#fcfcfa] rounded-b-xl">
           {/* Database Chip Selector */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {activeConnection ? (
               <button
                 type="button"
                 onClick={onOpenConnectModal}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#eeefe9] hover:bg-[#dcdfd2] text-[#23251d] font-semibold transition-colors cursor-pointer border border-[#bfc1b7]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#eeefe9] hover:bg-[#dcdfd2] text-[#23251d] font-semibold transition-colors cursor-pointer border border-[#bfc1b7]"
                 title="Change or reconnect database"
               >
-                <Database className="h-3 w-3 text-[#1078a3]" />
-                <span className="truncate max-w-[150px] font-mono text-[11px]">{activeConnection.name}</span>
+                <Database className="h-3.5 w-3.5 text-[#1078a3]" />
+                <span className="truncate max-w-[150px] font-mono text-xs">{activeConnection.name}</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={onOpenConnectModal}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#dceaf6] hover:bg-[#c3e0fa] text-[#1d4ed8] font-bold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#dceaf6] hover:bg-[#c3e0fa] text-[#1d4ed8] font-bold transition-colors"
               >
-                <Database className="h-3 w-3" />
+                <Database className="h-3.5 w-3.5" />
                 <span>Connect Database</span>
               </button>
             )}
 
-            <span className="hidden sm:inline text-[11px] text-[#6c6e63]">
+            <span className="hidden sm:inline text-xs text-[#6c6e63]">
               ↵ to ask · ⇧↵ new line
             </span>
           </div>
@@ -200,20 +200,20 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               <button
                 type="button"
                 onClick={onCancel}
-                className="h-8 w-8 rounded-md bg-[#e5e7e0] hover:bg-[#f7d6d3] text-[#cd4239] flex items-center justify-center transition-colors"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-[#e5e7e0] hover:bg-[#f7d6d3] text-[#cd4239] flex items-center justify-center transition-colors shadow-xs"
                 title="Cancel query execution"
               >
-                <Square className="h-3.5 w-3.5 fill-current" />
+                <Square className="h-4 w-4 fill-current" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleSubmit()}
                 disabled={!prompt.trim()}
-                className="h-9 w-9 rounded-full bg-[#f7a501] hover:bg-[#dd9001] active:bg-[#b17816] disabled:bg-[#e5e7e0] disabled:text-[#9b9c92] text-[#23251d] flex items-center justify-center transition-all disabled:opacity-50 font-bold"
+                className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-[#f7a501] hover:bg-[#dd9001] active:bg-[#b17816] disabled:bg-[#e5e7e0] disabled:text-[#9b9c92] text-[#23251d] flex items-center justify-center transition-all disabled:opacity-50 font-bold shadow-xs hover:shadow-sm"
                 title="Ask question"
               >
-                <ArrowUp className="h-4 w-4 stroke-[2.5]" />
+                <ArrowUp className="h-5 w-5 stroke-[2.5]" />
               </button>
             )}
           </div>
@@ -222,16 +222,16 @@ export const QueryInput: React.FC<QueryInputProps> = ({
 
       {/* Suggestion Chips (PostHog Pill-Tabs) */}
       {!isRunning && (
-        <div className="flex items-center flex-wrap gap-2 pt-1">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#6c6e63] uppercase tracking-wider pl-1">
-            <Sparkles className="h-3 w-3 text-[#f7a501]" /> Suggestions:
+        <div className="flex items-center flex-wrap gap-2.5 pt-1.5">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c6e63] uppercase tracking-wider pl-1">
+            <Sparkles className="h-3.5 w-3.5 text-[#f7a501]" /> Suggestions:
           </span>
           {DEFAULT_SUGGESTIONS.map((sug) => (
             <button
               key={sug}
               type="button"
               onClick={() => handleSelectSuggestion(sug)}
-              className="px-3 py-1 text-xs rounded-full bg-white hover:bg-[#eeefe9] border border-[#bfc1b7] text-[#23251d] hover:border-[#23251d] transition-colors truncate max-w-full text-left font-medium"
+              className="px-3.5 py-1.5 text-xs rounded-full bg-white hover:bg-[#eeefe9] border border-[#bfc1b7] text-[#23251d] hover:border-[#23251d] transition-all truncate max-w-full text-left font-medium shadow-2xs hover:shadow-xs"
             >
               {sug}
             </button>

@@ -126,24 +126,26 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
   };
 
   return (
-    <div className="w-full rounded-md bg-white border border-[#bfc1b7] p-6 my-4 transition-all">
+    <div className="w-full rounded-xl bg-white border border-[#bfc1b7] p-6 sm:p-8 my-6 sm:my-8 shadow-sm transition-all">
       {/* Header & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-[#dcdfd2]">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#dcdfd2]">
         <div>
-          <h3 className="text-base font-bold text-[#23251d] tracking-tight">
+          <h3 className="text-base sm:text-lg font-bold text-[#23251d] tracking-tight">
             {config?.title || `${yKey.replace(/_/g, ' ').toUpperCase()} by ${xKey.replace(/_/g, ' ')}`}
           </h3>
-          <p className="text-xs text-[#6c6e63]">Visualized query results from database session</p>
+          <p className="text-xs sm:text-sm text-[#4d4f46] leading-relaxed">
+            Visualized query results from active database session
+          </p>
         </div>
 
         {/* Chart Type Segmented Switcher */}
-        <div className="flex items-center gap-1 bg-[#e5e7e0] p-1 rounded-md border border-[#bfc1b7]">
+        <div className="flex items-center gap-1.5 bg-[#e5e7e0] p-1.5 rounded-lg border border-[#bfc1b7]">
           <button
             type="button"
             onClick={() => setActiveChartType('bar')}
-            className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-semibold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-md text-xs flex items-center gap-1.5 font-semibold transition-all ${
               activeChartType === 'bar'
-                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7]'
+                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7] font-bold'
                 : 'text-[#4d4f46] hover:text-[#23251d]'
             }`}
             title="Bar Chart"
@@ -155,9 +157,9 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
           <button
             type="button"
             onClick={() => setActiveChartType('line')}
-            className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-semibold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-md text-xs flex items-center gap-1.5 font-semibold transition-all ${
               activeChartType === 'line'
-                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7]'
+                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7] font-bold'
                 : 'text-[#4d4f46] hover:text-[#23251d]'
             }`}
             title="Line Chart"
@@ -169,9 +171,9 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
           <button
             type="button"
             onClick={() => setActiveChartType('pie')}
-            className={`px-2.5 py-1 rounded text-xs flex items-center gap-1 font-semibold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-md text-xs flex items-center gap-1.5 font-semibold transition-all ${
               activeChartType === 'pie'
-                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7]'
+                ? 'bg-white text-[#23251d] shadow-2xs border border-[#bfc1b7] font-bold'
                 : 'text-[#4d4f46] hover:text-[#23251d]'
             }`}
             title="Pie / Donut Chart"
@@ -182,8 +184,8 @@ export const ChartViewer: React.FC<ChartViewerProps> = ({
         </div>
       </div>
 
-      {/* Render Chart Area */}
-      <div className="h-72 w-full">
+      {/* Render Chart Area (Responsive, min-h instead of fixed restrictive container) */}
+      <div className="min-h-[340px] h-[340px] sm:h-[400px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           {activeChartType === 'line' ? (
             <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>

@@ -24,24 +24,24 @@ export const CautionNotice: React.FC<CautionNoticeProps> = ({
   return (
     <div
       role="status"
-      className={`w-full rounded-md bg-[#fffbeb] border border-[#f7a501] border-l-4 border-l-[#f7a501] p-4 my-3 transition-colors ${className}`}
+      className={`w-full rounded-xl bg-[#fffbeb] border border-[#f7a501] border-l-4 border-l-[#f7a501] p-6 sm:p-7 my-6 shadow-sm transition-colors ${className}`}
     >
-      <div className="flex items-start gap-3">
-        <span className="text-base select-none mt-0.5">⚠️</span>
+      <div className="flex items-start gap-4">
+        <span className="text-xl select-none mt-0.5">⚠️</span>
 
         <div className="flex-1">
-          <h4 className="text-sm font-bold text-[#23251d] mb-0.5">{title}</h4>
-          <p className="text-xs text-[#4d4f46] leading-relaxed">{message}</p>
+          <h4 className="text-sm sm:text-base font-bold text-[#23251d] mb-1">{title}</h4>
+          <p className="max-w-prose text-xs sm:text-sm text-[#4d4f46] leading-relaxed">{message}</p>
         </div>
 
         {actionText && onAction && (
           <button
             type="button"
             onClick={onAction}
-            className="text-xs font-semibold text-[#1078a3] hover:underline shrink-0 flex items-center gap-1"
+            className="text-xs sm:text-sm font-bold text-[#1078a3] hover:underline shrink-0 flex items-center gap-1.5"
           >
             <span>{actionText}</span>
-            <Info className="h-3 w-3" />
+            <Info className="h-4 w-4" />
           </button>
         )}
       </div>
