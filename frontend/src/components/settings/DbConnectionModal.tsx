@@ -1,22 +1,24 @@
 /**
- * DataSpeak — PostHog Database Connection Modal (DbConnectionModal.tsx)
- * Features one-click presets for Demo SQLite, PostgreSQL, Neon, and Supabase.
- * Uses PostHog yellow primary CTA pill and clear read-only guidance.
+ * DataSpeak — Database Connection Modal (DbConnectionModal.tsx)
+ * Calm Analytics Workspace (docs/ui-example/code.html)
+ * Features Engine Selector tabs (PostgreSQL, MySQL 8.0, SQLite / Turso),
+ * one-click cloud provider chips (Neon Cloud, Supabase, AWS RDS),
+ * connection URI with show/hide password toggle, SSL enforcement verification,
+ * and test latency + schema reflection triggers.
  */
 
 import React, { useState } from 'react';
 import {
   X,
   Database,
-  Server,
-  Zap,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Activity,
-  Layers,
+  Lock,
+  Check,
+  Eye,
+  EyeOff,
+  RefreshCw,
   Sparkles,
+  Server,
+  Layers,
 } from 'lucide-react';
 import { connectionService } from '../../services/api';
 import type { ConnectionParams, ConnectionTestResponse, DatabaseDialect } from '../../types';
@@ -27,64 +29,54 @@ interface DbConnectionModalProps {
   onConnected: (params: ConnectionParams) => Promise<void>;
 }
 
-type PresetType = 'sqlite_sample' | 'postgres' | 'neon' | 'supabase';
-
 export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
   isOpen,
   onClose,
   onConnected,
 }) => {
-  const [selectedPreset, setSelectedPreset] = useState<PresetType>('sqlite_sample');
-  const [name, setName] = useState('Sample E-Commerce Database');
-  const [dialect, setDialect] = useState<DatabaseDialect>('sqlite');
-  const [host, setHost] = useState('');
-  const [port, setPort] = useState<number>(5432);
-  const [database, setDatabase] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [ssl, setSsl] = useState(true);
-  const [connectionString, setConnectionString] = useState('');
+  const [selectedEngine, setSelectedEngine] = useState<DatabaseDialect>('postgresql');
+  const [connectionUri, setConnectionUri] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [isDemoSqlite, setIsDemoSqlite] = useState(false);
 
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<ConnectionTestResponse | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [connectError, setConnectError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSelectPreset = (preset: PresetType) => {
-    setSelectedPreset(preset);
+  const handleSelectEngine = (engine: DatabaseDialect) => {
+    setSelectedEngine(engine);
+    setIsDemoSqlite(false);
     setTestResult(null);
-    setConnectError(null);
+    setErrorMessage(null);
+  };
 
-    switch (preset) {
-      case 'sqlite_sample':
-        setName('Sample E-Commerce Database');
-        setDialect('sqlite');
-        break;
-      case 'postgres':
-        setName('Production PostgreSQL');
-        setDialect('postgresql');
-        setPort(5432);
-        setSsl(false);
-        break;
-      case 'neon':
-        setName('Neon Serverless DB');
-        setDialect('postgresql');
-        setPort(5432);
-        setSsl(true);
-        break;
-      case 'supabase':
-        setName('Supabase DB');
-        setDialect('postgresql');
-        setPort(6543);
-        setSsl(true);
-        break;
+  const handleSelectProviderPreset = (provider: 'neon' | 'supabase' | 'rds' | 'sample') => {
+    setSelectedEngine(provider === 'sample' ? 'sqlite' : 'postgresql');
+    setIsDemoSqlite(provider === 'sample');
+    setTestResult(null);
+    setErrorMessage(null);
+
+    if (provider === 'neon') {
+      setName('Neon Cloud Postgres');
+      setConnectionUri('postgresql://<user>:<password>@<ep-endpoint>.us-east-2.aws.neon.tech/neondb?sslmode=require');
+    } else if (provider === 'supabase') {
+      setName('Supabase DB (Pooled)');
+      setConnectionUri('postgresql://postgres.<project-ref>:<password>@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require');
+    } else if (provider === 'rds') {
+      setName('AWS RDS PostgreSQL');
+      setConnectionUri('postgresql://<user>:<password>@<rds-instance>.us-east-1.rds.amazonaws.com:5432/<dbname>?sslmode=require');
+    } else if (provider === 'sample') {
+      setName('Demo E-Commerce Database');
+      setConnectionUri('sqlite:///ecommerce.db');
     }
   };
 
-  const buildConnectionPayload = (): ConnectionParams => {
-    if (selectedPreset === 'sqlite_sample') {
+  const buildPayload = (): ConnectionParams => {
+    if (isDemoSqlite) {
       return {
         name,
         dialect: 'sqlite',
@@ -92,33 +84,20 @@ export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
       };
     }
 
-    if (connectionString.trim()) {
-      return {
-        name: name.trim() || `${dialect} Database`,
-        dialect,
-        connection_string: connectionString.trim(),
-        ssl,
-      };
-    }
-
     return {
-      name: name.trim() || `${dialect} Database`,
-      dialect,
-      host: host.trim(),
-      port: Number(port) || 5432,
-      database: database.trim(),
-      username: username.trim(),
-      password,
-      ssl,
+      name: name.trim() || `${selectedEngine} Database`,
+      dialect: selectedEngine,
+      connection_string: connectionUri.trim(),
+      ssl: true,
     };
   };
 
-  const handleTestConnection = async () => {
+  const handleTestLatency = async () => {
     setIsTesting(true);
     setTestResult(null);
-    setConnectError(null);
+    setErrorMessage(null);
     try {
-      const payload = buildConnectionPayload();
+      const payload = buildPayload();
       const res = await connectionService.test(payload);
       setTestResult(res);
     } catch (err: unknown) {
@@ -134,308 +113,255 @@ export const DbConnectionModal: React.FC<DbConnectionModalProps> = ({
     }
   };
 
-  const handleConnect = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsConnecting(true);
-    setConnectError(null);
+    setIsSubmitting(true);
+    setErrorMessage(null);
     try {
-      const payload = buildConnectionPayload();
+      const payload = buildPayload();
       await onConnected(payload);
       onClose();
     } catch (err: unknown) {
-      setConnectError(err instanceof Error ? err.message : 'Failed to connect and index database.');
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Failed to connect and index database schema.'
+      );
     } finally {
-      setIsConnecting(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-white rounded-2xl border border-[#bfc1b7] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Header with standard 8-pt padding */}
-        <div className="px-6 sm:px-8 py-5 border-b border-[#bfc1b7] flex items-center justify-between bg-[#eeefe9] shrink-0">
-          <div className="flex items-center gap-3.5">
-            <div className="h-10 w-10 rounded-xl bg-white text-[#1078a3] flex items-center justify-center border border-[#bfc1b7] shadow-xs">
-              <Database className="h-5 w-5" />
+    <div className="fixed inset-0 bg-[#0d0d0d]/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in-50 duration-150">
+      <div className="w-full max-w-lg rounded-lg bg-white border border-[#dddddd] p-6 shadow-xl flex flex-col gap-5 relative">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-[#e6e6e6]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-md bg-[#eaf3fc] border border-[#c9e0f6] flex items-center justify-center text-[#0075de]">
+              <Database className="h-4.5 w-4.5" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-[#23251d] tracking-tight">Connect Database</h2>
-              <p className="text-xs sm:text-sm text-[#4d4f46]">Select a ready-to-query preset or provide credentials</p>
+            <div className="flex flex-col">
+              <h3 className="font-semibold text-[16px] text-[#0d0d0d]">
+                Add / Switch Database Connection
+              </h3>
+              <span className="text-[11px] text-[#615d59] uppercase tracking-wider font-medium">
+                AST Read-Only Guardrails Enforced
+              </span>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-[#6c6e63] hover:text-[#23251d] hover:bg-[#e5e7e0] transition-colors"
+            className="text-[#615d59] hover:text-[#0d0d0d] p-1 rounded hover:bg-[#efeeec] transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Content Body with generous 24px-32px padding */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-7">
-          {/* Preset Selector Grid */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6c6e63] mb-3">
-              Connection Preset
+        {/* Engine Selector Tabs */}
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-md bg-[#efeeec] border border-[#e6e6e6]">
+          <button
+            type="button"
+            onClick={() => handleSelectEngine('postgresql')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-sm text-[13px] transition-all cursor-pointer ${
+              selectedEngine === 'postgresql' && !isDemoSqlite
+                ? 'bg-white text-[#0d0d0d] font-semibold shadow-2xs border border-[#e6e6e6]'
+                : 'text-[#31302e] hover:text-[#0d0d0d]'
+            }`}
+          >
+            <Database className="h-3.5 w-3.5 text-[#0075de]" />
+            <span>PostgreSQL</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectEngine('mysql')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-sm text-[13px] transition-all cursor-pointer ${
+              selectedEngine === 'mysql'
+                ? 'bg-white text-[#0d0d0d] font-semibold shadow-2xs border border-[#e6e6e6]'
+                : 'text-[#31302e] hover:text-[#0d0d0d]'
+            }`}
+          >
+            <Server className="h-3.5 w-3.5 text-[#f7a501]" />
+            <span>MySQL 8.0</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectEngine('sqlite')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-sm text-[13px] transition-all cursor-pointer ${
+              selectedEngine === 'sqlite' || isDemoSqlite
+                ? 'bg-white text-[#0d0d0d] font-semibold shadow-2xs border border-[#e6e6e6]'
+                : 'text-[#31302e] hover:text-[#0d0d0d]'
+            }`}
+          >
+            <Layers className="h-3.5 w-3.5 text-[#2a9d99]" />
+            <span>SQLite / Turso</span>
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Supported Providers Chips */}
+          <div className="flex items-center gap-2 text-[12px] flex-wrap">
+            <span className="text-[#615d59]">Supported Providers:</span>
+            <button
+              type="button"
+              onClick={() => handleSelectProviderPreset('neon')}
+              className="px-2 py-0.5 rounded bg-[#efeeec] hover:bg-[#e6e6e6] border border-[#e6e6e6] text-[#0d0d0d] font-mono text-[11px] cursor-pointer"
+            >
+              Neon Cloud
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectProviderPreset('supabase')}
+              className="px-2 py-0.5 rounded bg-[#efeeec] hover:bg-[#e6e6e6] border border-[#e6e6e6] text-[#0d0d0d] font-mono text-[11px] cursor-pointer"
+            >
+              Supabase
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectProviderPreset('rds')}
+              className="px-2 py-0.5 rounded bg-[#efeeec] hover:bg-[#e6e6e6] border border-[#e6e6e6] text-[#0d0d0d] font-mono text-[11px] cursor-pointer"
+            >
+              AWS RDS
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectProviderPreset('sample')}
+              className="px-2 py-0.5 rounded bg-[#eaf3fc] hover:bg-[#d5e7f9] border border-[#c9e0f6] text-[#0075de] font-mono text-[11px] font-semibold cursor-pointer"
+            >
+              Demo SQLite
+            </button>
+          </div>
+
+          {/* Connection Name */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-[#615d59] uppercase tracking-wider">
+              Connection Name
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
-              <button
-                type="button"
-                onClick={() => handleSelectPreset('sqlite_sample')}
-                className={`p-4 sm:p-5 rounded-xl border text-left transition-all ${
-                  selectedPreset === 'sqlite_sample'
-                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501] shadow-xs'
-                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1.5">
-                  <Sparkles className="h-4 w-4 text-[#f7a501]" />
-                  <span>Demo SQLite</span>
-                </div>
-                <p className="text-xs text-[#6c6e63] leading-relaxed">Instant e-commerce dataset (6 tables)</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset('postgres')}
-                className={`p-4 sm:p-5 rounded-xl border text-left transition-all ${
-                  selectedPreset === 'postgres'
-                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501] shadow-xs'
-                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1.5">
-                  <Server className="h-4 w-4 text-[#1078a3]" />
-                  <span>PostgreSQL</span>
-                </div>
-                <p className="text-xs text-[#6c6e63] leading-relaxed">Standard relational Postgres or AWS RDS</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset('neon')}
-                className={`p-4 sm:p-5 rounded-xl border text-left transition-all ${
-                  selectedPreset === 'neon'
-                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501] shadow-xs'
-                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1.5">
-                  <Zap className="h-4 w-4 text-[#f7a501]" />
-                  <span>Neon</span>
-                </div>
-                <p className="text-xs text-[#6c6e63] leading-relaxed">Serverless pooled cloud database</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset('supabase')}
-                className={`p-4 sm:p-5 rounded-xl border text-left transition-all ${
-                  selectedPreset === 'supabase'
-                    ? 'border-[#23251d] bg-[#fcfcfa] ring-2 ring-[#f7a501] shadow-xs'
-                    : 'border-[#bfc1b7] bg-white hover:bg-[#eeefe9]'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#23251d] mb-1.5">
-                  <Layers className="h-4 w-4 text-[#7c44a6]" />
-                  <span>Supabase</span>
-                </div>
-                <p className="text-xs text-[#6c6e63] leading-relaxed">Port 6543 transaction pooler</p>
-              </button>
-            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-white border border-[#dddddd] text-[#0d0d0d] text-[13px] px-3 py-1.5 rounded outline-none focus:border-[#0075de] focus:ring-1 focus:ring-[#0075de] transition-all"
+              placeholder={
+                selectedEngine === 'postgresql'
+                  ? 'e.g. Neon Analytics Database'
+                  : selectedEngine === 'mysql'
+                  ? 'e.g. Production MySQL 8.0'
+                  : 'e.g. SQLite Local Database'
+              }
+            />
           </div>
 
-          {/* Read-Only Safety Callout (Pastel Green Banner) */}
-          <div className="rounded-xl bg-[#d9eddf] border border-[#2c8c66]/40 p-5 sm:p-6 flex items-start gap-3.5 shadow-xs">
-            <ShieldCheck className="h-5 w-5 text-[#2c8c66] shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-[#23251d] leading-relaxed max-w-prose">
-              <span className="font-bold text-[#17543b]">Zero-Trust Read-Only Protection: </span>
-              Create a read-only database user for DataSpeak. In addition, all queries are parsed into
-              Abstract Syntax Trees (AST) via sqlglot to strictly reject mutation or schema-altering commands.
-            </div>
-          </div>
-
-          {/* Form Fields */}
-          {selectedPreset === 'sqlite_sample' ? (
-            <div className="p-5 sm:p-6 rounded-xl border border-[#bfc1b7] bg-[#eeefe9] text-xs sm:text-sm text-[#33342d] space-y-3">
-              <div className="font-bold text-[#23251d] text-sm">Demo SQLite E-Commerce Database:</div>
-              <p className="text-[#4d4f46] leading-relaxed">
-                Includes 6 interrelated tables with realistic prices, foreign keys, and customer reviews:
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {['customers', 'categories', 'products', 'orders', 'order_items', 'reviews'].map((t) => (
-                  <span key={t} className="px-3 py-1 rounded-lg bg-white border border-[#bfc1b7] font-mono text-xs text-[#23251d] font-semibold shadow-2xs">
-                    {t}
-                  </span>
-                ))}
+          {/* Connection URI or Demo Mode */}
+          {isDemoSqlite ? (
+            <div className="p-3.5 rounded-md bg-[#eaf3fc] border border-[#c9e0f6] text-[13px] text-[#0d0d0d] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#0075de]" />
+                <span>Pre-seeded SQLite e-commerce dataset (6 relational tables ready)</span>
               </div>
             </div>
           ) : (
-            <div className="space-y-5">
-              <div>
-                <label className="block text-xs font-bold text-[#33342d] mb-1.5">Connection Name</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold text-[#615d59] uppercase tracking-wider">
+                {selectedEngine === 'postgresql' ? 'Postgres Connection URI' : 'Connection URI'}
+              </label>
+              <div className="relative">
                 <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Analytics Production"
-                  className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d] focus:ring-1 focus:ring-[#23251d]"
+                  type={showPassword ? 'text' : 'password'}
+                  value={connectionUri}
+                  onChange={(e) => setConnectionUri(e.target.value)}
+                  className="w-full bg-white border border-[#dddddd] text-[#0d0d0d] font-mono text-[12px] sm:text-[13px] px-3 py-2 rounded outline-none pr-10 focus:border-[#0075de] focus:ring-1 focus:ring-[#0075de] transition-all"
+                  placeholder={
+                    selectedEngine === 'postgresql'
+                      ? 'postgresql://user:password@host:port/dbname?sslmode=require'
+                      : selectedEngine === 'mysql'
+                      ? 'mysql://user:password@127.0.0.1:3306/dbname'
+                      : 'sqlite:///path/to/database.db'
+                  }
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-2 text-[#615d59] hover:text-[#0d0d0d] cursor-pointer"
+                  title="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#33342d] mb-1.5">Connection String (Optional)</label>
-                <input
-                  type="text"
-                  value={connectionString}
-                  onChange={(e) => setConnectionString(e.target.value)}
-                  placeholder="postgresql://user:password@host:port/dbname?sslmode=require"
-                  className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg font-mono text-xs focus:outline-none focus:border-[#23251d] focus:ring-1 focus:ring-[#23251d]"
-                />
-                <p className="text-xs text-[#6c6e63] mt-1.5 leading-relaxed">Overrides individual host/port fields if provided.</p>
-              </div>
-
-              {!connectionString && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-[#33342d] mb-1.5">Host</label>
-                    <input
-                      type="text"
-                      value={host}
-                      onChange={(e) => setHost(e.target.value)}
-                      placeholder="db.example.com or localhost"
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[#33342d] mb-1.5">Port</label>
-                    <input
-                      type="number"
-                      value={port}
-                      onChange={(e) => setPort(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#33342d] mb-1.5">Database Name</label>
-                    <input
-                      type="text"
-                      value={database}
-                      onChange={(e) => setDatabase(e.target.value)}
-                      placeholder="main"
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#33342d] mb-1.5">Username</label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="readonly_user"
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#33342d] mb-1.5">Password</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-[#bfc1b7] rounded-lg focus:outline-none focus:border-[#23251d]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2.5 pt-1">
-                <input
-                  type="checkbox"
-                  id="ssl_toggle"
-                  checked={ssl}
-                  onChange={(e) => setSsl(e.target.checked)}
-                  className="h-4.5 w-4.5 rounded text-[#f7a501] focus:ring-[#f7a501]"
-                />
-                <label htmlFor="ssl_toggle" className="text-xs sm:text-sm text-[#33342d] font-semibold cursor-pointer">
-                  Enforce SSL/TLS encryption (recommended for Neon & Supabase)
-                </label>
-              </div>
+              <span className="text-[11px] text-[#615d59]">
+                Supports pooler URIs (`pgbouncer=true`). Passwords encrypted at rest.
+              </span>
             </div>
           )}
 
-          {/* Live Test Feedback */}
+          {/* SSL Mode & Read-only enforcement indicator */}
+          <div className="flex items-center justify-between p-3 rounded-md bg-[#f6f5f4] border border-[#e6e6e6]">
+            <div className="flex items-center gap-2.5">
+              <Lock className="h-4 w-4 text-[#2c8c66]" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-[#0d0d0d]">SSL Enforcement</span>
+                <span className="text-[11px] text-[#615d59]">require / verify-full</span>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#d9eddf] text-[#17543b] text-[11px] font-semibold border border-[#2c8c66]/30">
+              <Check className="h-3 w-3 text-[#2c8c66]" /> Enforced
+            </span>
+          </div>
+
+          {/* Test connection output if ran */}
           {testResult && (
             <div
-              className={`p-4 sm:p-5 rounded-xl border text-xs sm:text-sm flex items-start gap-3 shadow-xs ${
+              className={`p-3 rounded-md text-[12px] flex items-center justify-between ${
                 testResult.success
-                  ? 'bg-[#d9eddf] border-[#2c8c66] text-[#17543b]'
-                  : 'bg-[#f7d6d3] border-[#cd4239] text-[#86241d]'
+                  ? 'bg-[#d9eddf] text-[#17543b] border border-[#2c8c66]/30'
+                  : 'bg-[#f7d6d3] text-[#86241d] border border-[#cd4239]/30'
               }`}
             >
-              {testResult.success ? (
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-[#2c8c66] mt-0.5" />
-              ) : (
-                <AlertCircle className="h-5 w-5 shrink-0 text-[#cd4239] mt-0.5" />
+              <span>{testResult.message}</span>
+              {testResult.latency_ms && (
+                <span className="font-mono font-bold">{testResult.latency_ms}ms</span>
               )}
-              <div className="flex-1">
-                <div className="font-bold leading-snug">{testResult.message}</div>
-                {testResult.latency_ms !== undefined && (
-                  <div className="mt-2 flex items-center gap-4 text-xs opacity-90 font-mono">
-                    <span className="flex items-center gap-1.5">
-                      <Activity className="h-3.5 w-3.5" /> Latency: {testResult.latency_ms.toFixed(1)}ms
-                    </span>
-                    {testResult.database_version && <span>Version: {testResult.database_version}</span>}
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
-          {connectError && (
-            <div className="p-4 rounded-xl bg-[#f7d6d3] border border-[#cd4239] text-[#86241d] text-xs sm:text-sm flex items-center gap-2.5 shadow-xs">
-              <AlertCircle className="h-5 w-5 shrink-0" />
-              <span className="font-semibold leading-relaxed">{connectError}</span>
+          {errorMessage && (
+            <div className="p-3 rounded-md bg-[#f7d6d3] text-[#86241d] border border-[#cd4239]/30 text-[12px]">
+              {errorMessage}
             </div>
           )}
-        </div>
 
-        {/* Modal Footer with standard 8-pt padding */}
-        <div className="px-6 sm:px-8 py-5 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between shrink-0">
-          <button
-            type="button"
-            onClick={handleTestConnection}
-            disabled={isTesting || isConnecting}
-            className="posthog-button-secondary text-xs sm:text-sm font-semibold"
-          >
-            {isTesting && <Loader2 className="h-4 w-4 animate-spin text-[#f7a501]" />}
-            <span>Test Connection</span>
-          </button>
+          {/* Modal Footer */}
+          <div className="flex items-center justify-between pt-2 border-t border-[#e6e6e6]">
+            {!isDemoSqlite ? (
+              <button
+                type="button"
+                onClick={handleTestLatency}
+                disabled={isTesting}
+                className="px-3 py-1.5 text-[12px] text-[#31302e] hover:text-[#0d0d0d] rounded border border-[#dddddd] hover:bg-[#f8fafc] transition-colors cursor-pointer"
+              >
+                {isTesting ? 'Testing...' : 'Test Latency'}
+              </button>
+            ) : <div />}
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isConnecting}
-              className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg text-[#4d4f46] hover:bg-[#e5e7e0] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleConnect}
-              disabled={isConnecting}
-              className="posthog-button-primary text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm"
-            >
-              {isConnecting && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span>{selectedPreset === 'sqlite_sample' ? 'Load Sample Database' : 'Connect & Index'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-3.5 py-1.5 rounded-md bg-white border border-[#dddddd] text-[#0d0d0d] hover:bg-[#f8fafc] transition-colors text-[13px] font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#0075de] hover:bg-[#005bab] text-white transition-colors text-[13px] font-medium shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
+                <span>{isSubmitting ? 'Reflecting...' : 'Save & Reflect Schema'}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

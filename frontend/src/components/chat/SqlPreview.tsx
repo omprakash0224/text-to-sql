@@ -1,33 +1,28 @@
 /**
- * DataSpeak — PostHog Transparent SQL Preview (SqlPreview.tsx)
- * Deep olive-charcoal (#23251d) code island with white text, line numbers,
- * read-only AST verification chip, copy action, and terminal mascot marginalia.
+ * DataSpeak — Generated SQL Preview (SqlPreview.tsx)
+ * Calm Analytics Workspace (docs/ui-example/code1.html)
+ * PostHog dark olive-charcoal (#23251d) card with JetBrains Mono,
+ * syntax highlighting, read-only safety verified chip, execution stats,
+ * and referenced tables chips.
  */
 
 import React, { useState } from 'react';
-import {
-  Code,
-  Copy,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  ShieldCheck,
-  Table as TableIcon,
-} from 'lucide-react';
-import { HedgehogMascot } from '../common/HedgehogMascot';
+import { Copy, Check, ShieldCheck } from 'lucide-react';
 
 interface SqlPreviewProps {
   sql: string;
   dialect?: string;
   isReadonlyVerified?: boolean;
+  executionTimeMs?: number;
+  modelName?: string;
 }
 
 export const SqlPreview: React.FC<SqlPreviewProps> = ({
   sql,
-  dialect = 'sqlite',
   isReadonlyVerified = true,
+  executionTimeMs = 42,
+  modelName = 'Llama 3.3 70B via Groq',
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -38,99 +33,179 @@ export const SqlPreview: React.FC<SqlPreviewProps> = ({
 
   if (!sql) return null;
 
-  const lines = sql.trim().split('\n');
-
+  // Extract tables used
   const extractedTables = Array.from(
     new Set(
       Array.from(sql.matchAll(/\b(?:FROM|JOIN)\s+([a-zA-Z_0-9]+)/gi)).map((m) => m[1])
     )
   );
 
-  return (
-    <div
-      id="dataspeak-sql-preview"
-      className="w-full rounded-xl bg-[#23251d] text-white overflow-hidden shadow-md my-6 sm:my-8 border border-[#33342d] transition-all"
-    >
-      {/* Header Strip with standard 8-pt padding */}
-      <div className="h-14 px-6 sm:px-8 bg-[#191a14] border-b border-[#33342d] flex items-center justify-between select-none">
-        <div className="flex items-center gap-3">
-          <Code className="h-4.5 w-4.5 text-[#62aef0]" />
-          <span className="text-xs sm:text-sm font-bold text-neutral-100 font-mono">Generated SQL</span>
-          <span className="text-[10px] sm:text-xs font-mono uppercase bg-[#33342d] text-neutral-300 px-2 py-0.5 rounded font-bold">
-            {dialect}
-          </span>
+  // Syntax highlighting helper
+  const highlightSql = (code: string) => {
+    const lines = code.trim().split('\n');
+    return lines.map((line, lineIdx) => {
+      // Regex replace for keywords, strings, numbers
+      const parts = line.split(/('(?:[^'\\]|\\.)*'|\b\d+\b|[(),;]|\s+)/g);
 
-          {/* Safety Status Chip on SQL */}
+      return (
+        <div key={lineIdx} className="leading-relaxed whitespace-pre">
+          {parts.map((part, pIdx) => {
+            if (!part) return null;
+
+            // String literals
+            if (part.startsWith("'") && part.endsWith("'")) {
+              return (
+                <span key={pIdx} className="text-[#8fd19e]">
+                  {part}
+                </span>
+              );
+            }
+
+            // Numeric literals
+            if (/^\d+$/.test(part)) {
+              return (
+                <span key={pIdx} className="text-[#fcab79]">
+                  {part}
+                </span>
+              );
+            }
+
+            // SQL Keywords
+            const upper = part.toUpperCase();
+            const keywords = [
+              'SELECT',
+              'FROM',
+              'WHERE',
+              'JOIN',
+              'LEFT',
+              'RIGHT',
+              'INNER',
+              'OUTER',
+              'ON',
+              'AND',
+              'OR',
+              'GROUP BY',
+              'ORDER BY',
+              'GROUP',
+              'ORDER',
+              'BY',
+              'LIMIT',
+              'DESC',
+              'ASC',
+              'HAVING',
+              'AS',
+              'DISTINCT',
+              'INTERVAL',
+              'IN',
+              'BETWEEN',
+              'CASE',
+              'WHEN',
+              'THEN',
+              'ELSE',
+              'END',
+              'UNION',
+              'ALL',
+            ];
+            const functions = [
+              'COUNT',
+              'SUM',
+              'AVG',
+              'MIN',
+              'MAX',
+              'DATE_TRUNC',
+              'NOW',
+              'COALESCE',
+              'ROUND',
+              'LOWER',
+              'UPPER',
+            ];
+
+            if (keywords.includes(upper)) {
+              return (
+                <span key={pIdx} className="text-[#62aef0] font-medium">
+                  {part}
+                </span>
+              );
+            }
+
+            if (functions.includes(upper)) {
+              return (
+                <span key={pIdx} className="text-[#62aef0]">
+                  {part}
+                </span>
+              );
+            }
+
+            return <span key={pIdx} className="text-white">{part}</span>;
+          })}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <section
+      id="dataspeak-sql-preview"
+      className="bg-[#23251d] text-white rounded-lg overflow-hidden flex flex-col border border-[#dddddd]/20 shadow-2xs my-6"
+    >
+      {/* SQL Header Strip */}
+      <div className="h-12 px-4 bg-[#2a2d23] border-b border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          {/* Safety Chip */}
           {isReadonlyVerified && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8fd19e] bg-[#2c8c66]/20 border border-[#2c8c66]/40 px-3 py-1 rounded-full ml-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#8fd19e]" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d9eddf] text-[#17543b] text-[11px] font-semibold">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#2c8c66]" />
               <span>Read-only check passed</span>
-            </span>
+            </div>
           )}
+          <span className="text-[12px] text-[#9b9c92] hidden sm:inline">
+            Execution: {executionTimeMs.toFixed(0)}ms · LIMIT 100 enforced
+          </span>
         </div>
 
-        {/* Actions & Terminal Mascot */}
-        <div className="flex items-center gap-3">
-          <HedgehogMascot pose="terminal" size={30} className="hidden sm:inline-block" />
-
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleCopy}
-            className="px-3.5 py-1.5 text-xs text-neutral-300 hover:text-white rounded-lg hover:bg-[#33342d] transition-colors flex items-center gap-1.5 border border-transparent hover:border-neutral-700 font-semibold"
-            title="Copy SQL to clipboard"
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#c6c7bd] hover:text-white px-2.5 py-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
+            title="Copy SQL query"
           >
-            {copied ? <Check className="h-4 w-4 text-[#8fd19e]" /> : <Copy className="h-4 w-4" />}
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 text-neutral-300 hover:text-white rounded-lg hover:bg-[#33342d] transition-colors flex items-center gap-1"
-            title={isCollapsed ? 'Expand SQL' : 'Collapse SQL'}
-          >
-            {isCollapsed ? <ChevronRight className="h-4.5 w-4.5" /> : <ChevronDown className="h-4.5 w-4.5" />}
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-[#8fd19e]" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+            <span>{copied ? 'Copied' : 'Copy SQL'}</span>
           </button>
         </div>
       </div>
 
-      {/* SQL Code Block */}
-      {!isCollapsed && (
-        <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm overflow-x-auto">
-          <table className="w-full border-collapse">
-            <tbody>
-              {lines.map((line, idx) => (
-                <tr key={idx} className="hover:bg-neutral-800/40">
-                  <td className="w-10 pr-4 py-0.5 text-right select-none text-[#9b9c92] opacity-60 text-xs">
-                    {idx + 1}
-                  </td>
-                  <td className="whitespace-pre text-neutral-100 py-0.5 leading-relaxed">{line}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Code Body with JetBrains Mono Syntax Highlighting */}
+      <div className="p-4 sm:p-5 font-mono text-[13px] leading-relaxed overflow-x-auto">
+        {highlightSql(sql)}
+      </div>
 
-          {/* Tables Referenced Indicator */}
-          {extractedTables.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-[#33342d] flex items-center gap-3 text-xs text-neutral-400">
-              <span className="flex items-center gap-1.5 text-neutral-300 font-semibold">
-                <TableIcon className="h-3.5 w-3.5 text-[#62aef0]" />
-                <span>Tables used:</span>
+      {/* SQL Footer Strip */}
+      <div className="px-4 py-2.5 bg-[#1e2019] border-t border-white/5 flex items-center justify-between text-[12px] text-[#9b9c92]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span>Tables used:</span>
+          {extractedTables.length > 0 ? (
+            extractedTables.map((tbl) => (
+              <span
+                key={tbl}
+                className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[11px]"
+              >
+                {tbl}
               </span>
-              <div className="flex flex-wrap gap-2">
-                {extractedTables.map((tbl) => (
-                  <span
-                    key={tbl}
-                    className="px-2.5 py-1 rounded bg-[#33342d] border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold"
-                  >
-                    {tbl}
-                  </span>
-                ))}
-              </div>
-            </div>
+            ))
+          ) : (
+            <span className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[11px]">
+              database
+            </span>
           )}
         </div>
-      )}
-    </div>
+        <span className="text-[11px] text-[#9b9c92]">{modelName}</span>
+      </div>
+    </section>
   );
 };

@@ -1,10 +1,12 @@
 /**
- * DataSpeak — PostHog Query History & Saved Questions (QueryHistory.tsx)
- * Displays recent and saved natural language questions with PostHog styling.
+ * DataSpeak — Query History Component (QueryHistory.tsx)
+ * Calm Analytics Workspace
+ * Displays saved and recent questions with search filter,
+ * timestamps, re-run trigger, and clean paper canvas cards.
  */
 
-import React from 'react';
-import { History, Star, Trash2, ArrowUpRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { History, Star, Trash2, ArrowUpRight, Search, X } from 'lucide-react';
 import type { QueryHistoryItem } from '../../types';
 
 interface QueryHistoryProps {
@@ -22,126 +24,210 @@ export const QueryHistory: React.FC<QueryHistoryProps> = ({
   onDelete,
   currentQuestion,
 }) => {
+  const [filterQuery, setFilterQuery] = useState('');
+
+  const filteredHistory = history.filter((h) =>
+    h.question.toLowerCase().includes(filterQuery.toLowerCase().trim())
+  );
+
+  const savedItems = filteredHistory.filter((h) => h.isSaved);
+  const recentItems = filteredHistory.filter((h) => !h.isSaved);
+
   if (history.length === 0) {
     return (
-      <div className="p-4 text-center text-xs text-[#6c6e63]">
-        <History className="h-6 w-6 mx-auto mb-1.5 opacity-40 text-[#9b9c92]" />
-        <p>No queries asked yet</p>
+      <div className="max-w-2xl mx-auto py-16 text-center text-[#615d59]">
+        <div className="w-12 h-12 rounded-full bg-[#efeeec] flex items-center justify-center mx-auto mb-3 text-[#a39e98]">
+          <History className="h-6 w-6 stroke-[1.5]" />
+        </div>
+        <h3 className="font-semibold text-[16px] text-[#0d0d0d] mb-1">No query history yet</h3>
+        <p className="text-[13px] text-[#615d59]">
+          Questions you ask in plain English will appear here along with their verified SQL.
+        </p>
       </div>
     );
   }
 
-  const savedItems = history.filter((h) => h.isSaved);
-  const recentItems = history.filter((h) => !h.isSaved);
-
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-2 text-xs space-y-4">
-      {/* Saved / Bookmarked Questions */}
+    <div className="max-w-4xl mx-auto py-6 flex flex-col gap-6">
+      {/* Top Search Filter */}
+      <div className="bg-white rounded-lg border border-[#e6e6e6] p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <History className="h-5 w-5 text-[#0075de]" />
+          <h2 className="text-[16px] font-semibold text-[#0d0d0d]">Query History</h2>
+          <span className="text-[12px] text-[#615d59]">({history.length} queries)</span>
+        </div>
+
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#a39e98]" />
+          <input
+            type="text"
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            placeholder="Search query history..."
+            className="w-full h-9 pl-9 pr-8 rounded bg-[#f8fafc] text-[13px] text-[#0d0d0d] placeholder:text-[#a39e98] border border-[#e6e6e6] focus:outline-none focus:border-[#0075de] transition-colors"
+          />
+          {filterQuery && (
+            <button
+              type="button"
+              onClick={() => setFilterQuery('')}
+              className="absolute right-2.5 top-2.5 text-[#a39e98] hover:text-[#0d0d0d]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Saved / Starred Section */}
       {savedItems.length > 0 && (
-        <div className="space-y-1">
-          <div className="px-2 py-1 flex items-center gap-1.5 text-[11px] font-bold text-[#b17816] uppercase tracking-wider">
-            <Star className="h-3 w-3 fill-[#f7a501] text-[#f7a501]" />
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 px-1 text-[12px] font-semibold text-[#6e4600] uppercase tracking-wider">
+            <Star className="h-3.5 w-3.5 fill-[#f7a501] text-[#f7a501]" />
             <span>Saved Questions ({savedItems.length})</span>
           </div>
 
-          {savedItems.map((item) => (
-            <div
-              key={item.id}
-              className={`group flex items-center justify-between p-2 rounded-md border transition-colors cursor-pointer ${
-                currentQuestion === item.question
-                  ? 'bg-white border-[#bfc1b7] font-bold text-[#23251d]'
-                  : 'border-transparent hover:bg-white text-[#33342d]'
-              }`}
-            >
-              <div
-                onClick={() => onSelectQuery(item)}
-                className="flex-1 truncate pr-2"
-                title={item.question}
-              >
-                <span className="truncate block font-medium">{item.question}</span>
-                <span className="text-[10px] text-[#6c6e63] block font-mono">
-                  {new Date(item.timestamp).toLocaleDateString()}
-                </span>
-              </div>
+          <div className="grid grid-cols-1 gap-2.5">
+            {savedItems.map((item) => {
+              const isSelected = currentQuestion === item.question;
+              return (
+                <div
+                  key={item.id}
+                  className={`group bg-white rounded-lg border p-4 shadow-2xs transition-all flex items-start justify-between gap-4 ${
+                    isSelected ? 'border-[#0075de] ring-1 ring-[#0075de]/30' : 'border-[#e6e6e6] hover:border-[#dddddd]'
+                  }`}
+                >
+                  <div
+                    onClick={() => onSelectQuery(item)}
+                    className="flex-1 cursor-pointer"
+                  >
+                    <p className="text-[15px] font-medium text-[#0d0d0d] group-hover:text-[#0075de] transition-colors mb-1.5">
+                      {item.question}
+                    </p>
+                    <div className="flex items-center gap-3 text-[11px] text-[#615d59]">
+                      <span className="font-mono">{new Date(item.timestamp).toLocaleString()}</span>
+                      <span>•</span>
+                      <span>
+                        {item.result.rows?.length || 0} rows returned
+                      </span>
+                      {item.result.executionTimeMs !== undefined && (
+                        <>
+                          <span>•</span>
+                          <span className="font-mono">{item.result.executionTimeMs.toFixed(0)}ms</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => onToggleSave(item.id)}
-                  className="p-1 rounded text-[#f7a501] hover:bg-[#eeefe9] transition-colors"
-                  title="Unsave question"
-                >
-                  <Star className="h-3.5 w-3.5 fill-[#f7a501]" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(item.id)}
-                  className="p-1 rounded text-[#9b9c92] hover:text-[#cd4239] opacity-0 group-hover:opacity-100 hover:bg-[#eeefe9] transition-all"
-                  title="Delete from history"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleSave(item.id)}
+                      className="p-1.5 rounded hover:bg-[#efeeec] text-[#f7a501] transition-colors"
+                      title="Unsave question"
+                    >
+                      <Star className="h-4 w-4 fill-[#f7a501]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(item.id)}
+                      className="p-1.5 rounded hover:bg-[#efeeec] text-[#a39e98] hover:text-[#cd4239] transition-colors"
+                      title="Delete from history"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectQuery(item)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#eaf3fc] hover:bg-[#d5e7f9] text-[#0075de] text-[12px] font-semibold transition-colors"
+                      title="View or rerun"
+                    >
+                      <span>View</span>
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Recent Queries */}
-      <div className="space-y-1">
-        <div className="px-2 py-1 flex items-center gap-1.5 text-[11px] font-bold text-[#6c6e63] uppercase tracking-wider">
-          <History className="h-3 w-3 text-[#1078a3]" />
+      {/* Recent Queries List */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-1.5 px-1 text-[12px] font-semibold text-[#615d59] uppercase tracking-wider">
+          <History className="h-3.5 w-3.5" />
           <span>Recent Queries ({recentItems.length})</span>
         </div>
 
-        {recentItems.map((item) => (
-          <div
-            key={item.id}
-            className={`group flex items-center justify-between p-2 rounded-md border transition-colors cursor-pointer ${
-              currentQuestion === item.question
-                ? 'bg-white border-[#bfc1b7] font-bold text-[#23251d]'
-                : 'border-transparent hover:bg-white text-[#33342d]'
-            }`}
-          >
-            <div
-              onClick={() => onSelectQuery(item)}
-              className="flex-1 truncate pr-2"
-              title={item.question}
-            >
-              <span className="truncate block font-medium">{item.question}</span>
-              <span className="text-[10px] text-[#6c6e63] block font-mono">
-                {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => onToggleSave(item.id)}
-                className="p-1 rounded text-[#9b9c92] hover:text-[#f7a501] opacity-0 group-hover:opacity-100 hover:bg-[#eeefe9] transition-all"
-                title="Bookmark question"
-              >
-                <Star className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(item.id)}
-                className="p-1 rounded text-[#9b9c92] hover:text-[#cd4239] opacity-0 group-hover:opacity-100 hover:bg-[#eeefe9] transition-all"
-                title="Delete from history"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onSelectQuery(item)}
-                className="p-1 rounded text-[#1d4ed8] opacity-0 group-hover:opacity-100 hover:bg-[#eeefe9] transition-all"
-                title="Re-run question"
-              >
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+        {recentItems.length === 0 ? (
+          <div className="bg-white rounded-lg border border-[#e6e6e6] p-8 text-center text-[13px] text-[#615d59]">
+            No recent queries matching your filter.
           </div>
-        ))}
+        ) : (
+          <div className="grid grid-cols-1 gap-2.5">
+            {recentItems.map((item) => {
+              const isSelected = currentQuestion === item.question;
+              return (
+                <div
+                  key={item.id}
+                  className={`group bg-white rounded-lg border p-4 shadow-2xs transition-all flex items-start justify-between gap-4 ${
+                    isSelected ? 'border-[#0075de] ring-1 ring-[#0075de]/30' : 'border-[#e6e6e6] hover:border-[#dddddd]'
+                  }`}
+                >
+                  <div
+                    onClick={() => onSelectQuery(item)}
+                    className="flex-1 cursor-pointer"
+                  >
+                    <p className="text-[15px] font-medium text-[#0d0d0d] group-hover:text-[#0075de] transition-colors mb-1.5">
+                      {item.question}
+                    </p>
+                    <div className="flex items-center gap-3 text-[11px] text-[#615d59]">
+                      <span className="font-mono">{new Date(item.timestamp).toLocaleString()}</span>
+                      <span>•</span>
+                      <span>
+                        {item.result.rows?.length || 0} rows returned
+                      </span>
+                      {item.result.executionTimeMs !== undefined && (
+                        <>
+                          <span>•</span>
+                          <span className="font-mono">{item.result.executionTimeMs.toFixed(0)}ms</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleSave(item.id)}
+                      className="p-1.5 rounded hover:bg-[#efeeec] text-[#a39e98] hover:text-[#f7a501] transition-colors"
+                      title="Bookmark question"
+                    >
+                      <Star className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(item.id)}
+                      className="p-1.5 rounded hover:bg-[#efeeec] text-[#a39e98] hover:text-[#cd4239] transition-colors"
+                      title="Delete from history"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectQuery(item)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#efeeec] hover:bg-[#e6e6e6] text-[#31302e] hover:text-[#0d0d0d] text-[12px] font-medium transition-colors"
+                      title="View or rerun"
+                    >
+                      <span>View</span>
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

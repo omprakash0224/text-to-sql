@@ -1,7 +1,9 @@
 /**
- * DataSpeak — PostHog Interactive Results Table (DataTable.tsx)
- * Tabular data grid using TanStack Table v8 on warm cream canvas.
- * Supports sorting, pagination, density switching, type glyphs, and CSV export.
+ * DataSpeak — Results Data Table (DataTable.tsx)
+ * Calm Analytics Workspace (docs/ui-example/code1.html)
+ * Airtable-style comfortable grid using TanStack Table v8.
+ * Supports sorting, density switching, column visibility toggle,
+ * type glyphs, formula-sanitized RFC 4180 CSV export, and pagination.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -15,20 +17,20 @@ import {
   type ColumnDef,
 } from '@tanstack/react-table';
 import {
-  ChevronLeft,
-  ChevronRight,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Hash,
-  Type,
   Calendar,
   ToggleLeft,
-  Maximize2,
-  Minimize2,
-  Table as TableIcon,
+  Sliders,
+  Columns as ColumnsIcon,
+  Download,
+  Check,
+  Percent,
+  DollarSign,
 } from 'lucide-react';
-import { ExportButton } from './ExportButton';
+import { downloadCsv } from '../../utils/exportUtils';
 
 interface DataTableProps {
   columns: string[];
@@ -45,33 +47,53 @@ export const DataTable: React.FC<DataTableProps> = ({
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [copiedExport, setCopiedExport] = useState(false);
 
   const getColTypeGlyph = (colName: string, firstVal?: unknown) => {
     const name = colName.toLowerCase();
+    if (name.includes('price') || name.includes('mrr') || name.includes('amount') || name.includes('revenue') || name.includes('cost')) {
+      return <DollarSign className="h-3.5 w-3.5 text-[#a39e98]" />;
+    }
+    if (name.includes('rate') || name.includes('pct') || name.includes('percent') || name.includes('expansion') || name.includes('churn')) {
+      return <Percent className="h-3.5 w-3.5 text-[#a39e98]" />;
+    }
     if (
       name.includes('id') ||
       name.includes('count') ||
       name.includes('total') ||
-      name.includes('price') ||
-      name.includes('amount') ||
-      name.includes('sum') ||
-      name.includes('revenue') ||
+      name.includes('subscribers') ||
+      name.includes('num') ||
       typeof firstVal === 'number'
     ) {
-      return <Hash className="h-3 w-3 text-[#1d4ed8]" />;
+      return <Hash className="h-3.5 w-3.5 text-[#a39e98]" />;
     }
-    if (name.includes('date') || name.includes('time') || name.includes('at')) {
-      return <Calendar className="h-3 w-3 text-[#1078a3]" />;
+    if (name.includes('date') || name.includes('time') || name.includes('month') || name.includes('year') || name.includes('at')) {
+      return <Calendar className="h-3.5 w-3.5 text-[#a39e98]" />;
     }
     if (typeof firstVal === 'boolean') {
-      return <ToggleLeft className="h-3 w-3 text-[#7c44a6]" />;
+      return <ToggleLeft className="h-3.5 w-3.5 text-[#a39e98]" />;
     }
-    return <Type className="h-3 w-3 text-[#6c6e63]" />;
+    return <span className="text-[11px] font-mono text-[#a39e98]">Aa</span>;
+  };
+
+  const isNumericCol = (colName: string, val: unknown) => {
+    return (
+      typeof val === 'number' ||
+      colName.toLowerCase().includes('count') ||
+      colName.toLowerCase().includes('mrr') ||
+      colName.toLowerCase().includes('revenue') ||
+      colName.toLowerCase().includes('price') ||
+      colName.toLowerCase().includes('subscribers') ||
+      colName.toLowerCase().includes('rate')
+    );
   };
 
   const tableColumns = useMemo<ColumnDef<Record<string, unknown>>[]>(() => {
     return columns.map((colKey) => {
       const firstNonNull = rows.find((r) => r[colKey] !== null && r[colKey] !== undefined)?.[colKey];
+      const numeric = isNumericCol(colKey, firstNonNull);
 
       return {
         accessorKey: colKey,
@@ -80,15 +102,19 @@ export const DataTable: React.FC<DataTableProps> = ({
           return (
             <div
               onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-              className="flex items-center gap-1.5 cursor-pointer select-none group"
+              className={`flex items-center gap-1.5 cursor-pointer select-none group ${
+                numeric ? 'justify-end' : 'justify-start'
+              }`}
             >
               <span className="opacity-75">{getColTypeGlyph(colKey, firstNonNull)}</span>
-              <span className="font-bold text-[#23251d] text-xs font-mono">{colKey}</span>
-              <span className="text-[#9b9c92] group-hover:text-[#23251d]">
+              <span className="font-semibold text-[#31302e] text-[12px] uppercase tracking-[0.2px]">
+                {colKey.replace(/_/g, ' ')}
+              </span>
+              <span className="text-[#a39e98] group-hover:text-[#0d0d0d]">
                 {isSorted === 'asc' ? (
-                  <ArrowUp className="h-3 w-3 text-[#1d4ed8]" />
+                  <ArrowUp className="h-3 w-3 text-[#0075de]" />
                 ) : isSorted === 'desc' ? (
-                  <ArrowDown className="h-3 w-3 text-[#1d4ed8]" />
+                  <ArrowDown className="h-3 w-3 text-[#0075de]" />
                 ) : (
                   <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
@@ -99,21 +125,74 @@ export const DataTable: React.FC<DataTableProps> = ({
         cell: (info) => {
           const val = info.getValue();
           if (val === null || val === undefined) {
-            return <span className="text-[#9b9c92] italic font-sans">—</span>;
+            return <span className="text-[#a39e98] italic">—</span>;
           }
 
-          if (typeof val === 'number') {
-            const isCurrency =
-              colKey.toLowerCase().includes('price') ||
-              colKey.toLowerCase().includes('amount') ||
-              colKey.toLowerCase().includes('revenue') ||
-              colKey.toLowerCase().includes('total');
+          const lowerKey = colKey.toLowerCase();
+
+          // Render Status / Tier / Plan as neat pill badge
+          if (
+            (lowerKey.includes('plan') || lowerKey.includes('tier') || lowerKey.includes('status')) &&
+            typeof val === 'string'
+          ) {
+            const isEnterprise = val.toLowerCase().includes('enterprise');
+            const isActive = val.toLowerCase() === 'active';
+            const isPastDue = val.toLowerCase() === 'past_due';
 
             return (
-              <span className="tnum font-bold text-[#23251d]">
-                {isCurrency
-                  ? `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                  : val.toLocaleString()}
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium border ${
+                  isActive
+                    ? 'bg-[#d9eddf] text-[#17543b] border-[#2c8c66]/30'
+                    : isPastDue
+                    ? 'bg-[#fdf0d0] text-[#6e4600] border-[#f7a501]/30'
+                    : isEnterprise
+                    ? 'bg-[#efeeec] text-[#0d0d0d] border-[#e6e6e6]'
+                    : 'bg-[#efeeec] text-[#31302e] border-[#e6e6e6]'
+                }`}
+              >
+                {val}
+              </span>
+            );
+          }
+
+          // Percentage formatting
+          if (
+            (lowerKey.includes('rate') || lowerKey.includes('expansion') || lowerKey.includes('pct')) &&
+            typeof val === 'number'
+          ) {
+            const isPositive = val >= 0;
+            return (
+              <span
+                className={`tnum font-medium text-right block ${
+                  lowerKey.includes('expansion') && isPositive
+                    ? 'text-[#17543b]'
+                    : 'text-[#31302e]'
+                }`}
+              >
+                {isPositive && lowerKey.includes('expansion') ? '+' : ''}
+                {val.toFixed(1)}%
+              </span>
+            );
+          }
+
+          // Currency formatting
+          if (
+            (lowerKey.includes('price') || lowerKey.includes('amount') || lowerKey.includes('revenue') || lowerKey.includes('mrr')) &&
+            typeof val === 'number'
+          ) {
+            return (
+              <span className="tnum font-medium text-[#0d0d0d] text-right block">
+                ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            );
+          }
+
+          // General numbers
+          if (typeof val === 'number') {
+            return (
+              <span className="tnum font-normal text-[#0d0d0d] text-right block">
+                {val.toLocaleString()}
               </span>
             );
           }
@@ -121,8 +200,8 @@ export const DataTable: React.FC<DataTableProps> = ({
           if (typeof val === 'boolean') {
             return (
               <span
-                className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                  val ? 'bg-[#d9eddf] text-[#17543b]' : 'bg-[#e5e7e0] text-[#4d4f46]'
+                className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${
+                  val ? 'bg-[#d9eddf] text-[#17543b]' : 'bg-[#efeeec] text-[#615d59]'
                 }`}
               >
                 {val ? 'TRUE' : 'FALSE'}
@@ -130,11 +209,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             );
           }
 
-          if (typeof val === 'object') {
-            return <span className="font-mono text-xs text-[#4d4f46]">{JSON.stringify(val)}</span>;
-          }
-
-          return <span className="text-[#23251d]">{String(val)}</span>;
+          return <span className="text-[#0d0d0d]">{String(val)}</span>;
         },
       };
     });
@@ -145,8 +220,10 @@ export const DataTable: React.FC<DataTableProps> = ({
     columns: tableColumns,
     state: {
       sorting,
+      columnVisibility,
     },
     onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -157,74 +234,106 @@ export const DataTable: React.FC<DataTableProps> = ({
     },
   });
 
-  const rowHeightClass =
-    density === 'comfortable'
-      ? 'h-13 px-6 sm:px-8 py-3 text-xs sm:text-sm'
-      : 'h-9 px-4 sm:px-6 py-1.5 text-xs';
+  const handleExportCsv = () => {
+    if (rows.length === 0) return;
+    downloadCsv(columns, rows, questionPrompt);
+    setCopiedExport(true);
+    setTimeout(() => setCopiedExport(false), 2000);
+  };
+
+  const rowHeightClass = density === 'comfortable' ? 'h-11 px-4 py-2' : 'h-8 px-3 py-1';
 
   return (
-    <div className="w-full rounded-xl bg-white border border-[#bfc1b7] shadow-sm overflow-hidden my-6 sm:my-8 transition-all">
+    <section className="bg-white rounded-lg border border-[#dddddd] overflow-hidden flex flex-col shadow-2xs my-6">
       {/* Table Toolbar */}
-      <div className="h-16 px-6 sm:px-8 bg-white border-b border-[#dcdfd2] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <TableIcon className="h-5 w-5 text-[#1078a3]" />
-          <h3 className="text-sm sm:text-base font-bold text-[#23251d]">Results Table</h3>
-          <span className="text-xs text-[#4d4f46] tnum bg-[#eeefe9] border border-[#bfc1b7] px-3 py-1 rounded-full font-bold">
-            {rows.length} {rows.length === 1 ? 'row' : 'rows'}
-          </span>
+      <div className="h-14 px-4 flex items-center justify-between border-b border-[#e6e6e6]">
+        <div className="flex items-center gap-2">
+          <span className="text-[15px] font-semibold text-[#0d0d0d]">Results</span>
+          <span className="text-[13px] text-[#615d59]">· {rows.length} rows</span>
           {executionTimeMs !== undefined && (
-            <span className="text-xs text-[#6c6e63] tnum font-mono hidden sm:inline">
+            <span className="text-[11px] text-[#a39e98] font-mono hidden sm:inline">
               ({executionTimeMs.toFixed(0)}ms)
             </span>
           )}
         </div>
 
-        {/* Toolbar Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Density Toggle */}
-          <div className="inline-flex rounded-lg bg-[#e5e7e0] border border-[#bfc1b7] p-1 text-xs text-[#4d4f46]">
+          <button
+            type="button"
+            onClick={() => setDensity(density === 'comfortable' ? 'compact' : 'comfortable')}
+            className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-[#31302e] hover:text-[#0d0d0d] px-2.5 py-1.5 rounded hover:bg-[#efeeec] transition-colors cursor-pointer"
+            title="Toggle compact or comfortable density"
+          >
+            <Sliders className="h-4 w-4 text-[#615d59]" />
+            <span>Density</span>
+          </button>
+
+          {/* Columns Toggle Menu */}
+          <div className="relative">
             <button
               type="button"
-              onClick={() => setDensity('comfortable')}
-              className={`p-1.5 rounded-md transition-colors ${
-                density === 'comfortable' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7] shadow-2xs' : 'hover:text-[#23251d]'
-              }`}
-              title="Comfortable Density"
+              onClick={() => setShowColumnMenu(!showColumnMenu)}
+              className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-[#31302e] hover:text-[#0d0d0d] px-2.5 py-1.5 rounded hover:bg-[#efeeec] transition-colors cursor-pointer"
+              title="Toggle columns"
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              <ColumnsIcon className="h-4 w-4 text-[#615d59]" />
+              <span>Columns</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setDensity('compact')}
-              className={`p-1.5 rounded-md transition-colors ${
-                density === 'compact' ? 'bg-white text-[#23251d] font-bold border border-[#bfc1b7] shadow-2xs' : 'hover:text-[#23251d]'
-              }`}
-              title="Compact Density"
-            >
-              <Minimize2 className="h-3.5 w-3.5" />
-            </button>
+
+            {showColumnMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#dddddd] rounded-md shadow-lg p-2 z-30 text-xs">
+                <span className="font-semibold text-[#615d59] block px-2 py-1 uppercase text-[10px] tracking-wider">
+                  Visible Columns
+                </span>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {columns.map((col) => (
+                    <label key={col} className="flex items-center gap-2 px-2 py-1 hover:bg-[#f6f5f4] rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={columnVisibility[col] !== false}
+                        onChange={(e) =>
+                          setColumnVisibility((prev) => ({ ...prev, [col]: e.target.checked }))
+                        }
+                        className="rounded border-[#dddddd] text-[#0075de] focus:ring-[#0075de]"
+                      />
+                      <span className="font-mono truncate">{col}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Export CSV Button */}
-          <ExportButton
-            columns={columns}
-            rows={rows}
-            questionPrompt={questionPrompt}
-          />
+          {/* Export CSV */}
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={rows.length === 0}
+            className="inline-flex items-center gap-1.5 bg-white hover:bg-[#f8fafc] text-[#0d0d0d] text-[13px] font-medium h-9 px-3.5 rounded-md border border-[#dddddd] transition-colors shadow-2xs cursor-pointer disabled:opacity-40"
+            title="Export sanitized CSV (RFC 4180)"
+          >
+            {copiedExport ? (
+              <Check className="h-4 w-4 text-[#2c8c66]" />
+            ) : (
+              <Download className="h-4 w-4 text-[#615d59]" />
+            )}
+            <span>{copiedExport ? 'Downloaded' : 'Export CSV'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Grid Container */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
+      {/* Table Container */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-left border-collapse">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-[#eeefe9] border-b border-[#bfc1b7]">
+              <tr
+                key={headerGroup.id}
+                className="h-10 bg-[#f6f5f4] border-b border-[#dddddd] text-[12px] font-semibold text-[#31302e] uppercase tracking-[0.2px] select-none"
+              >
                 {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="h-12 px-6 sm:px-8 text-xs font-bold text-[#23251d] whitespace-nowrap select-none"
-                  >
+                  <th key={header.id} className="px-4 text-left font-semibold">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -234,24 +343,18 @@ export const DataTable: React.FC<DataTableProps> = ({
             ))}
           </thead>
 
-          <tbody className="divide-y divide-[#dcdfd2]">
+          <tbody className="text-[14px] text-[#0d0d0d] divide-y divide-[#eeeeec] font-normal">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length || 1} className="py-16 text-center text-sm text-[#6c6e63]">
+                <td colSpan={columns.length || 1} className="py-12 text-center text-sm text-[#615d59]">
                   No rows returned from this query
                 </td>
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-[#eeefe9]/50 transition-colors"
-                >
+                <tr key={row.id} className="hover:bg-[#f8fafc] transition-colors">
                   {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className={`${rowHeightClass} whitespace-nowrap text-[#23251d]`}
-                    >
+                    <td key={cell.id} className={`${rowHeightClass} whitespace-nowrap`}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -262,49 +365,47 @@ export const DataTable: React.FC<DataTableProps> = ({
         </table>
       </div>
 
-      {/* Table Pagination Footer */}
+      {/* Table Footer Pagination */}
       {rows.length > 0 && (
-        <div className="h-14 px-6 sm:px-8 bg-[#eeefe9] border-t border-[#bfc1b7] flex items-center justify-between text-xs sm:text-sm text-[#4d4f46]">
-          <div className="tnum">
+        <div className="h-12 bg-[#f6f5f4] px-4 flex items-center justify-between text-[13px] text-[#615d59] border-t border-[#e6e6e6]">
+          <span>
             Showing{' '}
-            <span className="font-bold text-[#23251d]">
+            <strong className="text-[#0d0d0d] font-semibold">
               {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
-            </span>{' '}
-            to{' '}
-            <span className="font-bold text-[#23251d]">
+            </strong>
+            –
+            <strong className="text-[#0d0d0d] font-semibold">
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
                 rows.length
               )}
-            </span>{' '}
-            of <span className="font-bold text-[#23251d]">{rows.length}</span> rows
-          </div>
+            </strong>{' '}
+            of {rows.length} rows
+          </span>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
-              title="Previous Page"
+              className="px-2.5 py-1 text-[13px] text-[#31302e] hover:text-[#0d0d0d] disabled:text-[#a39e98] disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" />
+              Previous
             </button>
-            <span className="px-3 font-bold text-[#23251d] tnum">
-              {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
+            <span className="px-2 py-0.5 rounded bg-white border border-[#e6e6e6] text-[#0d0d0d] font-semibold tnum text-[12px] shadow-2xs">
+              {table.getState().pagination.pageIndex + 1}
             </span>
             <button
               type="button"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-[#23251d] border border-transparent hover:border-[#bfc1b7]"
-              title="Next Page"
+              className="px-2.5 py-1 text-[13px] text-[#31302e] hover:text-[#0d0d0d] disabled:text-[#a39e98] disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight className="h-4 w-4" />
+              Next
             </button>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };

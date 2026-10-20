@@ -1,14 +1,15 @@
 /**
- * DataSpeak — PostHog Conversational Prompt Box (QueryInput.tsx)
- * White card on warm cream canvas with PostHog yellow CTA submit button,
- * suggestion chips, and pastel blue progress stepper during query execution.
+ * DataSpeak — Conversational Prompt Box (QueryInput.tsx)
+ * Calm Analytics Workspace (docs/ui-example/code1.html)
+ * Hero / Linear-inspired craft:
+ * Crisp white card, subtle hairline border, auto-expanding textarea,
+ * bottom bar with active DB pill, keyboard helper, and blue circular arrow button.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowUp,
   Square,
-  Sparkles,
   Database,
   CheckCircle2,
   Loader2,
@@ -24,13 +25,13 @@ interface QueryInputProps {
   activeConnection: DatabaseConnection | null;
   onOpenConnectModal: () => void;
   externalPrompt?: string;
+  defaultSuggestions?: string[];
 }
 
-const DEFAULT_SUGGESTIONS = [
-  'What are the top 5 products by revenue?',
-  'Show total sales revenue by category',
-  'Who are the top 10 customers with the most orders?',
-  'What is the monthly revenue trend over time?',
+const FALLBACK_SUGGESTIONS = [
+  'Top 10 churning customers',
+  'Average order value by category',
+  'Quarterly sales pipeline by rep',
 ];
 
 export const QueryInput: React.FC<QueryInputProps> = ({
@@ -41,14 +42,14 @@ export const QueryInput: React.FC<QueryInputProps> = ({
   activeConnection,
   onOpenConnectModal,
   externalPrompt,
+  defaultSuggestions = FALLBACK_SUGGESTIONS,
 }) => {
   const [prompt, setPrompt] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Sync external prompt when user clicks a suggestion chip or schema table
   useEffect(() => {
-    if (externalPrompt) {
+    if (externalPrompt !== undefined && externalPrompt !== null) {
       setPrompt(externalPrompt);
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -61,7 +62,7 @@ export const QueryInput: React.FC<QueryInputProps> = ({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(Math.max(scrollHeight, 52), 180)}px`;
+      textareaRef.current.style.height = `${Math.min(Math.max(scrollHeight, 48), 200)}px`;
     }
   }, [prompt]);
 
@@ -89,17 +90,19 @@ export const QueryInput: React.FC<QueryInputProps> = ({
     }
   };
 
+  const dbLabel = activeConnection ? activeConnection.name : 'No Database Connected';
+
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-4">
-      {/* PostHog Pastel Blue Stepper Banner during Query Execution */}
+    <section className="w-full flex flex-col gap-2.5">
+      {/* Execution Progress Stepper */}
       {isRunning && (
-        <div className="rounded-xl bg-[#dceaf6] border border-[#2c84e0]/30 p-6 sm:p-7 shadow-sm animate-in fade-in-50 duration-200">
-          <div className="flex items-center gap-2.5 mb-4 text-xs sm:text-sm font-bold text-[#1d4ed8]">
-            <span className="text-base">⚡</span>
-            <span>Orchestrating Text-to-SQL with Groq Llama 3.3 70B & AST Guardrails...</span>
+        <div className="bg-[#eaf3fc] border border-[#c9e0f6] rounded-lg p-4 sm:p-5 shadow-2xs animate-in fade-in-50 duration-200">
+          <div className="flex items-center gap-2 mb-3 text-[13px] font-semibold text-[#005bab]">
+            <Loader2 className="h-4 w-4 animate-spin text-[#0075de]" />
+            <span>Generating SQL with Llama 3.3 70B &amp; AST Guardrails...</span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {steps.map((step) => {
               const isCompleted = step.status === 'completed';
               const isActive = step.status === 'active';
@@ -108,28 +111,28 @@ export const QueryInput: React.FC<QueryInputProps> = ({
               return (
                 <div
                   key={step.id}
-                  className={`flex items-center gap-3 text-xs sm:text-sm transition-colors ${
+                  className={`flex items-center gap-2.5 text-[12px] sm:text-[13px] transition-colors ${
                     isBlocked
-                      ? 'text-[#cd4239] font-bold'
+                      ? 'text-[#cd4239] font-semibold'
                       : isCompleted
-                      ? 'text-[#33342d]'
+                      ? 'text-[#31302e]'
                       : isActive
-                      ? 'text-[#1d4ed8] font-bold'
-                      : 'text-[#6c6e63]'
+                      ? 'text-[#005bab] font-semibold'
+                      : 'text-[#a39e98]'
                   }`}
                 >
                   {isBlocked ? (
-                    <ShieldAlert className="h-4.5 w-4.5 text-[#cd4239] shrink-0" />
+                    <ShieldAlert className="h-4 w-4 text-[#cd4239] shrink-0" />
                   ) : isCompleted ? (
                     <CheckCircle2
-                      className={`h-4.5 w-4.5 shrink-0 ${
-                        step.id === 'validating_guardrails' ? 'text-[#2c8c66]' : 'text-[#4d4f46]'
+                      className={`h-4 w-4 shrink-0 ${
+                        step.id === 'validating_guardrails' ? 'text-[#2c8c66]' : 'text-[#0075de]'
                       }`}
                     />
                   ) : isActive ? (
-                    <Loader2 className="h-4.5 w-4.5 text-[#1d4ed8] animate-spin shrink-0" />
+                    <Loader2 className="h-4 w-4 text-[#0075de] animate-spin shrink-0" />
                   ) : (
-                    <div className="h-4.5 w-4.5 rounded-full border border-[#bfc1b7] shrink-0" />
+                    <div className="h-3.5 w-3.5 rounded-full border border-[#dddddd] shrink-0 ml-0.5" />
                   )}
                   <span>{step.label}</span>
                 </div>
@@ -139,105 +142,83 @@ export const QueryInput: React.FC<QueryInputProps> = ({
         </div>
       )}
 
-      {/* Main Prompt Input Box (White Card on Cream) */}
-      <div
-        className={`relative rounded-xl bg-white border shadow-sm transition-all ${
-          isFocused
-            ? 'border-[#23251d] ring-2 ring-[#3b82f6]/40 shadow-md'
-            : 'border-[#bfc1b7] hover:border-[#23251d]'
-        }`}
-      >
+      {/* Main Prompt Card */}
+      <div className="bg-white rounded-xl border border-[#dddddd] p-4 sm:p-5 shadow-2xs focus-within:border-[#0075de] focus-within:ring-2 focus-within:ring-[#0075de]/20 transition-all">
         <textarea
           ref={textareaRef}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
           disabled={isRunning}
           rows={2}
-          placeholder={
-            activeConnection
-              ? `Ask anything about ${activeConnection.name}...`
-              : 'Connect a database first to start querying in plain English...'
-          }
-          className="w-full px-5 pt-4 pb-3 bg-transparent text-sm sm:text-base text-[#23251d] placeholder-[#6c6e63] resize-none focus:outline-none leading-relaxed disabled:opacity-60"
+          id="prompt-input"
+          placeholder="Ask anything about your database in plain English..."
+          className="w-full bg-transparent resize-none border-0 p-0 text-[#0d0d0d] text-[16px] sm:text-[17px] leading-relaxed placeholder:text-[#a39e98] focus:ring-0 focus:outline-none"
         />
 
-        {/* Input Footer Row */}
-        <div className="px-5 py-3 flex items-center justify-between border-t border-[#dcdfd2] text-xs bg-[#fcfcfa] rounded-b-xl">
-          {/* Database Chip Selector */}
+        <div className="flex items-center justify-between pt-3 border-t border-[#eeeeec] mt-1">
           <div className="flex items-center gap-2.5">
-            {activeConnection ? (
-              <button
-                type="button"
-                onClick={onOpenConnectModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#eeefe9] hover:bg-[#dcdfd2] text-[#23251d] font-semibold transition-colors cursor-pointer border border-[#bfc1b7]"
-                title="Change or reconnect database"
-              >
-                <Database className="h-3.5 w-3.5 text-[#1078a3]" />
-                <span className="truncate max-w-[150px] font-mono text-xs">{activeConnection.name}</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenConnectModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#dceaf6] hover:bg-[#c3e0fa] text-[#1d4ed8] font-bold transition-colors"
-              >
-                <Database className="h-3.5 w-3.5" />
-                <span>Connect Database</span>
-              </button>
-            )}
-
-            <span className="hidden sm:inline text-xs text-[#6c6e63]">
-              ↵ to ask · ⇧↵ new line
+            <button
+              type="button"
+              onClick={onOpenConnectModal}
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[11px] font-semibold tnum transition-colors cursor-pointer ${
+                activeConnection
+                  ? 'bg-[#efeeec] hover:bg-[#e6e6e6] text-[#31302e]'
+                  : 'bg-[#fff5e5] hover:bg-[#faebd0] text-[#a36900] border border-[#f7a501]/30'
+              }`}
+              title={activeConnection ? 'Click to switch database' : 'Click to connect a database'}
+            >
+              <Database className="h-3 w-3" />
+              <span>{dbLabel}</span>
+            </button>
+            <span className="text-[12px] text-[#a39e98] hidden sm:inline">
+              ↵ to ask · ⇧ ↵ new line
             </span>
           </div>
 
-          {/* Submit / Cancel Action Button (PostHog Yellow CTA) */}
           <div>
             {isRunning ? (
               <button
                 type="button"
                 onClick={onCancel}
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-[#e5e7e0] hover:bg-[#f7d6d3] text-[#cd4239] flex items-center justify-center transition-colors shadow-xs"
+                className="w-9 h-9 rounded-full bg-[#f7d6d3] hover:bg-[#f3bcba] text-[#cd4239] flex items-center justify-center transition-colors shadow-2xs"
                 title="Cancel query execution"
               >
-                <Square className="h-4 w-4 fill-current" />
+                <Square className="h-3.5 w-3.5 fill-current" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => handleSubmit()}
                 disabled={!prompt.trim()}
-                className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-[#f7a501] hover:bg-[#dd9001] active:bg-[#b17816] disabled:bg-[#e5e7e0] disabled:text-[#9b9c92] text-[#23251d] flex items-center justify-center transition-all disabled:opacity-50 font-bold shadow-xs hover:shadow-sm"
+                className="w-9 h-9 rounded-full bg-[#0075de] hover:bg-[#005bab] active:scale-95 disabled:bg-[#efeeec] disabled:text-[#a39e98] text-white flex items-center justify-center transition-all shadow-2xs cursor-pointer disabled:cursor-not-allowed"
                 title="Ask question"
               >
-                <ArrowUp className="h-5 w-5 stroke-[2.5]" />
+                <ArrowUp className="h-4.5 w-4.5 stroke-[2.5]" />
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Suggestion Chips (PostHog Pill-Tabs) */}
+      {/* Suggestion Chips Below Prompt */}
       {!isRunning && (
-        <div className="flex items-center flex-wrap gap-2.5 pt-1.5">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6c6e63] uppercase tracking-wider pl-1">
-            <Sparkles className="h-3.5 w-3.5 text-[#f7a501]" /> Suggestions:
+        <div className="flex items-center gap-2 overflow-x-auto py-0.5 text-[13px] no-scrollbar">
+          <span className="text-[#615d59] text-[12px] font-medium shrink-0">
+            Try asking:
           </span>
-          {DEFAULT_SUGGESTIONS.map((sug) => (
+          {defaultSuggestions.map((sug) => (
             <button
               key={sug}
               type="button"
               onClick={() => handleSelectSuggestion(sug)}
-              className="px-3.5 py-1.5 text-xs rounded-full bg-white hover:bg-[#eeefe9] border border-[#bfc1b7] text-[#23251d] hover:border-[#23251d] transition-all truncate max-w-full text-left font-medium shadow-2xs hover:shadow-xs"
+              className="shrink-0 px-3 py-1 bg-white hover:bg-[#f8fafc] text-[#31302e] hover:text-[#0d0d0d] text-[13px] rounded-full border border-[#e6e6e6] transition-colors shadow-2xs cursor-pointer"
             >
               {sug}
             </button>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 };

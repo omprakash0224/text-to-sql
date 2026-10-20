@@ -1,227 +1,128 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   DataSpeak — PostHog Design System (docs/DESIGN-posthog.md)
-   Playful developer-tools system rendered on warm cream canvas (#eeefe9)
-   with olive-gray body (#4d4f46), deep olive-charcoal headlines (#23251d),
-   IBM Plex Sans Variable typography, and a single saturated yellow-orange
-   CTA pill (#f7a501) carrying primary actions.
+   DataSpeak — Calm Analytics Workspace Design System
+   Based on docs/ui-example/DESIGN.md & DESIGN1.md
+   Warm paper canvas (#f6f5f4), Notion blue primary (#0075de),
+   PostHog safety states, Airtable comfortable cells, and
+   JetBrains Mono code blocks.
    ════════════════════════════════════════════════════════════════ */
 
-:root {
-  /* ── Brand & Accent ────────────────────────────────────────────── */
-  --colors-primary:         #f7a501;   /* PostHog Yellow-Orange CTA */
-  --colors-primary-pressed: #dd9001;
-  --colors-primary-active:  #b17816;
-  --colors-on-primary:      #23251d;   /* Deep olive text on yellow */
+@theme {
+  --color-primary: #0075de;
+  --color-primary-active: #005bab;
+  --color-primary-soft: #eaf3fc;
+  --color-primary-soft-border: #c9e0f6;
+  --color-on-primary: #ffffff;
 
-  /* ── Surfaces (Cream Canvas System) ────────────────────────────── */
-  --colors-canvas:          #eeefe9;   /* Warm cream page background */
-  --colors-surface-soft:    #e5e7e0;   /* Secondary button, chip fill */
-  --colors-surface-card:    #ffffff;   /* Pure white card sitting on cream */
-  --colors-surface-doc:     #fcfcfa;   /* Faint cream-warm white */
-  --colors-surface-dark:    #23251d;   /* Deep olive-charcoal code block */
+  --color-canvas: #f6f5f4;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #efeeec;
+  --color-surface-hover: #f8fafc;
+  --color-hairline: #e6e6e6;
+  --color-hairline-strong: #dddddd;
+  --color-hairline-soft: #eeeeec;
 
-  /* ── Hairline Borders ──────────────────────────────────────────── */
-  --colors-hairline:        #bfc1b7;   /* 1px card border, table rule */
-  --colors-hairline-soft:   #dcdfd2;   /* In-card soft divider rule */
-  --colors-on-dark:         #ffffff;
+  --color-ink: #0d0d0d;
+  --color-ink-secondary: #31302e;
+  --color-ink-muted: #615d59;
+  --color-ink-faint: #a39e98;
 
-  /* ── Text / Ink Ladder (IBM Plex Sans) ─────────────────────────── */
-  --colors-ink:             #23251d;   /* Headlines, near-black olive-charcoal */
-  --colors-body:            #4d4f46;   /* Paragraph body prose */
-  --colors-charcoal:        #33342d;   /* Emphasized text */
-  --colors-mute:            #6c6e63;   /* Metadata, captions, secondary text */
-  --colors-ash:             #9b9c92;   /* Disabled text */
-  --colors-stone:           #b6b7af;   /* Muted icons */
+  --color-code-bg: #23251d;
+  --color-code-ink: #ffffff;
+  --color-code-comment: #9b9c92;
+  --color-code-keyword: #62aef0;
+  --color-code-string: #8fd19e;
+  --color-code-number: #fcab79;
+  --color-code-flag: #ff8b82;
 
-  /* ── Semantic Pastel Callout Banners (PostHog 4-color family) ──── */
-  --colors-accent-blue:      #2c84e0;
-  --colors-accent-blue-soft: #dceaf6;
-  --colors-link-blue:        #1d4ed8;
-  --colors-link-teal:        #1078a3;
+  --color-safe: #2c8c66;
+  --color-safe-soft: #d9eddf;
+  --color-safe-ink: #17543b;
 
-  --colors-accent-green:      #2c8c66;
-  --colors-accent-green-soft: #d9eddf;
+  --color-blocked: #cd4239;
+  --color-blocked-soft: #f7d6d3;
+  --color-blocked-ink: #86241d;
 
-  --colors-accent-red:        #cd4239;
-  --colors-accent-red-soft:   #f7d6d3;
+  --color-caution: #f7a501;
+  --color-caution-soft: #fdf0d0;
+  --color-caution-ink: #6e4600;
 
-  --colors-accent-purple:      #7c44a6;
-  --colors-accent-purple-soft: #e7d8ee;
+  --color-series-1: #0075de;
+  --color-series-2: #f7a501;
+  --color-series-3: #2a9d99;
+  --color-series-4: #7c44a6;
+  --color-series-5: #62aef0;
+  --color-series-6: #d6409f;
 
-  --colors-focus-ring:         rgba(59, 130, 246, 0.5);
-
-  /* ── Chart Series Palette (High contrast PostHog data palette) ─── */
-  --chart-series-1:         #1d4ed8;   /* Royal Blue */
-  --chart-series-2:         #f7a501;   /* PostHog Amber */
-  --chart-series-3:         #1078a3;   /* Teal */
-  --chart-series-4:         #7c44a6;   /* Purple */
-  --chart-series-5:         #2c8c66;   /* Green */
-  --chart-series-6:         #cd4239;   /* Coral */
-  --chart-series-other:     #6c6e63;   /* Muted Olive */
-  --chart-grid:             #dcdfd2;
-  --tooltip-bg:             #23251d;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ── Base Reset & Typography Defaults ────────────────────────────── */
+:root {
+  --primary: #0075de;
+  --primary-active: #005bab;
+  --primary-soft: #eaf3fc;
+  --primary-soft-border: #c9e0f6;
+  --canvas: #f6f5f4;
+  --surface: #ffffff;
+  --surface-sunken: #efeeec;
+  --surface-hover: #f8fafc;
+  --hairline: #e6e6e6;
+  --hairline-strong: #dddddd;
+  --hairline-soft: #eeeeec;
+  --ink: #0d0d0d;
+  --ink-secondary: #31302e;
+  --ink-muted: #615d59;
+  --ink-faint: #a39e98;
+  --code-bg: #23251d;
+  --safe: #2c8c66;
+  --safe-soft: #d9eddf;
+  --safe-ink: #17543b;
+  --blocked: #cd4239;
+  --blocked-soft: #f7d6d3;
+  --blocked-ink: #86241d;
+  --caution: #f7a501;
+  --caution-soft: #fdf0d0;
+  --caution-ink: #6e4600;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 body {
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--colors-canvas);
-  color: var(--colors-body);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #f6f5f4;
+  color: #0d0d0d;
   min-height: 100vh;
-  line-height: 1.5;
 }
 
-/* Tabular Numerals for metrics, table cells, and numerical stats */
-.tnum,
-[data-tnum="true"] {
+.tnum {
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }
 
-/* Monospace fonts for code blocks and column IDs */
 code, pre, kbd, .font-mono {
-  font-family: 'IBM Plex Mono', 'ui-monospace', 'Source Code Pro', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* ── PostHog Flat & Soft Shadow Card Architecture ───────────────── */
-.posthog-card {
-  background-color: var(--colors-surface-card);
-  border: 1px solid var(--colors-hairline);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(35, 37, 29, 0.05);
+.dashed-grid {
+  background-image: linear-gradient(to right, #e6e6e6 50%, rgba(255, 255, 255, 0) 0%);
+  background-position: bottom;
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
 }
 
-.posthog-card-doc {
-  background-color: var(--colors-surface-doc);
-  border: 1px solid var(--colors-hairline);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(35, 37, 29, 0.05);
-}
-
-.posthog-card-soft {
-  background-color: var(--colors-surface-soft);
-  border: 1px solid var(--colors-hairline);
-  border-radius: 12px;
-}
-
-/* ── PostHog Yellow CTA Pill ─────────────────────────────────────── */
-.posthog-button-primary {
-  background-color: var(--colors-primary);
-  color: var(--colors-on-primary);
-  font-weight: 700;
-  border-radius: 9999px;
-  padding: 10px 20px; /* px-5 py-2.5 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 1.25;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
-  user-select: none;
-}
-.posthog-button-primary:hover {
-  background-color: var(--colors-primary-pressed);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
-}
-.posthog-button-primary:active {
-  background-color: var(--colors-primary-active);
-  transform: translateY(1px);
-}
-.posthog-button-primary:disabled {
-  background-color: var(--colors-surface-soft);
-  color: var(--colors-ash);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Rounded pill variant for sticky navigation CTAs */
-.posthog-button-primary-pill {
-  background-color: var(--colors-primary);
-  color: var(--colors-on-primary);
-  font-weight: 700;
-  border-radius: 9999px;
-  padding: 10px 20px; /* px-5 py-2.5 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 1.25;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
-  user-select: none;
-}
-.posthog-button-primary-pill:hover {
-  background-color: var(--colors-primary-pressed);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
-}
-.posthog-button-primary-pill:active {
-  background-color: var(--colors-primary-active);
-  transform: translateY(1px);
-}
-
-/* ── PostHog Secondary Button ────────────────────────────────────── */
-.posthog-button-secondary {
-  background-color: var(--colors-surface-soft);
-  color: var(--colors-ink);
-  font-weight: 600;
-  border: 1px solid var(--colors-hairline);
-  border-radius: 8px;
-  padding: 6px 14px; /* px-3.5 py-1.5 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 1.25;
-  transition: background-color 150ms ease, border-color 150ms ease;
-}
-.posthog-button-secondary:hover {
-  background-color: #dcdfd2;
-  border-color: var(--colors-ink);
-}
-
-/* ── PostHog Subtle Shimmer Animation ────────────────────────────── */
-@keyframes ph-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.ph-shimmer {
-  background: linear-gradient(
-    90deg,
-    #e5e7e0 25%,
-    #dcdfd2 37%,
-    #e5e7e0 63%
-  );
-  background-size: 400% 100%;
-  animation: ph-shimmer 1.4s ease infinite;
-}
-
-/* ── Custom Scrollbar ────────────────────────────────────────────── */
+/* Scrollbar styles */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -230,9 +131,17 @@ code, pre, kbd, .font-mono {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--colors-hairline);
+  background: #dddddd;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--colors-mute);
+  background: #c0c0c0;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

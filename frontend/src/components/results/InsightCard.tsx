@@ -1,12 +1,12 @@
 /**
- * DataSpeak — PostHog AI Narrative Summary (InsightCard.tsx)
- * Pastel blue callout banner (#dceaf6) with inline emoji, scientist mascot marginalia,
- * bold takeaways, and traceable "Based on X rows · View Generated SQL" verification link.
+ * DataSpeak — AI Summary Callout Block (InsightCard.tsx)
+ * Calm Analytics Workspace (docs/ui-example/code1.html)
+ * Notion-style soft primary tint banner (#eaf3fc), border #c9e0f6,
+ * sparkle icon, copy button, bullet list, and "View SQL ↓" link.
  */
 
 import React, { useState } from 'react';
-import { Copy, Check, ExternalLink } from 'lucide-react';
-import { HedgehogMascot } from '../common/HedgehogMascot';
+import { Sparkles, Copy, Check } from 'lucide-react';
 
 interface InsightCardProps {
   summary: string;
@@ -29,41 +29,63 @@ export const InsightCard: React.FC<InsightCardProps> = ({
 
   if (!summary) return null;
 
+  // Extract lines / bullets if formatted with newlines or bullet characters
+  const lines = summary.split('\n').filter((l) => l.trim().length > 0);
+  const mainLead = lines[0] || summary;
+  const bulletItems = lines.slice(1);
+
   return (
-    <div className="w-full rounded-xl bg-[#dceaf6] border border-[#2c84e0]/30 p-6 sm:p-8 my-6 sm:my-8 shadow-sm transition-colors">
-      {/* Header with Mascot Marginalia */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <span className="text-lg select-none">💡</span>
-          <span className="text-xs font-bold text-[#1d4ed8] uppercase tracking-wider">
-            AI Narrative Insight
+    <section className="bg-[#eaf3fc] border border-[#c9e0f6] rounded-lg p-5 sm:p-6 flex flex-col gap-3 shadow-2xs transition-all">
+      {/* Top Header Strip */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Sparkles className="h-4 w-4 text-[#0075de]" />
+          <span className="text-[12px] font-semibold tracking-wider text-[#005bab] uppercase">
+            AI Summary
           </span>
         </div>
-
-        <div className="flex items-center gap-3">
-          <HedgehogMascot pose="scientist" size={32} className="hidden sm:inline-block" />
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex items-center gap-1.5 text-xs text-[#4d4f46] hover:text-[#23251d] px-3.5 py-1.5 rounded-lg hover:bg-white/70 transition-colors border border-transparent hover:border-[#bfc1b7] shadow-2xs"
-            title="Copy insight summary"
+            className="text-[#615d59] hover:text-[#0d0d0d] text-[12px] px-2.5 py-1 rounded hover:bg-[#c9e0f6]/50 transition-colors flex items-center gap-1 cursor-pointer"
+            title="Copy summary text"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-[#2c8c66]" /> : <Copy className="h-3.5 w-3.5" />}
-            <span className="text-xs font-semibold">{copied ? 'Copied' : 'Copy'}</span>
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-[#2c8c66]" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
         </div>
       </div>
 
-      {/* Summary Narrative Body (Constrained to max-w-prose, 65ch–75ch) */}
-      <div className="max-w-prose text-base text-[#23251d] leading-relaxed font-normal mb-5">
-        {summary}
-      </div>
+      {/* Main Paragraph */}
+      <p className="text-[15px] sm:text-[16px] text-[#0d0d0d] leading-relaxed">
+        {mainLead}
+      </p>
 
-      {/* Traceability Footer */}
-      <div className="pt-3.5 border-t border-[#2c84e0]/20 flex items-center justify-between text-xs text-[#4d4f46]">
+      {/* Bulleted Insights if present */}
+      {bulletItems.length > 0 && (
+        <ul className="flex flex-col gap-1.5 pt-1 text-[14px] text-[#0d0d0d] leading-normal">
+          {bulletItems.map((item, idx) => {
+            const cleanText = item.replace(/^[-*•]\s*/, '');
+            return (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0075de] mt-2 shrink-0"></span>
+                <span>{cleanText}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* Traceability & View SQL Footer */}
+      <div className="pt-2 text-[13px] text-[#615d59] flex items-center justify-between border-t border-[#c9e0f6]/60">
         <span>
           Based on{' '}
-          <strong className="text-[#23251d] tnum font-bold">
+          <strong className="text-[#0d0d0d] tnum font-semibold">
             {rowCount !== undefined ? rowCount.toLocaleString() : 'queried'}
           </strong>{' '}
           {rowCount === 1 ? 'row' : 'rows'}
@@ -73,13 +95,12 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           <button
             type="button"
             onClick={onViewSql}
-            className="inline-flex items-center gap-1.5 font-bold text-[#1078a3] hover:underline"
+            className="text-[#0075de] hover:underline font-medium text-[13px] cursor-pointer"
           >
-            <span>View Generated SQL</span>
-            <ExternalLink className="h-3.5 w-3.5" />
+            View SQL ↓
           </button>
         )}
       </div>
-    </div>
+    </section>
   );
 };
