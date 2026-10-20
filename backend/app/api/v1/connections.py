@@ -16,6 +16,7 @@ from app.core.rate_limit import RateLimiter, RateLimitResult
 from app.db.connection import (
     build_async_engine,
     test_connection,
+    _sanitize_connection_error,
 )
 from app.db.inspector import reflect_database_schema
 from app.db.session_manager import session_manager
@@ -67,23 +68,15 @@ async def connect_database(
     """Connect to database, reflect schema, and store in tenant session cache."""
     logger.info("Establishing database connection", user_id=current_user.user_id, is_sample=request.is_sample_db)
 
-    # 1. Test connectivity first
-    test_res = await test_connection(request)
-    if not test_res.success:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Connection failed: {test_res.message}",
-        )
-
     try:
-        # 2. Build persistent pooled engine
+        # 1. Build persistent pooled engine
         engine, dialect = build_async_engine(request, is_transient=False)
 
-        # 3. Perform schema reflection
+        # 2. Perform schema reflection
         db_name = request.database or ("demo_ecommerce.db" if request.is_sample_db else "main")
         schema_response = await reflect_database_schema(engine, dialect, database_name=db_name)
 
-        # 4. Formulate safe public connection metadata
+        # 3. Formulate safe public connection metadata
         conn_id = str(uuid.uuid4())
         display_name = request.name or (
             "Sample E-Commerce Database" if request.is_sample_db else f"{dialect.value.capitalize()} Database"
@@ -103,7 +96,7 @@ async def connect_database(
             connected_at=datetime.now().isoformat(),
         )
 
-        # 5. Register in session manager
+        # 4. Register in session manager
         await session_manager.set_session(
             user_id=current_user.user_id,
             engine=engine,
@@ -117,9 +110,10 @@ async def connect_database(
         raise
     except Exception as exc:
         logger.error("Failed to establish active database session", error=str(exc))
+        sanitized = _sanitize_connection_error(str(exc), request.dialect)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to connect and index database schema: {str(exc)}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Connection failed: {sanitized}",
         )
 
 

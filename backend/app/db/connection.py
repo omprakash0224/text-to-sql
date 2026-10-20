@@ -10,7 +10,7 @@ import re
 import ssl
 import time
 from typing import Any, Dict, Optional, Tuple
-from urllib.parse import quote_plus, urlparse
+from urllib.parse import parse_qs, quote_plus, urlencode, urlparse, urlunparse
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.pool import NullPool, StaticPool
@@ -80,10 +80,19 @@ def normalize_database_url(params: ConnectionParams) -> Tuple[str, Dict[str, Any
                 connect_args["statement_cache_size"] = 0
                 connect_args["prepared_statement_cache_size"] = 0
 
-            # Remove sslmode query param from URL since asyncpg receives it in connect_args
-            cleaned_url = re.sub(r"[?&]sslmode=[^&]+", "", raw_url)
-            # Remove trailing '?' if left dangling
-            cleaned_url = cleaned_url.rstrip("?")
+            # Remove sslmode and channel_binding from URL since asyncpg receives SSL in connect_args
+            query_dict = parse_qs(parsed.query, keep_blank_values=True)
+            query_dict.pop("sslmode", None)
+            query_dict.pop("channel_binding", None)
+            new_query = urlencode([(k, v) for k, vs in query_dict.items() for v in vs])
+            cleaned_url = urlunparse((
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                parsed.params,
+                new_query,
+                parsed.fragment,
+            ))
             return cleaned_url, connect_args, dialect
 
         elif "mysql" in scheme or "aiomysql" in scheme:

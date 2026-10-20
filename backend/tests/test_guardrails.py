@@ -196,6 +196,11 @@ def test_postgresql_dialect():
     assert result.is_valid is True
     assert "LIMIT 100" in result.sanitized_sql
 
+    # Also verify 'postgresql' dialect string from DatabaseDialect.POSTGRESQL
+    result_pg = validate_and_sanitize_sql(query, dialect="postgresql")
+    assert result_pg.is_valid is True
+    assert "LIMIT 100" in result_pg.sanitized_sql
+
 
 def test_mysql_dialect():
     query = "SELECT `id`, `name` FROM `users` WHERE `active` = 1"

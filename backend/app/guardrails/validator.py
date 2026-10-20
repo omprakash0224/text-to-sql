@@ -107,6 +107,20 @@ class ValidationResult:
         )
 
 
+def normalize_sqlglot_dialect(dialect: Optional[str]) -> str:
+    """Map database dialect string to sqlglot's recognized canonical dialect identifier."""
+    if not dialect:
+        return "postgres"
+    d = dialect.lower().strip()
+    if d in ("postgresql", "postgres", "pgsql"):
+        return "postgres"
+    if d in ("sqlite", "sqlite3"):
+        return "sqlite"
+    if d in ("mysql", "mariadb"):
+        return "mysql"
+    return d
+
+
 class SQLGuardrailValidator:
     """
     Validates that a SQL string is strictly a single, read-only SELECT query.
@@ -114,7 +128,7 @@ class SQLGuardrailValidator:
     """
 
     def __init__(self, default_dialect: str = "postgres"):
-        self.default_dialect = default_dialect
+        self.default_dialect = normalize_sqlglot_dialect(default_dialect)
 
     def validate(
         self,
@@ -125,7 +139,7 @@ class SQLGuardrailValidator:
         Validate that the provided SQL is strictly a single, read-only SELECT query.
         Returns a ValidationResult object. Raises specific exceptions if requested.
         """
-        target_dialect = dialect or self.default_dialect
+        target_dialect = normalize_sqlglot_dialect(dialect or self.default_dialect)
         stripped_sql = sql.strip() if sql else ""
 
         if not stripped_sql:
