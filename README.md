@@ -18,9 +18,9 @@
 
 ## Demo
 
-<video src="./demo_dataspeak.mp4" controls muted playsinline width="100%"></video>
+<img src="assets/demo_dataspeak.gif" width="100%" alt="Demo">
 
-[Watch the demo video](./demo_dataspeak.mp4)
+[Watch the demo video](assets/demo_dataspeak.mp4)
 
 > The video walks through connecting a database, asking a question in plain English, and receiving the summary, chart, and data grid.
 
