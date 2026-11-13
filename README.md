@@ -16,8 +16,19 @@
 
 ---
 
+## Demo
+
+<video src="./demo_dataspeak.mp4" controls muted playsinline width="100%"></video>
+
+[Watch the demo video](./demo_dataspeak.mp4)
+
+> The video walks through connecting a database, asking a question in plain English, and receiving the summary, chart, and data grid.
+
+---
+
 ## Table of Contents
 
+- [Demo](#demo)
 - [The Origin: What It Was](#the-origin-what-it-was)
 - [The Solution: What Problem It Solves](#the-solution-what-problem-it-solves)
 - [How It Is Made](#how-it-is-made)
@@ -352,6 +363,7 @@ text-to-sql/
 ├── AGENTS.md                  # Root agent instructions and operational rules
 ├── DEPLOYMENT.md              # Production deployment & infrastructure guide
 ├── README.md                  # Project overview and quickstart guide (this file)
+├── demo_dataspeak.mp4         # Product demo walkthrough video
 ├── docker-compose.yml         # Local PostgreSQL 16 & Redis 7 services
 ├── .env.example               # Environment variables template
 ├── docs/
